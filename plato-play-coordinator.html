@@ -130,6 +130,44 @@ body {
   color: var(--muted);
   line-height: 1.5;
 }
+.setup {
+  margin-top: 0.9rem;
+  border-top: 1px dashed var(--line);
+  padding-top: 0.7rem;
+  display: grid;
+  gap: 0.55rem;
+}
+.setup h3 {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.setup-item {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.45rem;
+  background: #fff;
+  display: grid;
+  gap: 0.25rem;
+}
+.setup-item label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.setup-item input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.32rem 0.4rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.73rem;
+  background: #fffdfa;
+}
 .main {
   display: grid;
   gap: 0.85rem;
@@ -252,6 +290,10 @@ textarea {
   <aside class="sidebar">
     <h2>Group Drafts</h2>
     <div class="group-list" id="groupList"></div>
+    <div class="setup">
+      <h3>Group Setup (Saved)</h3>
+      <div id="groupSetup"></div>
+    </div>
     <div class="help">
       <strong>Script Format Tips</strong><br>
       <code># Scene 1</code> for headings<br>
@@ -301,18 +343,14 @@ textarea {
 <script>
 const STORAGE_KEY = 'plato_play_draft_studio_v1';
 
-const groups = [
-  { id: 'A', label: 'Triad A', scene: 'Scene 1: The Cave + Liberation' },
-  { id: 'B', label: 'Triad B', scene: 'Scene 2: The Ascent' },
-  { id: 'C', label: 'Triad C', scene: 'Scene 3: The Return' },
-  { id: 'D', label: 'Pair D', scene: 'Narrator + Production Cues' }
+const defaultGroups = [
+  { id: 'A', label: 'Triad A', scene: 'Scene 1: The Cave + Liberation', docUrl: '' },
+  { id: 'B', label: 'Triad B', scene: 'Scene 2: The Ascent', docUrl: '' },
+  { id: 'C', label: 'Triad C', scene: 'Scene 3: The Return', docUrl: '' },
+  { id: 'D', label: 'Pair D', scene: 'Narrator + Production Cues', docUrl: '' }
 ];
 
-let state = loadState() || {
-  currentGroup: 'A',
-  drafts: { A: '', B: '', C: '', D: '' },
-  combinedScript: ''
-};
+let state = normalizeState(loadState());
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -327,10 +365,44 @@ function loadState() {
   }
 }
 
+function normalizeState(raw) {
+  const base = {
+    currentGroup: 'A',
+    groups: defaultGroups.map(g => ({ ...g })),
+    drafts: { A: '', B: '', C: '', D: '' },
+    combinedScript: ''
+  };
+  if (!raw) return base;
+
+  const merged = {
+    currentGroup: raw.currentGroup || 'A',
+    groups: Array.isArray(raw.groups)
+      ? defaultGroups.map(g => {
+          const found = raw.groups.find(x => x.id === g.id) || {};
+          return {
+            id: g.id,
+            label: found.label || g.label,
+            scene: found.scene || g.scene,
+            docUrl: found.docUrl || ''
+          };
+        })
+      : defaultGroups.map(g => ({ ...g })),
+    drafts: { ...base.drafts, ...(raw.drafts || {}) },
+    combinedScript: raw.combinedScript || ''
+  };
+
+  if (!merged.groups.find(g => g.id === merged.currentGroup)) merged.currentGroup = 'A';
+  return merged;
+}
+
+function groupById(id) {
+  return state.groups.find(g => g.id === id);
+}
+
 function renderGroupButtons() {
   const list = document.getElementById('groupList');
   list.innerHTML = '';
-  groups.forEach(g => {
+  state.groups.forEach(g => {
     const btn = document.createElement('button');
     btn.className = 'group-btn' + (g.id === state.currentGroup ? ' active' : '');
     btn.onclick = () => {
@@ -344,10 +416,39 @@ function renderGroupButtons() {
   });
 }
 
+function renderGroupSetup() {
+  const wrap = document.getElementById('groupSetup');
+  wrap.innerHTML = '';
+  state.groups.forEach((g, idx) => {
+    const item = document.createElement('div');
+    item.className = 'setup-item';
+    item.innerHTML = `
+      <label>${escapeHtml(g.id)} Label</label>
+      <input value="${escapeAttr(g.label)}" oninput="updateGroupMeta(${idx}, 'label', this.value)">
+      <label>Scene Description</label>
+      <input value="${escapeAttr(g.scene)}" oninput="updateGroupMeta(${idx}, 'scene', this.value)">
+      <label>Google Doc URL (Optional)</label>
+      <input value="${escapeAttr(g.docUrl || '')}" placeholder="https://docs.google.com/..." oninput="updateGroupMeta(${idx}, 'docUrl', this.value)">
+    `;
+    wrap.appendChild(item);
+  });
+}
+
+function updateGroupMeta(idx, field, value) {
+  state.groups[idx][field] = value;
+  saveState();
+  renderGroupButtons();
+  renderEditor();
+}
+
 function renderEditor() {
-  const group = groups.find(g => g.id === state.currentGroup);
+  const group = groupById(state.currentGroup);
   document.getElementById('editorTitle').textContent = group.label + ' Draft';
-  document.getElementById('editorScene').textContent = group.scene;
+  if (group.docUrl && /^https?:\/\//i.test(group.docUrl)) {
+    document.getElementById('editorScene').innerHTML = `<a href="${escapeAttr(group.docUrl)}" target="_blank" rel="noopener">${escapeHtml(group.scene)} (Open Doc)</a>`;
+  } else {
+    document.getElementById('editorScene').textContent = group.scene;
+  }
 
   const editor = document.getElementById('draftEditor');
   editor.value = state.drafts[state.currentGroup] || '';
@@ -441,6 +542,9 @@ function combineDraftScripts() {
   const b = state.drafts.B || '';
   const c = state.drafts.C || '';
   const d = state.drafts.D || '';
+  const gA = groupById('A');
+  const gB = groupById('B');
+  const gC = groupById('C');
 
   const nb = extractNarratorBlocks(d);
 
@@ -451,13 +555,13 @@ function combineDraftScripts() {
   if (nb.OPENING.trim()) pieces.push(section('Narrator Opening', nb.OPENING));
   else if (d.trim()) pieces.push(section('Narrator / Production', d));
 
-  pieces.push(section('Scene 1 - The Cave + Liberation', a));
+  pieces.push(section(`${gA.label} - ${gA.scene}`, a));
   if (nb.TRANSITION_2.trim()) pieces.push(section('Narrator Transition to Scene 2', nb.TRANSITION_2));
 
-  pieces.push(section('Scene 2 - The Ascent', b));
+  pieces.push(section(`${gB.label} - ${gB.scene}`, b));
   if (nb.TRANSITION_3.trim()) pieces.push(section('Narrator Transition to Scene 3', nb.TRANSITION_3));
 
-  pieces.push(section('Scene 3 - The Return', c));
+  pieces.push(section(`${gC.label} - ${gC.scene}`, c));
   if (nb.CLOSING.trim()) pieces.push(section('Narrator Closing', nb.CLOSING));
 
   state.combinedScript = pieces.filter(Boolean).join('\n');
@@ -504,9 +608,10 @@ function importProject(event) {
     try {
       const payload = JSON.parse(e.target.result);
       if (!payload.state || !payload.state.drafts) throw new Error('Invalid project file.');
-      state = payload.state;
+      state = normalizeState(payload.state);
       saveState();
       renderGroupButtons();
+      renderGroupSetup();
       renderEditor();
       alert('Project imported.');
     } catch (err) {
@@ -549,7 +654,12 @@ function escapeHtml(s) {
 }
 
 renderGroupButtons();
+renderGroupSetup();
 renderEditor();
+
+function escapeAttr(s) {
+  return escapeHtml(s).replace(/`/g, '&#96;');
+}
 </script>
 </body>
 </html>
