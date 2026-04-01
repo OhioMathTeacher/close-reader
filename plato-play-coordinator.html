@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plato Play Coordinator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0efe7;
+  --card: #fffdf6;
+  --ink: #1f1f1a;
+  --muted: #686553;
+  --line: #d8d3bf;
+  --primary: #0e5f58;
+  --primary-soft: #d8ecea;
+  --accent: #b15a2b;
+  --warn: #a12f2f;
+  --ok: #2b6c32;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background:
+    radial-gradient(circle at 10% 10%, #f8f2de 0%, transparent 32%),
+    radial-gradient(circle at 85% 12%, #dde9f5 0%, transparent 35%),
+    linear-gradient(145deg, #ece9db 0%, #f5f2e8 60%, #f0eee6 100%);
+  color: var(--ink);
+  min-height: 100vh;
+}
+.container { max-width: 1260px; margin: 0 auto; padding: 1.2rem; }
+.header {
+  background: linear-gradient(115deg, #133b52, #1f5f74);
+  color: #f6f1e2;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 16px;
+  padding: 1rem 1.2rem;
+  box-shadow: 0 12px 28px rgba(20,30,40,0.17);
+  margin-bottom: 1rem;
+}
+.header h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-size: 1.75rem;
+}
+.header p {
+  margin-top: 0.35rem;
+  color: #cfe4e8;
+  font-size: 0.92rem;
+}
+.toolbar {
+  margin-top: 0.8rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.btn {
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.14);
+  color: #f9f4e8;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 0.8rem;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.btn:hover { background: rgba(255,255,255,0.23); }
+.btn.light {
+  background: #f8f5ea;
+  border: 1px solid #d7d1be;
+  color: #2e3328;
+}
+.btn.light:hover { background: #f0ebdb; }
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 0.9rem;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 10px 16px rgba(20, 20, 10, 0.05);
+}
+.card-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #24372f;
+}
+.panel { padding: 0.95rem; }
+.panel + .panel { border-top: 1px dashed var(--line); }
+.day-select {
+  width: 100%;
+  margin-top: 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 0.45rem;
+  font-family: inherit;
+  background: #fff;
+}
+.meta-list { margin-top: 0.65rem; font-size: 0.86rem; color: var(--muted); line-height: 1.45; }
+.status-pill {
+  display: inline-block;
+  margin-top: 0.5rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.58rem;
+  border: 1px solid #9fc8c4;
+  background: var(--primary-soft);
+  color: #134944;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+.board {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.9rem;
+}
+.group {
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+}
+.group header {
+  border-bottom: 1px solid var(--line);
+  padding: 0.8rem 0.9rem;
+  background: linear-gradient(170deg, #fffef8, #f8f4e8);
+  border-radius: 12px 12px 0 0;
+}
+.group h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.06rem;
+  margin-bottom: 0.24rem;
+}
+.group .scene {
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+.group-body { padding: 0.82rem 0.9rem; display: grid; gap: 0.7rem; }
+.label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #6f6a57; font-weight: 700; }
+.row { display: grid; gap: 0.42rem; }
+textarea,
+input[type="text"],
+select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.45rem 0.52rem;
+  font-family: inherit;
+  font-size: 0.84rem;
+  background: #fffefa;
+  color: var(--ink);
+}
+textarea { min-height: 64px; resize: vertical; }
+.checks { display: flex; gap: 0.34rem; flex-wrap: wrap; }
+.chk {
+  border: 1px solid #cfc7b0;
+  background: #f7f1df;
+  color: #5c5540;
+  border-radius: 18px;
+  font-size: 0.71rem;
+  font-weight: 700;
+  padding: 0.17rem 0.54rem;
+  cursor: pointer;
+}
+.chk.active { background: #1f5f74; color: #f4f7ea; border-color: #1f5f74; }
+.attendance {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+.person {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.35rem;
+  background: #fff;
+  display: grid;
+  gap: 0.26rem;
+}
+.person-top { display: flex; justify-content: space-between; align-items: center; }
+.person strong { font-size: 0.76rem; }
+.person select { font-size: 0.72rem; padding: 0.2rem 0.3rem; }
+.person .status {
+  font-size: 0.67rem;
+  font-weight: 700;
+  border-radius: 99px;
+  padding: 0.12rem 0.42rem;
+  display: inline-block;
+}
+.st-present { color: #104c26; background: #d9f4de; }
+.st-absent { color: #6f1414; background: #f6dede; }
+.st-backup { color: #513809; background: #f7e4be; }
+.health {
+  border-top: 1px dashed var(--line);
+  padding-top: 0.52rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+.health .score { font-size: 0.77rem; color: var(--muted); }
+.health .ready {
+  border-radius: 999px;
+  padding: 0.22rem 0.58rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.ready.ok { color: #0f5427; background: #d9f1d9; border: 1px solid #88c18b; }
+.ready.warn { color: #713022; background: #f6e5c8; border: 1px solid #dfb77a; }
+.ready.risk { color: #7a1f1f; background: #f7d6d6; border: 1px solid #dc9d9d; }
+.summary {
+  margin-top: 0.9rem;
+  padding: 0.75rem;
+  border: 1px dashed #bbb39d;
+  border-radius: 10px;
+  background: #fffdf8;
+}
+.summary h4 { font-family: 'Fraunces', serif; margin-bottom: 0.45rem; }
+.summary pre {
+  white-space: pre-wrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: #303025;
+  max-height: 190px;
+  overflow: auto;
+}
+@media (max-width: 1050px) {
+  .layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .board { grid-template-columns: 1fr; }
+  .attendance { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <section class="header card">
+    <h1>Plato Play Coordinator</h1>
+    <p>Absence-proof board for TCE 265. Tracks roles, coverage, progress, and handoffs by day.</p>
+    <div class="toolbar">
+      <button class="btn" onclick="exportBoard()">Export Board JSON</button>
+      <button class="btn" onclick="document.getElementById('importFile').click()">Import Board JSON</button>
+      <button class="btn" onclick="copyDailySummary()">Copy Daily Summary</button>
+      <button class="btn" onclick="resetBoard()">Reset</button>
+      <input id="importFile" type="file" accept=".json" style="display:none" onchange="importBoard(event)">
+    </div>
+  </section>
+
+  <div class="layout">
+    <aside class="card">
+      <div class="panel">
+        <div class="card-title">Class Checkpoint</div>
+        <select id="daySelect" class="day-select" onchange="changeDay(this.value)">
+          <option value="Day 18">Day 18 - Draft Start</option>
+          <option value="Day 19">Day 19 - Table Read + Revise</option>
+          <option value="Day 20">Day 20 - Perform + Record</option>
+        </select>
+        <div class="meta-list" id="dayGoals"></div>
+        <span class="status-pill" id="readinessPill">Readiness: --</span>
+      </div>
+      <div class="panel">
+        <div class="card-title">Teacher Notes</div>
+        <textarea id="teacherNotes" placeholder="Quick reminders for next class period..."></textarea>
+      </div>
+      <div class="panel">
+        <div class="card-title">Daily Summary</div>
+        <div class="summary">
+          <h4 id="summaryHeading">Day 18 Snapshot</h4>
+          <pre id="summaryText"></pre>
+        </div>
+      </div>
+    </aside>
+
+    <main class="board" id="board"></main>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'plato_play_coordinator_state_v1';
+
+const dayData = {
+  'Day 18': {
+    goals: [
+      'Groups build rough draft with dialogue + stage directions.',
+      'Production crew drafts narrator transitions + staging sketch.',
+      'By end: each group has a readable section.'
+    ]
+  },
+  'Day 19': {
+    goals: [
+      'Complete readable draft for full table read.',
+      'Run full sequence start to finish without stopping.',
+      'Revise weak transitions and unclear moments.'
+    ]
+  },
+  'Day 20': {
+    goals: [
+      'Finalize blocking and cave/outside layout.',
+      'Perform and record complete one-act adaptation.',
+      'Capture one concrete revision point after run-through.'
+    ]
+  }
+};
+
+const groupTemplate = [
+  { id: 'A', title: 'Triad A', scene: 'Scene 1: The Cave + Liberation', members: ['Student A1', 'Student A2', 'Student A3'] },
+  { id: 'B', title: 'Triad B', scene: 'Scene 2: The Ascent', members: ['Student B1', 'Student B2', 'Student B3'] },
+  { id: 'C', title: 'Triad C', scene: 'Scene 3: The Return', members: ['Student C1', 'Student C2', 'Student C3'] },
+  { id: 'D', title: 'Pair D', scene: 'Production Crew: Narrator + Staging', members: ['Student D1', 'Student D2'] }
+];
+
+let state = loadState() || {
+  currentDay: 'Day 18',
+  teacherNotes: '',
+  groups: groupTemplate.map(g => ({
+    id: g.id,
+    title: g.title,
+    scene: g.scene,
+    checklist: {
+      draft: false,
+      stageDirections: false,
+      transitions: false,
+      props: false,
+      rehearsalReady: false
+    },
+    note: '',
+    handoff: '',
+    members: g.members.map(name => ({
+      name,
+      role: '',
+      status: 'present'
+    }))
+  }))
+};
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function render() {
+  document.getElementById('daySelect').value = state.currentDay;
+  document.getElementById('teacherNotes').value = state.teacherNotes;
+  document.getElementById('teacherNotes').oninput = (e) => {
+    state.teacherNotes = e.target.value;
+    saveState();
+    renderSummary();
+  };
+
+  const goals = dayData[state.currentDay].goals;
+  document.getElementById('dayGoals').innerHTML = goals.map(g => `- ${escapeHtml(g)}`).join('<br>');
+
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  state.groups.forEach((group, groupIndex) => {
+    const groupEl = document.createElement('section');
+    groupEl.className = 'card group';
+
+    const checks = [
+      ['draft', 'Draft'],
+      ['stageDirections', 'Stage Dir'],
+      ['transitions', 'Transitions'],
+      ['props', 'Props'],
+      ['rehearsalReady', 'Ready']
+    ];
+
+    const checkHtml = checks.map(([key, label]) => {
+      const active = group.checklist[key] ? 'active' : '';
+      return `<button class="chk ${active}" onclick="toggleCheck('${group.id}','${key}')">${label}</button>`;
+    }).join('');
+
+    const membersHtml = group.members.map((m, memberIndex) => {
+      const statusClass = m.status === 'present' ? 'st-present' : m.status === 'absent' ? 'st-absent' : 'st-backup';
+      return `
+      <div class="person">
+        <div class="person-top">
+          <strong contenteditable="true" onblur="updateMemberName(${groupIndex},${memberIndex},this.textContent)">${escapeHtml(m.name)}</strong>
+          <span class="status ${statusClass}">${m.status}</span>
+        </div>
+        <input type="text" value="${escapeAttr(m.role)}" placeholder="Role/line set" oninput="updateMemberRole(${groupIndex},${memberIndex},this.value)">
+        <select onchange="updateMemberStatus(${groupIndex},${memberIndex},this.value)">
+          <option value="present" ${m.status==='present'?'selected':''}>Present</option>
+          <option value="absent" ${m.status==='absent'?'selected':''}>Absent</option>
+          <option value="backup" ${m.status==='backup'?'selected':''}>Backup</option>
+        </select>
+      </div>`;
+    }).join('');
+
+    const health = computeGroupHealth(group);
+
+    groupEl.innerHTML = `
+      <header>
+        <h3>${escapeHtml(group.title)}</h3>
+        <div class="scene">${escapeHtml(group.scene)}</div>
+      </header>
+      <div class="group-body">
+        <div class="row">
+          <div class="label">Progress</div>
+          <div class="checks">${checkHtml}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Attendance + Coverage</div>
+          <div class="attendance">${membersHtml}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Current Blocker / Next Move</div>
+          <textarea oninput="updateGroupField(${groupIndex},'note',this.value)" placeholder="What is blocking this group right now?">${escapeHtml(group.note)}</textarea>
+        </div>
+
+        <div class="row">
+          <div class="label">Absence Handoff Note</div>
+          <textarea oninput="updateGroupField(${groupIndex},'handoff',this.value)" placeholder="If someone misses class, what should they do before next session?">${escapeHtml(group.handoff)}</textarea>
+        </div>
+
+        <div class="health">
+          <div class="score">Coverage score: ${health.coverage}%</div>
+          <div class="ready ${health.level}">${health.label}</div>
+        </div>
+      </div>
+    `;
+
+    board.appendChild(groupEl);
+  });
+
+  renderSummary();
+  renderReadinessPill();
+}
+
+function toggleCheck(groupId, key) {
+  const group = state.groups.find(g => g.id === groupId);
+  if (!group) return;
+  group.checklist[key] = !group.checklist[key];
+  saveState();
+  render();
+}
+
+function updateMemberName(groupIndex, memberIndex, value) {
+  state.groups[groupIndex].members[memberIndex].name = value.trim() || 'Unnamed';
+  saveState();
+  renderSummary();
+}
+
+function updateMemberRole(groupIndex, memberIndex, value) {
+  state.groups[groupIndex].members[memberIndex].role = value;
+  saveState();
+  renderSummary();
+}
+
+function updateMemberStatus(groupIndex, memberIndex, value) {
+  state.groups[groupIndex].members[memberIndex].status = value;
+  saveState();
+  render();
+}
+
+function updateGroupField(groupIndex, field, value) {
+  state.groups[groupIndex][field] = value;
+  saveState();
+  renderSummary();
+}
+
+function changeDay(day) {
+  state.currentDay = day;
+  saveState();
+  render();
+}
+
+function computeGroupHealth(group) {
+  const total = group.members.length || 1;
+  const present = group.members.filter(m => m.status === 'present').length;
+  const backup = group.members.filter(m => m.status === 'backup').length;
+  const checklistCount = Object.values(group.checklist).filter(Boolean).length;
+
+  let coverage = Math.round(((present + backup * 0.5) / total) * 100);
+  coverage = Math.max(0, Math.min(100, coverage));
+
+  let score = coverage + (checklistCount * 8);
+  if (score >= 105) return { level: 'ok', label: 'Ready to Run', coverage };
+  if (score >= 75) return { level: 'warn', label: 'Needs Focus', coverage };
+  return { level: 'risk', label: 'At Risk', coverage };
+}
+
+function renderReadinessPill() {
+  const healths = state.groups.map(computeGroupHealth);
+  const risky = healths.filter(h => h.level === 'risk').length;
+  const warn = healths.filter(h => h.level === 'warn').length;
+
+  let label = 'Readiness: Strong';
+  if (risky > 0) label = `Readiness: ${risky} Group(s) At Risk`;
+  else if (warn > 0) label = `Readiness: ${warn} Group(s) Need Focus`;
+
+  document.getElementById('readinessPill').textContent = label;
+}
+
+function buildSummaryText() {
+  const lines = [];
+  lines.push(`${state.currentDay} Summary`);
+  lines.push('');
+
+  state.groups.forEach(g => {
+    const h = computeGroupHealth(g);
+    const presentNames = g.members.filter(m => m.status === 'present').map(m => m.name).join(', ') || 'None';
+    const absentNames = g.members.filter(m => m.status === 'absent').map(m => m.name).join(', ') || 'None';
+    const backupNames = g.members.filter(m => m.status === 'backup').map(m => m.name).join(', ') || 'None';
+
+    lines.push(`${g.title} - ${g.scene}`);
+    lines.push(`Status: ${h.label} | Coverage ${h.coverage}%`);
+    lines.push(`Present: ${presentNames}`);
+    lines.push(`Absent: ${absentNames}`);
+    lines.push(`Backup: ${backupNames}`);
+    lines.push(`Blocker: ${g.note || 'None listed'}`);
+    lines.push(`Handoff: ${g.handoff || 'None listed'}`);
+    lines.push('');
+  });
+
+  if (state.teacherNotes.trim()) {
+    lines.push('Teacher Notes:');
+    lines.push(state.teacherNotes.trim());
+  }
+
+  return lines.join('\n');
+}
+
+function renderSummary() {
+  document.getElementById('summaryHeading').textContent = `${state.currentDay} Snapshot`;
+  document.getElementById('summaryText').textContent = buildSummaryText();
+}
+
+function copyDailySummary() {
+  const txt = buildSummaryText();
+  navigator.clipboard.writeText(txt).then(() => {
+    alert('Daily summary copied.');
+  }).catch(() => {
+    alert('Clipboard blocked. Select and copy from the summary panel.');
+  });
+}
+
+function exportBoard() {
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    app: 'Plato Play Coordinator',
+    version: 1,
+    state
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `plato-play-board-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function importBoard(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const payload = JSON.parse(e.target.result);
+      if (!payload.state || !payload.state.groups) throw new Error('Invalid board file.');
+      state = payload.state;
+      saveState();
+      render();
+      alert('Board imported.');
+    } catch (err) {
+      alert('Import failed: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function resetBoard() {
+  if (!confirm('Reset everything? This clears all groups, notes, and attendance.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = {
+    currentDay: 'Day 18',
+    teacherNotes: '',
+    groups: groupTemplate.map(g => ({
+      id: g.id,
+      title: g.title,
+      scene: g.scene,
+      checklist: {
+        draft: false,
+        stageDirections: false,
+        transitions: false,
+        props: false,
+        rehearsalReady: false
+      },
+      note: '',
+      handoff: '',
+      members: g.members.map(name => ({ name, role: '', status: 'present' }))
+    }))
+  };
+  saveState();
+  render();
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeAttr(s) {
+  return escapeHtml(s).replace(/`/g, '&#96;');
+}
+
+render();
+</script>
+</body>
+</html>
