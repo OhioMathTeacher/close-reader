@@ -451,6 +451,7 @@ function renderEditor() {
   }
 
   const editor = document.getElementById('draftEditor');
+  editor.placeholder = `Write ${group.label}'s working draft here (this box is editable and saved in the app).`;
   editor.value = state.drafts[state.currentGroup] || '';
   editor.oninput = () => {
     state.drafts[state.currentGroup] = editor.value;
