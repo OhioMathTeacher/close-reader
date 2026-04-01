@@ -3,340 +3,315 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plato Play Coordinator</title>
+<title>Plato Play Draft Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #f0efe7;
-  --card: #fffdf6;
-  --ink: #1f1f1a;
-  --muted: #686553;
-  --line: #d8d3bf;
-  --primary: #0e5f58;
-  --primary-soft: #d8ecea;
-  --accent: #b15a2b;
-  --warn: #a12f2f;
-  --ok: #2b6c32;
+  --parchment: #f7f3ea;
+  --ink: #2a2418;
+  --cave-dark: #1a2a40;
+  --cave-glow: #d4a843;
+  --muted: #7f7565;
+  --line: #dacdaf;
+  --card: #fffdf7;
+  --accent: #7a3b10;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: 'Space Grotesk', sans-serif;
-  background:
-    radial-gradient(circle at 10% 10%, #f8f2de 0%, transparent 32%),
-    radial-gradient(circle at 85% 12%, #dde9f5 0%, transparent 35%),
-    linear-gradient(145deg, #ece9db 0%, #f5f2e8 60%, #f0eee6 100%);
+  font-family: 'Crimson Pro', serif;
+  background: linear-gradient(175deg, #f8f5ed 0%, #f1ecdf 100%);
   color: var(--ink);
   min-height: 100vh;
 }
-.container { max-width: 1260px; margin: 0 auto; padding: 1.2rem; }
 .header {
-  background: linear-gradient(115deg, #133b52, #1f5f74);
-  color: #f6f1e2;
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 16px;
-  padding: 1rem 1.2rem;
-  box-shadow: 0 12px 28px rgba(20,30,40,0.17);
-  margin-bottom: 1rem;
+  background: var(--cave-dark);
+  color: #ddd3c0;
+  padding: 1.25rem 1.6rem 1rem;
+  border-bottom: 1px solid rgba(212,168,67,0.28);
 }
 .header h1 {
-  font-family: 'Fraunces', serif;
-  font-weight: 600;
+  font-weight: 400;
   letter-spacing: 0.02em;
-  font-size: 1.75rem;
+  font-size: 1.7rem;
 }
 .header p {
-  margin-top: 0.35rem;
-  color: #cfe4e8;
-  font-size: 0.92rem;
+  font-family: 'DM Sans', sans-serif;
+  color: #9f9484;
+  font-size: 0.83rem;
+  margin-top: 0.2rem;
 }
 .toolbar {
-  margin-top: 0.8rem;
+  margin-top: 0.7rem;
   display: flex;
-  gap: 0.5rem;
+  gap: 0.45rem;
   flex-wrap: wrap;
 }
 .btn {
-  border: 1px solid rgba(255,255,255,0.25);
-  background: rgba(255,255,255,0.14);
-  color: #f9f4e8;
-  font-family: inherit;
-  font-size: 0.82rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.76rem;
   font-weight: 600;
-  padding: 0.45rem 0.8rem;
-  border-radius: 7px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid rgba(212,168,67,0.32);
+  color: #d8cebd;
+  background: transparent;
+  border-radius: 5px;
+  padding: 0.38rem 0.65rem;
   cursor: pointer;
 }
-.btn:hover { background: rgba(255,255,255,0.23); }
-.btn.light {
-  background: #f8f5ea;
-  border: 1px solid #d7d1be;
-  color: #2e3328;
-}
-.btn.light:hover { background: #f0ebdb; }
+.btn:hover { border-color: var(--cave-glow); color: #efe6d3; }
 .layout {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem;
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 280px 1fr;
   gap: 0.9rem;
 }
-.card {
-  background: var(--card);
+.sidebar,
+.panel {
   border: 1px solid var(--line);
   border-radius: 12px;
-  box-shadow: 0 10px 16px rgba(20, 20, 10, 0.05);
+  background: var(--card);
 }
-.card-title {
-  font-family: 'Fraunces', serif;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: #24372f;
+.sidebar {
+  padding: 0.85rem;
+  height: fit-content;
+  position: sticky;
+  top: 0.75rem;
 }
-.panel { padding: 0.95rem; }
-.panel + .panel { border-top: 1px dashed var(--line); }
-.day-select {
-  width: 100%;
-  margin-top: 0.55rem;
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  padding: 0.45rem;
-  font-family: inherit;
-  background: #fff;
+.sidebar h2,
+.panel h2 {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
 }
-.meta-list { margin-top: 0.65rem; font-size: 0.86rem; color: var(--muted); line-height: 1.45; }
-.status-pill {
-  display: inline-block;
-  margin-top: 0.5rem;
-  border-radius: 999px;
-  padding: 0.2rem 0.58rem;
-  border: 1px solid #9fc8c4;
-  background: var(--primary-soft);
-  color: #134944;
-  font-size: 0.74rem;
-  font-weight: 700;
-}
-.board {
+.group-list {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.9rem;
+  gap: 0.45rem;
 }
-.group {
-  display: flex;
-  flex-direction: column;
-  min-height: 320px;
-}
-.group header {
-  border-bottom: 1px solid var(--line);
-  padding: 0.8rem 0.9rem;
-  background: linear-gradient(170deg, #fffef8, #f8f4e8);
-  border-radius: 12px 12px 0 0;
-}
-.group h3 {
-  font-family: 'Fraunces', serif;
-  font-size: 1.06rem;
-  margin-bottom: 0.24rem;
-}
-.group .scene {
-  font-size: 0.84rem;
-  color: var(--muted);
-}
-.group-body { padding: 0.82rem 0.9rem; display: grid; gap: 0.7rem; }
-.label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #6f6a57; font-weight: 700; }
-.row { display: grid; gap: 0.42rem; }
-textarea,
-input[type="text"],
-select {
+.group-btn {
   width: 100%;
   border: 1px solid var(--line);
+  background: #fff;
   border-radius: 8px;
-  padding: 0.45rem 0.52rem;
-  font-family: inherit;
-  font-size: 0.84rem;
-  background: #fffefa;
-  color: var(--ink);
-}
-textarea { min-height: 64px; resize: vertical; }
-.checks { display: flex; gap: 0.34rem; flex-wrap: wrap; }
-.chk {
-  border: 1px solid #cfc7b0;
-  background: #f7f1df;
-  color: #5c5540;
-  border-radius: 18px;
-  font-size: 0.71rem;
-  font-weight: 700;
-  padding: 0.17rem 0.54rem;
+  padding: 0.5rem;
+  text-align: left;
   cursor: pointer;
 }
-.chk.active { background: #1f5f74; color: #f4f7ea; border-color: #1f5f74; }
-.attendance {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.35rem;
+.group-btn strong {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  color: #2f2d25;
 }
-.person {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 0.35rem;
-  background: #fff;
-  display: grid;
-  gap: 0.26rem;
+.group-btn span {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 0.1rem;
 }
-.person-top { display: flex; justify-content: space-between; align-items: center; }
-.person strong { font-size: 0.76rem; }
-.person select { font-size: 0.72rem; padding: 0.2rem 0.3rem; }
-.person .status {
-  font-size: 0.67rem;
-  font-weight: 700;
-  border-radius: 99px;
-  padding: 0.12rem 0.42rem;
-  display: inline-block;
+.group-btn.active {
+  border-color: rgba(122,59,16,0.5);
+  background: #fff8ea;
 }
-.st-present { color: #104c26; background: #d9f4de; }
-.st-absent { color: #6f1414; background: #f6dede; }
-.st-backup { color: #513809; background: #f7e4be; }
-.health {
+.help {
+  margin-top: 0.9rem;
   border-top: 1px dashed var(--line);
-  padding-top: 0.52rem;
+  padding-top: 0.7rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.main {
+  display: grid;
+  gap: 0.85rem;
+}
+.editor-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.panel {
+  padding: 0.85rem;
+}
+.panel-title {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
 }
-.health .score { font-size: 0.77rem; color: var(--muted); }
-.health .ready {
-  border-radius: 999px;
-  padding: 0.22rem 0.58rem;
+.panel-title h3 {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+.panel-title .sub {
+  font-family: 'DM Sans', sans-serif;
   font-size: 0.72rem;
-  font-weight: 700;
+  color: var(--muted);
 }
-.ready.ok { color: #0f5427; background: #d9f1d9; border: 1px solid #88c18b; }
-.ready.warn { color: #713022; background: #f6e5c8; border: 1px solid #dfb77a; }
-.ready.risk { color: #7a1f1f; background: #f7d6d6; border: 1px solid #dc9d9d; }
-.summary {
-  margin-top: 0.9rem;
-  padding: 0.75rem;
-  border: 1px dashed #bbb39d;
-  border-radius: 10px;
-  background: #fffdf8;
+textarea {
+  width: 100%;
+  min-height: 460px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fffdfa;
+  color: #2d2a20;
+  padding: 0.65rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  resize: vertical;
 }
-.summary h4 { font-family: 'Fraunces', serif; margin-bottom: 0.45rem; }
-.summary pre {
-  white-space: pre-wrap;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.74rem;
-  line-height: 1.45;
-  color: #303025;
-  max-height: 190px;
+.preview {
+  min-height: 460px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 0.8rem;
+  background: #fffcf3;
   overflow: auto;
 }
-@media (max-width: 1050px) {
-  .layout { grid-template-columns: 1fr; }
+.script-line { margin-bottom: 0.45rem; }
+.script-heading {
+  text-align: center;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.1em;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  margin: 0.8rem 0 0.5rem;
+  color: #40372a;
 }
-@media (max-width: 760px) {
-  .board { grid-template-columns: 1fr; }
-  .attendance { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.script-stage {
+  text-align: center;
+  color: #6c6253;
+  font-style: italic;
+  margin: 0.5rem 0;
+}
+.script-char {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #3c3327;
+  margin-top: 0.55rem;
+}
+.script-dialogue {
+  margin-left: 1.6rem;
+  line-height: 1.55;
+}
+.combine-panel .preview {
+  min-height: 270px;
+}
+.combine-actions {
+  margin-bottom: 0.55rem;
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+.combine-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid #c59f64;
+  background: #e9cf9f;
+  color: #3b2b16;
+  padding: 0.38rem 0.65rem;
+  cursor: pointer;
+}
+.combine-btn:hover { background: #e3c48c; }
+@media (max-width: 980px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; }
+  .editor-wrap { grid-template-columns: 1fr; }
+  textarea, .preview { min-height: 320px; }
 }
 </style>
 </head>
 <body>
-<div class="container">
-  <section class="header card">
-    <h1>Plato Play Coordinator</h1>
-    <p>Absence-proof board for TCE 265. Tracks roles, coverage, progress, and handoffs by day.</p>
-    <div class="toolbar">
-      <button class="btn" onclick="exportBoard()">Export Board JSON</button>
-      <button class="btn" onclick="document.getElementById('importFile').click()">Import Board JSON</button>
-      <button class="btn" onclick="copyDailySummary()">Copy Daily Summary</button>
-      <button class="btn" onclick="resetBoard()">Reset</button>
-      <input id="importFile" type="file" accept=".json" style="display:none" onchange="importBoard(event)">
-    </div>
-  </section>
-
-  <div class="layout">
-    <aside class="card">
-      <div class="panel">
-        <div class="card-title">Class Checkpoint</div>
-        <select id="daySelect" class="day-select" onchange="changeDay(this.value)">
-          <option value="Day 18">Day 18 - Draft Start</option>
-          <option value="Day 19">Day 19 - Table Read + Revise</option>
-          <option value="Day 20">Day 20 - Perform + Record</option>
-        </select>
-        <div class="meta-list" id="dayGoals"></div>
-        <span class="status-pill" id="readinessPill">Readiness: --</span>
-      </div>
-      <div class="panel">
-        <div class="card-title">Teacher Notes</div>
-        <textarea id="teacherNotes" placeholder="Quick reminders for next class period..."></textarea>
-      </div>
-      <div class="panel">
-        <div class="card-title">Daily Summary</div>
-        <div class="summary">
-          <h4 id="summaryHeading">Day 18 Snapshot</h4>
-          <pre id="summaryText"></pre>
-        </div>
-      </div>
-    </aside>
-
-    <main class="board" id="board"></main>
+<header class="header">
+  <h1>Plato Play Draft Studio</h1>
+  <p>Script drafting only: group drafts, shared visibility, and one-click combined script for table read.</p>
+  <div class="toolbar">
+    <button class="btn" onclick="exportProject()">Export Project</button>
+    <button class="btn" onclick="document.getElementById('importFile').click()">Import Project</button>
+    <button class="btn" onclick="seedTemplates()">Load Starter Templates</button>
+    <button class="btn" onclick="clearAllDrafts()">Clear Drafts</button>
+    <input id="importFile" type="file" accept=".json" style="display:none" onchange="importProject(event)">
   </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <h2>Group Drafts</h2>
+    <div class="group-list" id="groupList"></div>
+    <div class="help">
+      <strong>Script Format Tips</strong><br>
+      <code># Scene 1</code> for headings<br>
+      <code>[Lights dim.]</code> for stage directions<br>
+      <code>SOCRATES: Dialogue text...</code> for dialogue
+      <br><br>
+      <strong>Pair D cue markers (optional):</strong><br>
+      <code>[[OPENING]]</code><br>
+      <code>[[TRANSITION_2]]</code><br>
+      <code>[[TRANSITION_3]]</code><br>
+      <code>[[CLOSING]]</code>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section class="panel editor-wrap">
+      <div>
+        <div class="panel-title">
+          <h3 id="editorTitle">Triad A Draft</h3>
+          <span class="sub" id="editorScene">Scene 1</span>
+        </div>
+        <textarea id="draftEditor" placeholder="Write your group's script draft here..."></textarea>
+      </div>
+      <div>
+        <div class="panel-title">
+          <h3>Formatted Script Preview</h3>
+          <span class="sub">Real script view</span>
+        </div>
+        <div class="preview" id="groupPreview"></div>
+      </div>
+    </section>
+
+    <section class="panel combine-panel">
+      <div class="panel-title">
+        <h3>Full Allegory Draft</h3>
+        <span class="sub">Before Day 19: click Combine Draft Scripts</span>
+      </div>
+      <div class="combine-actions">
+        <button class="combine-btn" onclick="combineDraftScripts()">Combine Draft Scripts</button>
+        <button class="combine-btn" onclick="copyCombinedScript()">Copy Combined Script</button>
+      </div>
+      <div class="preview" id="combinedPreview"></div>
+    </section>
+  </main>
 </div>
 
 <script>
-const STORAGE_KEY = 'plato_play_coordinator_state_v1';
+const STORAGE_KEY = 'plato_play_draft_studio_v1';
 
-const dayData = {
-  'Day 18': {
-    goals: [
-      'Groups build rough draft with dialogue + stage directions.',
-      'Production crew drafts narrator transitions + staging sketch.',
-      'By end: each group has a readable section.'
-    ]
-  },
-  'Day 19': {
-    goals: [
-      'Complete readable draft for full table read.',
-      'Run full sequence start to finish without stopping.',
-      'Revise weak transitions and unclear moments.'
-    ]
-  },
-  'Day 20': {
-    goals: [
-      'Finalize blocking and cave/outside layout.',
-      'Perform and record complete one-act adaptation.',
-      'Capture one concrete revision point after run-through.'
-    ]
-  }
-};
-
-const groupTemplate = [
-  { id: 'A', title: 'Triad A', scene: 'Scene 1: The Cave + Liberation', members: ['Student A1', 'Student A2', 'Student A3'] },
-  { id: 'B', title: 'Triad B', scene: 'Scene 2: The Ascent', members: ['Student B1', 'Student B2', 'Student B3'] },
-  { id: 'C', title: 'Triad C', scene: 'Scene 3: The Return', members: ['Student C1', 'Student C2', 'Student C3'] },
-  { id: 'D', title: 'Pair D', scene: 'Production Crew: Narrator + Staging', members: ['Student D1', 'Student D2'] }
+const groups = [
+  { id: 'A', label: 'Triad A', scene: 'Scene 1: The Cave + Liberation' },
+  { id: 'B', label: 'Triad B', scene: 'Scene 2: The Ascent' },
+  { id: 'C', label: 'Triad C', scene: 'Scene 3: The Return' },
+  { id: 'D', label: 'Pair D', scene: 'Narrator + Production Cues' }
 ];
 
 let state = loadState() || {
-  currentDay: 'Day 18',
-  teacherNotes: '',
-  groups: groupTemplate.map(g => ({
-    id: g.id,
-    title: g.title,
-    scene: g.scene,
-    checklist: {
-      draft: false,
-      stageDirections: false,
-      transitions: false,
-      props: false,
-      rehearsalReady: false
-    },
-    note: '',
-    handoff: '',
-    members: g.members.map(name => ({
-      name,
-      role: '',
-      status: 'present'
-    }))
-  }))
+  currentGroup: 'A',
+  drafts: { A: '', B: '', C: '', D: '' },
+  combinedScript: ''
 };
 
 function saveState() {
@@ -347,214 +322,166 @@ function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
-  } catch (e) {
+  } catch (err) {
     return null;
   }
 }
 
-function render() {
-  document.getElementById('daySelect').value = state.currentDay;
-  document.getElementById('teacherNotes').value = state.teacherNotes;
-  document.getElementById('teacherNotes').oninput = (e) => {
-    state.teacherNotes = e.target.value;
+function renderGroupButtons() {
+  const list = document.getElementById('groupList');
+  list.innerHTML = '';
+  groups.forEach(g => {
+    const btn = document.createElement('button');
+    btn.className = 'group-btn' + (g.id === state.currentGroup ? ' active' : '');
+    btn.onclick = () => {
+      state.currentGroup = g.id;
+      saveState();
+      renderEditor();
+      renderGroupButtons();
+    };
+    btn.innerHTML = `<strong>${escapeHtml(g.label)}</strong><span>${escapeHtml(g.scene)}</span>`;
+    list.appendChild(btn);
+  });
+}
+
+function renderEditor() {
+  const group = groups.find(g => g.id === state.currentGroup);
+  document.getElementById('editorTitle').textContent = group.label + ' Draft';
+  document.getElementById('editorScene').textContent = group.scene;
+
+  const editor = document.getElementById('draftEditor');
+  editor.value = state.drafts[state.currentGroup] || '';
+  editor.oninput = () => {
+    state.drafts[state.currentGroup] = editor.value;
     saveState();
-    renderSummary();
+    renderGroupPreview();
   };
 
-  const goals = dayData[state.currentDay].goals;
-  document.getElementById('dayGoals').innerHTML = goals.map(g => `- ${escapeHtml(g)}`).join('<br>');
+  renderGroupPreview();
+  renderCombinedPreview();
+}
 
-  const board = document.getElementById('board');
-  board.innerHTML = '';
+function renderGroupPreview() {
+  const txt = state.drafts[state.currentGroup] || '';
+  document.getElementById('groupPreview').innerHTML = renderScriptHtml(txt);
+}
 
-  state.groups.forEach((group, groupIndex) => {
-    const groupEl = document.createElement('section');
-    groupEl.className = 'card group';
+function renderCombinedPreview() {
+  const txt = state.combinedScript || 'No combined script yet. Click "Combine Draft Scripts".';
+  document.getElementById('combinedPreview').innerHTML = renderScriptHtml(txt);
+}
 
-    const checks = [
-      ['draft', 'Draft'],
-      ['stageDirections', 'Stage Dir'],
-      ['transitions', 'Transitions'],
-      ['props', 'Props'],
-      ['rehearsalReady', 'Ready']
-    ];
+function renderScriptHtml(raw) {
+  if (!raw.trim()) return '<div class="script-stage">No script text yet.</div>';
 
-    const checkHtml = checks.map(([key, label]) => {
-      const active = group.checklist[key] ? 'active' : '';
-      return `<button class="chk ${active}" onclick="toggleCheck('${group.id}','${key}')">${label}</button>`;
-    }).join('');
+  const lines = raw.split('\n');
+  const html = [];
 
-    const membersHtml = group.members.map((m, memberIndex) => {
-      const statusClass = m.status === 'present' ? 'st-present' : m.status === 'absent' ? 'st-absent' : 'st-backup';
-      return `
-      <div class="person">
-        <div class="person-top">
-          <strong contenteditable="true" onblur="updateMemberName(${groupIndex},${memberIndex},this.textContent)">${escapeHtml(m.name)}</strong>
-          <span class="status ${statusClass}">${m.status}</span>
-        </div>
-        <input type="text" value="${escapeAttr(m.role)}" placeholder="Role/line set" oninput="updateMemberRole(${groupIndex},${memberIndex},this.value)">
-        <select onchange="updateMemberStatus(${groupIndex},${memberIndex},this.value)">
-          <option value="present" ${m.status==='present'?'selected':''}>Present</option>
-          <option value="absent" ${m.status==='absent'?'selected':''}>Absent</option>
-          <option value="backup" ${m.status==='backup'?'selected':''}>Backup</option>
-        </select>
-      </div>`;
-    }).join('');
+  lines.forEach(line => {
+    const t = line.trim();
+    if (!t) {
+      html.push('<div class="script-line">&nbsp;</div>');
+      return;
+    }
 
-    const health = computeGroupHealth(group);
+    if (t.startsWith('#')) {
+      html.push(`<div class="script-heading">${escapeHtml(t.replace(/^#+\s*/, ''))}</div>`);
+      return;
+    }
 
-    groupEl.innerHTML = `
-      <header>
-        <h3>${escapeHtml(group.title)}</h3>
-        <div class="scene">${escapeHtml(group.scene)}</div>
-      </header>
-      <div class="group-body">
-        <div class="row">
-          <div class="label">Progress</div>
-          <div class="checks">${checkHtml}</div>
-        </div>
+    if ((t.startsWith('[') && t.endsWith(']')) || (t.startsWith('(') && t.endsWith(')'))) {
+      html.push(`<div class="script-stage">${escapeHtml(t)}</div>`);
+      return;
+    }
 
-        <div class="row">
-          <div class="label">Attendance + Coverage</div>
-          <div class="attendance">${membersHtml}</div>
-        </div>
+    const m = t.match(/^([A-Z][A-Z0-9_\- ]{1,30}):\s*(.+)$/);
+    if (m) {
+      html.push(`<div class="script-char">${escapeHtml(m[1])}</div>`);
+      html.push(`<div class="script-dialogue">${escapeHtml(m[2])}</div>`);
+      return;
+    }
 
-        <div class="row">
-          <div class="label">Current Blocker / Next Move</div>
-          <textarea oninput="updateGroupField(${groupIndex},'note',this.value)" placeholder="What is blocking this group right now?">${escapeHtml(group.note)}</textarea>
-        </div>
-
-        <div class="row">
-          <div class="label">Absence Handoff Note</div>
-          <textarea oninput="updateGroupField(${groupIndex},'handoff',this.value)" placeholder="If someone misses class, what should they do before next session?">${escapeHtml(group.handoff)}</textarea>
-        </div>
-
-        <div class="health">
-          <div class="score">Coverage score: ${health.coverage}%</div>
-          <div class="ready ${health.level}">${health.label}</div>
-        </div>
-      </div>
-    `;
-
-    board.appendChild(groupEl);
+    html.push(`<div class="script-line">${escapeHtml(t)}</div>`);
   });
 
-  renderSummary();
-  renderReadinessPill();
+  return html.join('');
 }
 
-function toggleCheck(groupId, key) {
-  const group = state.groups.find(g => g.id === groupId);
-  if (!group) return;
-  group.checklist[key] = !group.checklist[key];
-  saveState();
-  render();
-}
+function extractNarratorBlocks(rawD) {
+  const blocks = {
+    OPENING: '',
+    TRANSITION_2: '',
+    TRANSITION_3: '',
+    CLOSING: '',
+    OTHER: ''
+  };
 
-function updateMemberName(groupIndex, memberIndex, value) {
-  state.groups[groupIndex].members[memberIndex].name = value.trim() || 'Unnamed';
-  saveState();
-  renderSummary();
-}
-
-function updateMemberRole(groupIndex, memberIndex, value) {
-  state.groups[groupIndex].members[memberIndex].role = value;
-  saveState();
-  renderSummary();
-}
-
-function updateMemberStatus(groupIndex, memberIndex, value) {
-  state.groups[groupIndex].members[memberIndex].status = value;
-  saveState();
-  render();
-}
-
-function updateGroupField(groupIndex, field, value) {
-  state.groups[groupIndex][field] = value;
-  saveState();
-  renderSummary();
-}
-
-function changeDay(day) {
-  state.currentDay = day;
-  saveState();
-  render();
-}
-
-function computeGroupHealth(group) {
-  const total = group.members.length || 1;
-  const present = group.members.filter(m => m.status === 'present').length;
-  const backup = group.members.filter(m => m.status === 'backup').length;
-  const checklistCount = Object.values(group.checklist).filter(Boolean).length;
-
-  let coverage = Math.round(((present + backup * 0.5) / total) * 100);
-  coverage = Math.max(0, Math.min(100, coverage));
-
-  let score = coverage + (checklistCount * 8);
-  if (score >= 105) return { level: 'ok', label: 'Ready to Run', coverage };
-  if (score >= 75) return { level: 'warn', label: 'Needs Focus', coverage };
-  return { level: 'risk', label: 'At Risk', coverage };
-}
-
-function renderReadinessPill() {
-  const healths = state.groups.map(computeGroupHealth);
-  const risky = healths.filter(h => h.level === 'risk').length;
-  const warn = healths.filter(h => h.level === 'warn').length;
-
-  let label = 'Readiness: Strong';
-  if (risky > 0) label = `Readiness: ${risky} Group(s) At Risk`;
-  else if (warn > 0) label = `Readiness: ${warn} Group(s) Need Focus`;
-
-  document.getElementById('readinessPill').textContent = label;
-}
-
-function buildSummaryText() {
-  const lines = [];
-  lines.push(`${state.currentDay} Summary`);
-  lines.push('');
-
-  state.groups.forEach(g => {
-    const h = computeGroupHealth(g);
-    const presentNames = g.members.filter(m => m.status === 'present').map(m => m.name).join(', ') || 'None';
-    const absentNames = g.members.filter(m => m.status === 'absent').map(m => m.name).join(', ') || 'None';
-    const backupNames = g.members.filter(m => m.status === 'backup').map(m => m.name).join(', ') || 'None';
-
-    lines.push(`${g.title} - ${g.scene}`);
-    lines.push(`Status: ${h.label} | Coverage ${h.coverage}%`);
-    lines.push(`Present: ${presentNames}`);
-    lines.push(`Absent: ${absentNames}`);
-    lines.push(`Backup: ${backupNames}`);
-    lines.push(`Blocker: ${g.note || 'None listed'}`);
-    lines.push(`Handoff: ${g.handoff || 'None listed'}`);
-    lines.push('');
+  const markerRegex = /^\[\[(OPENING|TRANSITION_2|TRANSITION_3|CLOSING)\]\]\s*$/;
+  let current = 'OTHER';
+  rawD.split('\n').forEach(line => {
+    const marker = line.trim().match(markerRegex);
+    if (marker) {
+      current = marker[1];
+      return;
+    }
+    blocks[current] += (blocks[current] ? '\n' : '') + line;
   });
 
-  if (state.teacherNotes.trim()) {
-    lines.push('Teacher Notes:');
-    lines.push(state.teacherNotes.trim());
+  return blocks;
+}
+
+function section(title, body) {
+  const trimmed = (body || '').trim();
+  if (!trimmed) return '';
+  return `# ${title}\n${trimmed}\n`;
+}
+
+function combineDraftScripts() {
+  const a = state.drafts.A || '';
+  const b = state.drafts.B || '';
+  const c = state.drafts.C || '';
+  const d = state.drafts.D || '';
+
+  const nb = extractNarratorBlocks(d);
+
+  const pieces = [];
+  pieces.push('# Plato: Allegory of the Cave - One-Act Draft');
+  pieces.push('[Combined from group drafts. Edit after table read.]\n');
+
+  if (nb.OPENING.trim()) pieces.push(section('Narrator Opening', nb.OPENING));
+  else if (d.trim()) pieces.push(section('Narrator / Production', d));
+
+  pieces.push(section('Scene 1 - The Cave + Liberation', a));
+  if (nb.TRANSITION_2.trim()) pieces.push(section('Narrator Transition to Scene 2', nb.TRANSITION_2));
+
+  pieces.push(section('Scene 2 - The Ascent', b));
+  if (nb.TRANSITION_3.trim()) pieces.push(section('Narrator Transition to Scene 3', nb.TRANSITION_3));
+
+  pieces.push(section('Scene 3 - The Return', c));
+  if (nb.CLOSING.trim()) pieces.push(section('Narrator Closing', nb.CLOSING));
+
+  state.combinedScript = pieces.filter(Boolean).join('\n');
+  saveState();
+  renderCombinedPreview();
+}
+
+function copyCombinedScript() {
+  const txt = state.combinedScript || '';
+  if (!txt.trim()) {
+    alert('No combined script yet. Click Combine Draft Scripts first.');
+    return;
   }
-
-  return lines.join('\n');
-}
-
-function renderSummary() {
-  document.getElementById('summaryHeading').textContent = `${state.currentDay} Snapshot`;
-  document.getElementById('summaryText').textContent = buildSummaryText();
-}
-
-function copyDailySummary() {
-  const txt = buildSummaryText();
   navigator.clipboard.writeText(txt).then(() => {
-    alert('Daily summary copied.');
+    alert('Combined script copied.');
   }).catch(() => {
-    alert('Clipboard blocked. Select and copy from the summary panel.');
+    alert('Clipboard blocked. Copy manually from preview.');
   });
 }
 
-function exportBoard() {
+function exportProject() {
   const payload = {
     exportedAt: new Date().toISOString(),
-    app: 'Plato Play Coordinator',
+    app: 'Plato Play Draft Studio',
     version: 1,
     state
   };
@@ -562,26 +489,26 @@ function exportBoard() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `plato-play-board-${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `plato-play-drafts-${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
 }
 
-function importBoard(event) {
+function importProject(event) {
   const file = event.target.files && event.target.files[0];
   if (!file) return;
-
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
       const payload = JSON.parse(e.target.result);
-      if (!payload.state || !payload.state.groups) throw new Error('Invalid board file.');
+      if (!payload.state || !payload.state.drafts) throw new Error('Invalid project file.');
       state = payload.state;
       saveState();
-      render();
-      alert('Board imported.');
+      renderGroupButtons();
+      renderEditor();
+      alert('Project imported.');
     } catch (err) {
       alert('Import failed: ' + err.message);
     }
@@ -590,30 +517,26 @@ function importBoard(event) {
   event.target.value = '';
 }
 
-function resetBoard() {
-  if (!confirm('Reset everything? This clears all groups, notes, and attendance.')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  state = {
-    currentDay: 'Day 18',
-    teacherNotes: '',
-    groups: groupTemplate.map(g => ({
-      id: g.id,
-      title: g.title,
-      scene: g.scene,
-      checklist: {
-        draft: false,
-        stageDirections: false,
-        transitions: false,
-        props: false,
-        rehearsalReady: false
-      },
-      note: '',
-      handoff: '',
-      members: g.members.map(name => ({ name, role: '', status: 'present' }))
-    }))
-  };
+function clearAllDrafts() {
+  if (!confirm('Clear all group drafts and combined script?')) return;
+  state.drafts = { A: '', B: '', C: '', D: '' };
+  state.combinedScript = '';
   saveState();
-  render();
+  renderEditor();
+}
+
+function seedTemplates() {
+  state.drafts.A = `# Scene 1\n[Dim light. Prisoners face wall.]\n\nSOCRATES: Imagine people chained in a cave since childhood.\nGLAUCON: They see only shadows, then?\nSOCRATES: Yes. They take shadows for reality.`;
+
+  state.drafts.B = `# Scene 2\n[Freed prisoner climbs toward bright light.]\n\nPRISONER: My eyes hurt. Everything is too bright.\nGUIDE: Stay with it. You are seeing more clearly now.`;
+
+  state.drafts.C = `# Scene 3\n[Prisoner returns to cave.]\n\nPRISONER: You are watching shadows, not the real things.\nPRISONER IN CAVE: Your eyes are ruined. We trust what we see here.`;
+
+  state.drafts.D = `[[OPENING]]\nNARRATOR: Tonight, we enter Plato's cave.\n\n[[TRANSITION_2]]\nNARRATOR: The journey upward begins in pain.\n\n[[TRANSITION_3]]\nNARRATOR: Now the traveler returns to those still chained.\n\n[[CLOSING]]\nNARRATOR: The question remains: what shadows still govern us?`;
+
+  if (!state.currentGroup) state.currentGroup = 'A';
+  saveState();
+  renderEditor();
 }
 
 function escapeHtml(s) {
@@ -625,11 +548,8 @@ function escapeHtml(s) {
     .replace(/'/g, '&#39;');
 }
 
-function escapeAttr(s) {
-  return escapeHtml(s).replace(/`/g, '&#96;');
-}
-
-render();
+renderGroupButtons();
+renderEditor();
 </script>
 </body>
 </html>
