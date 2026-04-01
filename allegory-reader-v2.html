@@ -274,8 +274,8 @@ body {
 .popup-btn.secondary { background: rgba(255,255,255,0.06); color: #9A9083; }
 .popup-btn.secondary:hover { background: rgba(255,255,255,0.12); }
 
-/* ═══ API KEY BUTTON ═══ */
-.key-btn {
+/* ═══ AI SETTINGS BUTTON ═══ */
+.ai-btn {
   font-family: 'DM Sans', sans-serif;
   font-size: 0.72rem; font-weight: 500;
   padding: 0.3rem 0.65rem;
@@ -283,56 +283,79 @@ body {
   background: transparent; color: #7A7062; cursor: pointer;
   transition: all 0.2s; display: flex; align-items: center; gap: 0.35rem;
 }
-.key-btn:hover { border-color: rgba(212,168,67,0.5); color: #BDB3A2; }
-.key-btn.key-set { border-color: rgba(80,160,80,0.4); color: #7AB87A; }
-.key-btn.key-set:hover { border-color: rgba(80,160,80,0.7); }
-.key-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
+.ai-btn:hover { border-color: rgba(212,168,67,0.5); color: #BDB3A2; }
+.ai-btn.ai-active { border-color: rgba(80,160,80,0.4); color: #7AB87A; }
+.ai-btn.ai-active:hover { border-color: rgba(80,160,80,0.7); }
+.ai-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
 
-/* ═══ KEY MODAL ═══ */
-.key-modal-overlay {
+/* ═══ AI SETTINGS MODAL ═══ */
+.ai-modal-overlay {
   display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.6); z-index: 1000;
+  background: rgba(0,0,0,0.65); z-index: 1000;
   align-items: center; justify-content: center;
 }
-.key-modal-overlay.open { display: flex; }
-.key-modal {
-  background: #1E2D42; border: 1px solid rgba(212,168,67,0.25);
-  border-radius: 10px; padding: 2rem; width: 420px; max-width: calc(100vw - 2rem);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+.ai-modal-overlay.open { display: flex; }
+.ai-modal {
+  background: #1A2738; border: 1px solid rgba(212,168,67,0.2);
+  border-radius: 12px; padding: 1.8rem; width: 500px; max-width: calc(100vw - 2rem);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.55);
 }
-.key-modal h2 {
+.ai-modal h2 {
   font-family: 'Crimson Pro', serif; font-weight: 400;
-  color: #DDD3C0; font-size: 1.25rem; margin-bottom: 0.5rem;
+  color: #DDD3C0; font-size: 1.3rem; margin-bottom: 1.1rem;
 }
-.key-modal p {
-  font-family: 'DM Sans', sans-serif; font-size: 0.8rem;
-  color: #9A9083; line-height: 1.5; margin-bottom: 1.2rem;
+.ai-provider-cards {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 0.6rem;
+  margin-bottom: 1.1rem;
 }
-.key-modal p a { color: var(--cave-glow); text-decoration: none; }
-.key-modal p a:hover { text-decoration: underline; }
-.key-modal input {
+.ai-provider-card {
+  background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 8px; padding: 0.85rem 0.75rem; cursor: pointer;
+  transition: all 0.18s; position: relative;
+}
+.ai-provider-card:hover { background: rgba(255,255,255,0.07); border-color: rgba(212,168,67,0.3); }
+.ai-provider-card.selected { border-color: var(--cave-glow); background: rgba(212,168,67,0.08); }
+.ai-card-title {
+  font-family: 'DM Sans', sans-serif; font-weight: 600;
+  font-size: 0.8rem; color: #DDD3C0; margin-bottom: 0.35rem;
+}
+.ai-card-desc {
+  font-family: 'DM Sans', sans-serif; font-size: 0.72rem;
+  color: #7A7A6A; line-height: 1.45;
+}
+.ai-card-badge {
+  font-family: 'DM Sans', sans-serif; font-size: 0.62rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  display: inline-block; padding: 0.15rem 0.45rem; border-radius: 3px;
+  margin-top: 0.55rem;
+}
+.ai-badge-paid { background: rgba(122,59,16,0.35); color: #D4956A; }
+.ai-badge-free { background: rgba(40,120,60,0.3); color: #7EC88A; }
+.ai-badge-none { background: rgba(90,90,90,0.3); color: #888; }
+.ai-key-section { margin-bottom: 1.1rem; }
+.ai-key-section input {
   width: 100%; padding: 0.6rem 0.75rem;
   background: rgba(255,255,255,0.06); border: 1px solid rgba(212,168,67,0.2);
-  border-radius: 5px; color: #DDD3C0; font-family: 'DM Sans', monospace;
-  font-size: 0.82rem; outline: none; margin-bottom: 0.4rem;
+  border-radius: 5px; color: #DDD3C0; font-family: monospace;
+  font-size: 0.82rem; outline: none; margin-bottom: 0.35rem;
 }
-.key-modal input:focus { border-color: rgba(212,168,67,0.5); }
-.key-modal .key-hint {
-  font-family: 'DM Sans', sans-serif; font-size: 0.72rem;
-  color: #6A6A5A; margin-bottom: 1.2rem; line-height: 1.4;
+.ai-key-section input:focus { border-color: rgba(212,168,67,0.5); }
+.ai-key-hint {
+  font-family: 'DM Sans', sans-serif; font-size: 0.7rem;
+  color: #555A50; line-height: 1.4;
 }
-.key-modal-actions { display: flex; gap: 0.5rem; }
-.key-modal-actions button {
+.ai-key-hint a { color: var(--cave-glow); text-decoration: none; }
+.ai-key-hint a:hover { text-decoration: underline; }
+.ai-modal-actions { display: flex; gap: 0.5rem; }
+.ai-modal-actions button {
   font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500;
-  padding: 0.5rem 1rem; border-radius: 5px; border: none; cursor: pointer;
+  padding: 0.5rem 1.1rem; border-radius: 5px; border: none; cursor: pointer;
   transition: background 0.15s;
 }
-.km-save { background: var(--cave-glow); color: var(--cave-dark); flex: 1; }
-.km-save:hover { background: #E0B84E; }
-.km-clear { background: rgba(255,255,255,0.06); color: #9A9083; }
-.km-clear:hover { background: rgba(255,255,255,0.12); }
-.km-cancel { background: rgba(255,255,255,0.06); color: #9A9083; }
-.km-cancel:hover { background: rgba(255,255,255,0.12); }
+.am-save { background: var(--cave-glow); color: var(--cave-dark); flex: 1; }
+.am-save:hover { background: #E0B84E; }
+.am-cancel { background: rgba(255,255,255,0.06); color: #9A9083; }
+.am-cancel:hover { background: rgba(255,255,255,0.12); }
 
 /* ═══ RESPONSIVE ═══ */
 @media (max-width: 860px) {
@@ -361,25 +384,42 @@ body {
       <div class="instructions">
         <em>Hover</em> dotted phrases for annotations · <em>Select any text</em> to ask a question
       </div>
-      <button class="key-btn" id="keyBtn" onclick="openKeyModal()">
-        <span class="key-dot"></span><span id="keyBtnLabel">Set API Key</span>
+      <button class="ai-btn" id="aiBtn" onclick="openAIModal()">
+        <span class="ai-dot"></span><span id="aiBtnLabel">AI: Off</span>
       </button>
     </div>
   </div>
 </header>
 
-<!-- API Key Modal -->
-<div class="key-modal-overlay" id="keyModalOverlay" onclick="if(event.target===this)closeKeyModal()">
-  <div class="key-modal">
-    <h2>Anthropic API Key</h2>
-    <p>Your key is saved only in <strong style="color:#DDD3C0">your browser's localStorage</strong> — it never touches the source code or leaves your device. Get a key at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.</p>
-    <input type="password" id="keyInput" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"
-      onkeydown="if(event.key==='Enter')saveKey();if(event.key==='Escape')closeKeyModal()">
-    <div class="key-hint">Stored locally · Never in source code · Clear anytime</div>
-    <div class="key-modal-actions">
-      <button class="km-save" onclick="saveKey()">Save Key</button>
-      <button class="km-clear" onclick="clearKey()">Clear</button>
-      <button class="km-cancel" onclick="closeKeyModal()">Cancel</button>
+<!-- AI Settings Modal -->
+<div class="ai-modal-overlay" id="aiModalOverlay" onclick="if(event.target===this)closeAIModal()">
+  <div class="ai-modal">
+    <h2>AI Assistant</h2>
+    <div class="ai-provider-cards">
+      <div class="ai-provider-card" id="card-anthropic" onclick="selectProvider('anthropic')">
+        <div class="ai-card-title">Anthropic Claude</div>
+        <div class="ai-card-desc">Your own key. Claude Sonnet — powerful and precise.</div>
+        <div class="ai-card-badge ai-badge-paid">Own Key</div>
+      </div>
+      <div class="ai-provider-card" id="card-gemini" onclick="selectProvider('gemini')">
+        <div class="ai-card-title">Gemini 2.0 Flash</div>
+        <div class="ai-card-desc">Free tier via Google. No credit card needed.</div>
+        <div class="ai-card-badge ai-badge-free">Free</div>
+      </div>
+      <div class="ai-provider-card" id="card-none" onclick="selectProvider('none')">
+        <div class="ai-card-title">No AI</div>
+        <div class="ai-card-desc">Read and annotate without AI assistance.</div>
+        <div class="ai-card-badge ai-badge-none">Off</div>
+      </div>
+    </div>
+    <div class="ai-key-section" id="aiKeySection" style="display:none">
+      <input type="password" id="aiKeyInput" placeholder="Paste your API key here…" autocomplete="off" spellcheck="false"
+        onkeydown="if(event.key==='Enter')saveAISettings();if(event.key==='Escape')closeAIModal()">
+      <div class="ai-key-hint" id="aiKeyHint">Stored only in your browser · Never in the source code</div>
+    </div>
+    <div class="ai-modal-actions">
+      <button class="am-save" onclick="saveAISettings()">Save</button>
+      <button class="am-cancel" onclick="closeAIModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -452,46 +492,93 @@ const ANNOTATIONS = {
 };
 
 // ═══════════════════════════════════
-// API KEY MANAGEMENT
+// AI PROVIDER MANAGEMENT
 // ═══════════════════════════════════
-const KEY_STORAGE = 'cr_anthropic_key';
+const PROVIDER_KEY  = 'cr_provider';
+const ANTHROPIC_KEY = 'cr_anthropic_key';
+const GEMINI_KEY    = 'cr_gemini_key';
 
-function getApiKey() { return localStorage.getItem(KEY_STORAGE) || ''; }
-
-function updateKeyBtn() {
-  const keyBtn = document.getElementById('keyBtn');
-  const label = document.getElementById('keyBtnLabel');
-  const hasKey = !!getApiKey();
-  keyBtn.classList.toggle('key-set', hasKey);
-  label.textContent = hasKey ? 'API Key ✓' : 'Set API Key';
+function getProvider() { return localStorage.getItem(PROVIDER_KEY) || 'none'; }
+function getStoredKey(provider) {
+  if (provider === 'anthropic') return localStorage.getItem(ANTHROPIC_KEY) || '';
+  if (provider === 'gemini')    return localStorage.getItem(GEMINI_KEY) || '';
+  return '';
 }
 
-function openKeyModal() {
-  const overlay = document.getElementById('keyModalOverlay');
-  const input = document.getElementById('keyInput');
-  overlay.classList.add('open');
-  input.value = getApiKey() ? '••••••••••••••••' : '';
-  setTimeout(() => { input.select(); input.focus(); }, 50);
-}
+let _modalProvider = 'none';
 
-function closeKeyModal() {
-  document.getElementById('keyModalOverlay').classList.remove('open');
-}
-
-function saveKey() {
-  const val = document.getElementById('keyInput').value.trim();
-  if (val && !val.startsWith('•')) {
-    localStorage.setItem(KEY_STORAGE, val);
+function updateAIBtn() {
+  const btn   = document.getElementById('aiBtn');
+  const label = document.getElementById('aiBtnLabel');
+  const p = getProvider();
+  if (p === 'anthropic') {
+    btn.classList.add('ai-active');
+    label.textContent = getStoredKey('anthropic') ? 'AI: Claude ✓' : 'AI: Claude (no key)';
+  } else if (p === 'gemini') {
+    btn.classList.add('ai-active');
+    label.textContent = getStoredKey('gemini') ? 'AI: Gemini ✓' : 'AI: Gemini (no key)';
+  } else {
+    btn.classList.remove('ai-active');
+    label.textContent = 'AI: Off';
   }
-  closeKeyModal();
-  updateKeyBtn();
 }
 
-function clearKey() {
-  localStorage.removeItem(KEY_STORAGE);
-  document.getElementById('keyInput').value = '';
-  closeKeyModal();
-  updateKeyBtn();
+function openAIModal() {
+  _modalProvider = getProvider();
+  _refreshModalCards();
+  _refreshKeySection();
+  document.getElementById('aiModalOverlay').classList.add('open');
+  if (_modalProvider !== 'none') {
+    setTimeout(() => document.getElementById('aiKeyInput').focus(), 50);
+  }
+}
+
+function closeAIModal() {
+  document.getElementById('aiModalOverlay').classList.remove('open');
+}
+
+function selectProvider(p) {
+  _modalProvider = p;
+  _refreshModalCards();
+  _refreshKeySection();
+  if (p !== 'none') setTimeout(() => document.getElementById('aiKeyInput').focus(), 30);
+}
+
+function _refreshModalCards() {
+  ['anthropic','gemini','none'].forEach(p => {
+    document.getElementById('card-' + p).classList.toggle('selected', p === _modalProvider);
+  });
+}
+
+function _refreshKeySection() {
+  const section = document.getElementById('aiKeySection');
+  const input   = document.getElementById('aiKeyInput');
+  const hint    = document.getElementById('aiKeyHint');
+  if (_modalProvider === 'none') {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  const stored = getStoredKey(_modalProvider);
+  input.value = stored ? '••••••••••••••••' : '';
+  if (_modalProvider === 'anthropic') {
+    input.placeholder = 'sk-ant-…';
+    hint.innerHTML = 'Stored only in your browser · Never in source code · Get a key at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>';
+  } else {
+    input.placeholder = 'AIza…';
+    hint.innerHTML = 'Free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com</a> · Stored only in your browser · Never in source code';
+  }
+}
+
+function saveAISettings() {
+  const val = document.getElementById('aiKeyInput').value.trim();
+  localStorage.setItem(PROVIDER_KEY, _modalProvider);
+  if (_modalProvider !== 'none' && val && !val.startsWith('•')) {
+    const storageKey = _modalProvider === 'anthropic' ? ANTHROPIC_KEY : GEMINI_KEY;
+    localStorage.setItem(storageKey, val);
+  }
+  closeAIModal();
+  updateAIBtn();
 }
 
 // ═══════════════════════════════════
@@ -577,6 +664,7 @@ textCol.addEventListener('mouseup', (e) => {
   const text = sel.toString().trim();
   if (text.length < 3) return;
   if (e.target.closest('.tooltip')) return;
+  if (getProvider() === 'none') return;
 
   selectedText = text;
   popupPassage.textContent = text.length > 100 ? text.substring(0, 100) + '…' : text;
@@ -627,7 +715,7 @@ async function submitComment() {
   const el = document.getElementById('comment-' + id);
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-  comment.answer = await askClaude(comment.passage, question, null, comment.lang);
+  comment.answer = await askAI(comment.passage, question, null, comment.lang);
   renderComments();
 }
 
@@ -649,11 +737,11 @@ async function submitFollowup(cid) {
       ctx += `Follow-up Q: ${f.question}\nFollow-up A: ${f.answer}\n`;
   });
 
-  followup.answer = await askClaude(comment.passage, question, ctx, comment.lang);
+  followup.answer = await askAI(comment.passage, question, ctx, comment.lang);
   renderComments();
 }
 
-async function askClaude(passage, question, context, lang) {
+async function askAI(passage, question, context, lang) {
   const langNote = lang === 'el'
     ? 'The student is reading a Modern Greek translation. Answer in English but acknowledge Greek terms where helpful.'
     : '';
@@ -667,37 +755,70 @@ async function askClaude(passage, question, context, lang) {
     prompt = `${sysContext}\n\nA student selected this passage:\n"${passage}"\n\nTheir question: ${question}\n\nGive a clear, substantive answer of 3-5 sentences. Explain philosophical meaning, connect to the broader allegory if relevant. Use plain language and modern analogies where they illuminate. No bullet points. No sycophancy.`;
   }
 
-  const apiKey = getApiKey();
+  const provider = getProvider();
+  const apiKey   = getStoredKey(provider);
+
+  if (provider === 'none') {
+    openAIModal();
+    return 'No AI provider selected. Choose one using the AI button in the header.';
+  }
   if (!apiKey) {
-    openKeyModal();
-    return 'No API key set. Enter your Anthropic key using the button in the header, then try again.';
+    openAIModal();
+    return 'No API key found. Enter your key in the AI settings.';
   }
 
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-allow-browser': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      if (res.status === 401) return 'Invalid API key. Click "API Key ✓" in the header to update it.';
-      return `API error ${res.status}: ${err?.error?.message || 'Unknown error'}`;
+  if (provider === 'anthropic') {
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-allow-browser': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (res.status === 401) return 'Invalid Anthropic key. Update it via the AI button in the header.';
+        return `Anthropic API error ${res.status}: ${err?.error?.message || 'Unknown error'}`;
+      }
+      const data = await res.json();
+      return data.content?.map(b => b.text || '').join('') || 'No response received.';
+    } catch (err) {
+      return 'Error reaching Anthropic. Please check your connection and try again.';
     }
-    const data = await res.json();
-    return data.content?.map(b => b.text || '').join('') || 'No response received.';
-  } catch (err) {
-    return 'Error reaching the API. Please check your connection and try again.';
   }
+
+  if (provider === 'gemini') {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
+        })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (res.status === 400 || res.status === 403) return 'Invalid Gemini key. Update it via the AI button in the header.';
+        return `Gemini API error ${res.status}: ${err?.error?.message || 'Unknown error'}`;
+      }
+      const data = await res.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received.';
+    } catch (err) {
+      return 'Error reaching Gemini. Please check your connection and try again.';
+    }
+  }
+
+  return 'Unknown provider.';
 }
 
 function renderComments() {
@@ -757,7 +878,7 @@ function escHtml(s) { const d = document.createElement('div'); d.textContent = s
 // INIT
 // ═══════════════════════════════════
 renderText();
-updateKeyBtn();
+updateAIBtn();
 </script>
 </body>
 </html>
