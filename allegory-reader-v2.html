@@ -158,13 +158,31 @@ body {
   font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase;
   color: var(--muted); margin-bottom: 0.8rem;
   padding-bottom: 0.5rem; border-bottom: 1px solid var(--comment-border);
-  display: flex; justify-content: space-between; align-items: center;
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.margin-header-title {
+  display: flex; flex-direction: column; gap: 0.2rem;
+}
+.margin-header-subtitle {
+  font-size: 0.56rem; letter-spacing: 0.08em;
+  color: var(--muted); opacity: 0.7; font-weight: normal;
 }
 .comment-count {
   font-size: 0.72rem; letter-spacing: 0; text-transform: none;
   background: var(--accent-light); color: white;
   padding: 0.1rem 0.45rem; border-radius: 10px; font-weight: 600;
 }
+.margin-header-actions {
+  display: flex; gap: 0.35rem; align-items: center;
+}
+.margin-header-btn {
+  font-family: 'DM Sans', sans-serif; font-size: 0.65rem; font-weight: 500;
+  background: transparent; border: 1px solid rgba(212,168,67,0.2);
+  color: var(--muted); padding: 0.25rem 0.55rem; border-radius: 3px;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.margin-header-btn:hover { border-color: rgba(212,168,67,0.4); color: var(--accent-light); }
+#importNotesInput { display: none; }
 .comment-thread {
   margin-bottom: 1rem;
   animation: slideIn 0.25s ease;
@@ -434,8 +452,16 @@ body {
   <div class="text-column" id="textColumn"></div>
   <div class="comment-column" id="commentColumn">
     <div class="margin-header">
-      <span>Margin Notes</span>
-      <span class="comment-count" id="commentCount" style="display:none">0</span>
+      <div class="margin-header-title">
+        <span>Margin Notes</span>
+        <span class="margin-header-subtitle">Personal — Auto-saved</span>
+      </div>
+      <div class="margin-header-actions">
+        <button class="margin-header-btn" onclick="exportNotes()" title="Download notes as JSON">↓ Export</button>
+        <button class="margin-header-btn" onclick="document.getElementById('importNotesInput').click()" title="Load notes from a file">↑ Import</button>
+        <input type="file" id="importNotesInput" accept=".json" onchange="importNotes(event)">
+        <span class="comment-count" id="commentCount" style="display:none">0</span>
+      </div>
     </div>
     <div id="commentList">
       <div class="empty-state" id="emptyState">
@@ -496,6 +522,73 @@ const ANNOTATIONS = {
   ],
   el: []
 };
+
+// ═══════════════════════════════════
+// NOTES PERSISTENCE
+// ═══════════════════════════════════
+const NOTES_STORAGE = 'cr_margin_notes';
+
+function saveNotesToStorage() {
+  localStorage.setItem(NOTES_STORAGE, JSON.stringify(comments));
+}
+
+function loadNotesFromStorage() {
+  const stored = localStorage.getItem(NOTES_STORAGE);
+  if (stored) {
+    try {
+      comments = JSON.parse(stored);
+      commentId = comments.length > 0 ? Math.max(...comments.map(c => c.id)) : 0;
+    } catch (e) {
+      console.error('Failed to load notes:', e);
+      comments = [];
+      commentId = 0;
+    }
+  }
+}
+
+function exportNotes() {
+  if (comments.length === 0) {
+    alert('No notes to export yet.');
+    return;
+  }
+  const now = new Date().toISOString().split('T')[0];
+  const filename = `allegory-notes-${now}.json`;
+  const data = {
+    exported: new Date().toISOString(),
+    text: currentLang === 'el' ? 'Modern Greek' : 'English',
+    notes: comments
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importNotes(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data.notes)) throw new Error('Invalid notes format');
+      comments = data.notes;
+      commentId = comments.length > 0 ? Math.max(...comments.map(c => c.id)) : 0;
+      saveNotesToStorage();
+      renderComments();
+      emptyState.style.display = comments.length > 0 ? 'none' : 'block';
+    } catch (err) {
+      alert('Could not import notes: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
 
 // ═══════════════════════════════════
 // AI PROVIDER MANAGEMENT
@@ -724,6 +817,7 @@ async function submitComment() {
   const id = ++commentId;
   const comment = { id, passage: selectedText, question, answer: null, followups: [], lang: currentLang };
   comments.push(comment);
+  saveNotesToStorage();
   closePopup();
   renderComments();
   emptyState.style.display = 'none';
@@ -732,6 +826,7 @@ async function submitComment() {
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   comment.answer = await askAI(comment.passage, question, null, comment.lang);
+  saveNotesToStorage();
   renderComments();
 }
 
@@ -744,6 +839,7 @@ async function submitFollowup(cid) {
 
   const followup = { question, answer: null };
   comment.followups.push(followup);
+  saveNotesToStorage();
   input.value = '';
   renderComments();
 
@@ -754,6 +850,7 @@ async function submitFollowup(cid) {
   });
 
   followup.answer = await askAI(comment.passage, question, ctx, comment.lang);
+  saveNotesToStorage();
   renderComments();
 }
 
@@ -919,7 +1016,12 @@ function escHtml(s) { const d = document.createElement('div'); d.textContent = s
 // ═══════════════════════════════════
 // INIT
 // ═══════════════════════════════════
+loadNotesFromStorage();
 renderText();
+if (comments.length > 0) {
+  emptyState.style.display = 'none';
+  renderComments();
+}
 updateAIBtn();
 </script>
 </body>
