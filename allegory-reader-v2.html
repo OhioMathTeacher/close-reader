@@ -305,7 +305,7 @@ body {
   color: #DDD3C0; font-size: 1.3rem; margin-bottom: 1.1rem;
 }
 .ai-provider-cards {
-  display: grid; grid-template-columns: repeat(3,1fr); gap: 0.6rem;
+  display: grid; grid-template-columns: repeat(2,1fr); gap: 0.6rem;
   margin-bottom: 1.1rem;
 }
 .ai-provider-card {
@@ -332,6 +332,7 @@ body {
 .ai-badge-paid { background: rgba(122,59,16,0.35); color: #D4956A; }
 .ai-badge-free { background: rgba(40,120,60,0.3); color: #7EC88A; }
 .ai-badge-none { background: rgba(90,90,90,0.3); color: #888; }
+.ai-badge-groq { background: rgba(60,80,160,0.3); color: #8AABE0; }
 .ai-key-section { margin-bottom: 1.1rem; }
 .ai-key-section input {
   width: 100%; padding: 0.6rem 0.75rem;
@@ -403,8 +404,13 @@ body {
       </div>
       <div class="ai-provider-card" id="card-gemini" onclick="selectProvider('gemini')">
         <div class="ai-card-title">Gemini 2.0 Flash</div>
-        <div class="ai-card-desc">Free tier via Google. No credit card needed.</div>
+        <div class="ai-card-desc">Free tier via Google. Use a personal Gmail account.</div>
         <div class="ai-card-badge ai-badge-free">Free</div>
+      </div>
+      <div class="ai-provider-card" id="card-groq" onclick="selectProvider('groq')">
+        <div class="ai-card-title">Groq (Llama 3.3)</div>
+        <div class="ai-card-desc">Free tier. Any email — no Google account needed.</div>
+        <div class="ai-card-badge ai-badge-groq">Free</div>
       </div>
       <div class="ai-provider-card" id="card-none" onclick="selectProvider('none')">
         <div class="ai-card-title">No AI</div>
@@ -497,11 +503,13 @@ const ANNOTATIONS = {
 const PROVIDER_KEY  = 'cr_provider';
 const ANTHROPIC_KEY = 'cr_anthropic_key';
 const GEMINI_KEY    = 'cr_gemini_key';
+const GROQ_KEY      = 'cr_groq_key';
 
 function getProvider() { return localStorage.getItem(PROVIDER_KEY) || 'none'; }
 function getStoredKey(provider) {
   if (provider === 'anthropic') return localStorage.getItem(ANTHROPIC_KEY) || '';
   if (provider === 'gemini')    return localStorage.getItem(GEMINI_KEY) || '';
+  if (provider === 'groq')      return localStorage.getItem(GROQ_KEY) || '';
   return '';
 }
 
@@ -517,6 +525,9 @@ function updateAIBtn() {
   } else if (p === 'gemini') {
     btn.classList.add('ai-active');
     label.textContent = getStoredKey('gemini') ? 'AI: Gemini ✓' : 'AI: Gemini (no key)';
+  } else if (p === 'groq') {
+    btn.classList.add('ai-active');
+    label.textContent = getStoredKey('groq') ? 'AI: Groq ✓' : 'AI: Groq (no key)';
   } else {
     btn.classList.remove('ai-active');
     label.textContent = 'AI: Off';
@@ -545,7 +556,7 @@ function selectProvider(p) {
 }
 
 function _refreshModalCards() {
-  ['anthropic','gemini','none'].forEach(p => {
+  ['anthropic','gemini','groq','none'].forEach(p => {
     document.getElementById('card-' + p).classList.toggle('selected', p === _modalProvider);
   });
 }
@@ -564,9 +575,12 @@ function _refreshKeySection() {
   if (_modalProvider === 'anthropic') {
     input.placeholder = 'sk-ant-…';
     hint.innerHTML = 'Stored only in your browser · Never in source code · Get a key at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>';
-  } else {
+  } else if (_modalProvider === 'gemini') {
     input.placeholder = 'AIza…';
-    hint.innerHTML = 'Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com</a> to get your free key — <strong style="color:#D4A843">use a personal Gmail, not a school account.</strong> Paste here. Stored only in your browser. Never shared.';
+    hint.innerHTML = 'Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com</a> to get your free key — <strong style="color:#D4A843">use a personal Gmail, not a school account.</strong> Stored only in your browser. Never shared.';
+  } else {
+    input.placeholder = 'gsk_…';
+    hint.innerHTML = 'Visit <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com</a> to get your free key — any email works, no Google account needed. Stored only in your browser. Never shared.';
   }
 }
 
@@ -574,7 +588,9 @@ function saveAISettings() {
   const val = document.getElementById('aiKeyInput').value.trim();
   localStorage.setItem(PROVIDER_KEY, _modalProvider);
   if (_modalProvider !== 'none' && val && !val.startsWith('•')) {
-    const storageKey = _modalProvider === 'anthropic' ? ANTHROPIC_KEY : GEMINI_KEY;
+    const storageKey = _modalProvider === 'anthropic' ? ANTHROPIC_KEY
+                     : _modalProvider === 'gemini'    ? GEMINI_KEY
+                     :                                  GROQ_KEY;
     localStorage.setItem(storageKey, val);
   }
   closeAIModal();
@@ -815,6 +831,32 @@ async function askAI(passage, question, context, lang) {
       return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received.';
     } catch (err) {
       return 'Error reaching Gemini. Please check your connection and try again.';
+    }
+  }
+
+  if (provider === 'groq') {
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (res.status === 401) return 'Invalid Groq key. Update it via the AI button in the header.';
+        return `Groq API error ${res.status}: ${err?.error?.message || 'Unknown error'}`;
+      }
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || 'No response received.';
+    } catch (err) {
+      return 'Error reaching Groq. Please check your connection and try again.';
     }
   }
 
