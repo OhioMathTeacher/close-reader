@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Allegory of the Cave — Deep Reader</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --parchment: #F8F4EC;
+  --ink: #2C2416;
+  --margin-bg: #EFEBE2;
+  --accent: #7A3B10;
+  --accent-light: #C69A5C;
+  --highlight-soft: rgba(198, 154, 92, 0.18);
+  --highlight-active: rgba(122, 59, 16, 0.18);
+  --comment-bg: #FFFCF5;
+  --comment-border: #D8CBAF;
+  --cave-dark: #1A2A40;
+  --cave-glow: #D4A843;
+  --muted: #8A7C6C;
+  --danger: #8B3333;
+  --speaker-soc: #5B3A1A;
+  --speaker-glau: #2A5A3A;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Crimson Pro', Georgia, serif;
+  background: var(--parchment);
+  color: var(--ink);
+  line-height: 1.78;
+  font-size: 18px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══ HEADER ═══ */
+.site-header {
+  background: var(--cave-dark);
+  color: #DDD3C0;
+  padding: 1.6rem 2rem 1.2rem;
+  position: relative; overflow: hidden;
+}
+.site-header::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse at 50% 140%, rgba(212,168,67,0.12) 0%, transparent 55%);
+  pointer-events: none;
+}
+.header-inner {
+  max-width: 1220px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  flex-wrap: wrap; gap: 0.8rem; position: relative; z-index: 1;
+}
+.header-text h1 {
+  font-family: 'Crimson Pro', serif;
+  font-weight: 300; font-size: 1.8rem; letter-spacing: 0.03em; line-height: 1.2;
+}
+.header-text .subtitle {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--cave-glow); opacity: 0.75; margin-top: 0.1rem;
+}
+.header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
+.lang-toggles { display: flex; gap: 0.4rem; }
+.lang-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem; font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid rgba(212,168,67,0.3); border-radius: 4px;
+  background: transparent; color: #BDB3A2; cursor: pointer;
+  transition: all 0.2s; white-space: nowrap;
+}
+.lang-btn:hover { border-color: var(--cave-glow); color: #DDD3C0; }
+.lang-btn.active { background: var(--cave-glow); color: var(--cave-dark); border-color: var(--cave-glow); }
+.instructions {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem; color: #9A9083; line-height: 1.5;
+  text-align: right; max-width: 400px;
+}
+.instructions em { color: var(--cave-glow); font-style: normal; font-weight: 500; }
+
+/* ═══ MAIN LAYOUT ═══ */
+.main-container {
+  display: grid; grid-template-columns: 1fr 360px;
+  max-width: 1220px; margin: 0 auto;
+  height: calc(100vh - 110px);
+}
+
+/* ═══ TEXT COLUMN ═══ */
+.text-column {
+  padding: 2rem 2.8rem 4rem 2.8rem;
+  overflow-y: auto; position: relative;
+}
+.text-column::after {
+  content:''; position: absolute; top:0; right:0; bottom:0;
+  width: 1px; background: var(--comment-border);
+}
+.section-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 0.15rem; margin-top: 2.5rem;
+}
+.section-label:first-child { margin-top: 0; }
+.section-title {
+  font-family: 'Crimson Pro', serif;
+  font-weight: 600; font-size: 1.15rem; color: var(--cave-dark);
+  margin-bottom: 1rem; letter-spacing: 0.02em;
+}
+.para-heading {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem; font-weight: 500; font-style: italic;
+  color: var(--muted); margin-bottom: 0.15rem; margin-top: 1.2rem;
+}
+.text-paragraph {
+  margin-bottom: 0.6rem;
+  text-align: justify;
+  position: relative;
+}
+.speaker-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-right: 0.4rem;
+}
+.speaker-label.socrates { color: var(--speaker-soc); }
+.speaker-label.glaucon { color: var(--speaker-glau); }
+
+/* Hover annotations */
+.annotated {
+  border-bottom: 1.5px dotted var(--accent-light);
+  cursor: help; position: relative; transition: background 0.2s;
+}
+.annotated:hover { background: var(--highlight-soft); }
+.tooltip {
+  display: none; position: absolute;
+  bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: var(--cave-dark); color: #E8DCC8;
+  padding: 0.65rem 0.9rem; border-radius: 5px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.8rem; line-height: 1.5;
+  width: 320px; max-width: 90vw; z-index: 100;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+  pointer-events: none;
+}
+.tooltip::after {
+  content:''; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%); border: 6px solid transparent;
+  border-top-color: var(--cave-dark);
+}
+.annotated:hover .tooltip { display: block; }
+::selection { background: var(--highlight-active); }
+
+/* ═══ COMMENT COLUMN ═══ */
+.comment-column {
+  background: var(--margin-bg);
+  padding: 1.5rem 1.1rem;
+  overflow-y: auto; position: relative;
+}
+.margin-header {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 0.8rem;
+  padding-bottom: 0.5rem; border-bottom: 1px solid var(--comment-border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.comment-count {
+  font-size: 0.72rem; letter-spacing: 0; text-transform: none;
+  background: var(--accent-light); color: white;
+  padding: 0.1rem 0.45rem; border-radius: 10px; font-weight: 600;
+}
+.comment-thread {
+  margin-bottom: 1rem;
+  animation: slideIn 0.25s ease;
+}
+@keyframes slideIn {
+  from { opacity:0; transform: translateX(8px); }
+  to { opacity:1; transform: translateX(0); }
+}
+.comment-card {
+  background: var(--comment-bg);
+  border: 1px solid var(--comment-border);
+  border-radius: 5px;
+  padding: 0.7rem 0.8rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem; line-height: 1.5;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.comment-passage {
+  font-family: 'Crimson Pro', serif;
+  font-style: italic; font-size: 0.84rem;
+  color: var(--accent);
+  border-left: 2px solid var(--accent-light);
+  padding-left: 0.55rem; margin-bottom: 0.45rem;
+  line-height: 1.35;
+  max-height: 3.2em; overflow: hidden;
+}
+.comment-question {
+  color: var(--cave-dark); font-weight: 500; margin-bottom: 0.3rem;
+}
+.comment-answer { color: var(--ink); }
+.comment-answer.loading { color: var(--muted); font-style: italic; }
+.comment-meta {
+  font-size: 0.68rem; color: var(--muted); margin-top: 0.35rem;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.comment-delete {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 0.68rem; padding: 0 0.2rem; opacity: 0.4; transition: all 0.2s;
+}
+.comment-delete:hover { opacity: 1; color: var(--danger); }
+
+.followup-row {
+  display: flex; gap: 0.35rem; margin-top: 0.45rem;
+  padding-top: 0.45rem; border-top: 1px solid var(--comment-border);
+}
+.followup-input {
+  flex: 1; font-family: 'DM Sans', sans-serif; font-size: 0.76rem;
+  padding: 0.3rem 0.45rem; border: 1px solid var(--comment-border);
+  border-radius: 3px; background: white; color: var(--ink); outline: none;
+}
+.followup-input:focus { border-color: var(--accent); }
+.followup-input::placeholder { color: #BDB3A2; }
+.followup-btn {
+  font-family: 'DM Sans', sans-serif; font-size: 0.7rem; font-weight: 500;
+  padding: 0.3rem 0.55rem; border: none; border-radius: 3px;
+  background: var(--accent); color: white; cursor: pointer; white-space: nowrap;
+}
+.followup-btn:hover { background: #63300D; }
+.followup-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.sub-comment {
+  margin-top: 0.4rem; padding-top: 0.4rem;
+  border-top: 1px dashed var(--comment-border);
+}
+.sub-comment .comment-question, .sub-comment .comment-answer { font-size: 0.76rem; }
+
+.empty-state {
+  text-align: center; padding: 2.5rem 1rem;
+  color: var(--muted); font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem; line-height: 1.6;
+}
+.empty-state .icon { font-size: 1.8rem; margin-bottom: 0.4rem; opacity: 0.35; }
+
+/* ═══ SELECTION POPUP ═══ */
+.selection-popup {
+  display: none; position: fixed; z-index: 200;
+  background: var(--cave-dark); border-radius: 7px;
+  padding: 0.55rem; box-shadow: 0 4px 22px rgba(0,0,0,0.3);
+  animation: popIn 0.12s ease; width: 300px;
+}
+@keyframes popIn {
+  from { opacity:0; transform: scale(0.96); }
+  to { opacity:1; transform: scale(1); }
+}
+.popup-passage {
+  font-family: 'Crimson Pro', serif; font-style: italic; font-size: 0.8rem;
+  color: var(--cave-glow); padding: 0 0.25rem 0.4rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 0.4rem; max-height: 2.8em; overflow: hidden; line-height: 1.35;
+}
+.selection-popup input {
+  width: 100%; font-family: 'DM Sans', sans-serif; font-size: 0.8rem;
+  padding: 0.4rem 0.55rem; border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 4px; background: rgba(255,255,255,0.06);
+  color: #E8DCC8; outline: none;
+}
+.selection-popup input::placeholder { color: rgba(255,255,255,0.3); }
+.selection-popup input:focus { border-color: var(--cave-glow); }
+.popup-actions { display: flex; gap: 0.35rem; margin-top: 0.35rem; }
+.popup-btn {
+  font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 500;
+  padding: 0.3rem 0.6rem; border: none; border-radius: 3px; cursor: pointer;
+  transition: background 0.15s;
+}
+.popup-btn.primary { background: var(--cave-glow); color: var(--cave-dark); flex: 1; }
+.popup-btn.primary:hover { background: #E0B84E; }
+.popup-btn.secondary { background: rgba(255,255,255,0.06); color: #9A9083; }
+.popup-btn.secondary:hover { background: rgba(255,255,255,0.12); }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 860px) {
+  .main-container { grid-template-columns: 1fr; height: auto; }
+  .comment-column { border-top: 1px solid var(--comment-border); max-height: 50vh; }
+  .text-column { padding: 1.5rem 1.2rem; max-height: none; }
+  .tooltip { width: 260px; }
+  .header-inner { flex-direction: column; }
+  .header-right { align-items: flex-start; }
+  .instructions { text-align: left; }
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-text">
+      <h1 id="headerTitle">The Allegory of the Cave</h1>
+      <div class="subtitle" id="headerSubtitle">Plato · Republic VII · 514a–517a · tr. Thomas Sheehan</div>
+    </div>
+    <div class="header-right">
+      <div class="lang-toggles">
+        <button class="lang-btn active" data-lang="en" onclick="switchLang('en')">English (Sheehan)</button>
+        <button class="lang-btn" data-lang="el" onclick="switchLang('el')">Ελληνικά</button>
+      </div>
+      <div class="instructions">
+        <em>Hover</em> dotted phrases for annotations · <em>Select any text</em> to ask a question
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="main-container">
+  <div class="text-column" id="textColumn"></div>
+  <div class="comment-column" id="commentColumn">
+    <div class="margin-header">
+      <span>Margin Notes</span>
+      <span class="comment-count" id="commentCount" style="display:none">0</span>
+    </div>
+    <div id="commentList">
+      <div class="empty-state" id="emptyState">
+        <div class="icon">✎</div>
+        Select any passage in the text,<br>then ask a question.<br>
+        Your thread will appear here.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="selection-popup" id="selectionPopup">
+  <div class="popup-passage" id="popupPassage"></div>
+  <input type="text" id="popupInput" placeholder="Ask about this passage…" autocomplete="off">
+  <div class="popup-actions">
+    <button class="popup-btn secondary" onclick="closePopup()">Cancel</button>
+    <button class="popup-btn primary" id="popupAskBtn" onclick="submitComment()">Ask</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// TEXT DATA — Sheehan English (verified word-for-word against PDF)
+// ════════════════════════════════════════════════════════════
+const TEXTS = {
+  en: {"id":"allegory-cave-sheehan-en","title":"The Allegory of the Cave","author":"Plato","source":"Republic, VII","reference":"514 a, 2 to 517 a, 7","translator":"Thomas Sheehan","language":"en","sections":[{"id":"intro","label":"Introduction","title":"","paragraphs":[{"speaker":"SOCRATES","text":"Next, said I [= Socrates], compare our nature in respect of education and its lack to such an experience as this."}]},{"id":"part1","label":"PART ONE: SETTING THE SCENE: THE CAVE AND THE FIRE","title":"","paragraphs":[{"speaker":"SOCRATES","heading":"The cave","text":"Imagine this: People live under the earth in a cavelike dwelling. Stretching a long way up toward the daylight is its entrance, toward which the entire cave is gathered. The people have been in this dwelling since childhood, shackled by the legs and neck..Thus they stay in the same place so that there is only one thing for them to look that: whatever they encounter in front of their faces. But because they are shackled, they are unable to turn their heads around."},{"speaker":"SOCRATES","heading":"A fire is behind them, and there is a wall between the fire and the prisoners","text":"Some light, of course, is allowed them, namely from a fire that casts its glow toward them from behind them, being above and at some distance. Between the fire and those who are shackled [i.e., behind their backs] there runs a walkway at a certain height. Imagine that a low wall has been built the length of the walkway, like the low curtain that puppeteers put up, over which they show their puppets."},{"speaker":"SOCRATES","heading":"The images carried before the fire","text":"So now imagine that all along this low wall people are carrying all sorts of things that reach up higher than the wall: statues and other carvings made of stone or wood and many other artifacts that people have made. As you would expect, some are talking to each other [as they walk along] and some are silent."},{"speaker":"GLAUCON","text":"This is an unusual picture that you are presenting here, and these are unusual prisoners."},{"speaker":"SOCRATES","text":"They are very much like us humans, I [Socrates] responded."},{"speaker":"SOCRATES","heading":"What the prisoners see and hear","text":"What do you think? From the beginning people like this have never managed, whether on their own or with the help by others, to see anything besides the shadows that are [continually] projected on the wall opposite them by the glow of the fire."},{"speaker":"GLAUCON","text":"How could it be otherwise, since they are forced to keep their heads immobile for their entire lives?"},{"speaker":"SOCRATES","text":"And what do they see of the things that are being carried along [behind them]? Do they not see simply these [namely the shadows]?"},{"speaker":"GLAUCON","text":"Certainly."},{"speaker":"SOCRATES","text":"Now if they were able to say something about what they saw and to talk it over, do you not think that they would regard that which they saw on the wall as beings?"},{"speaker":"GLAUCON","text":"They would have to."},{"speaker":"SOCRATES","text":"And now what if this prison also had an echo reverberating off the wall in front of them [the one that they always and only look at]? Whenever one of the people walking behind those in chains (and carrying the things) would make a sound, do you think the prisoners would imagine that the speaker were anyone other than the shadow passing in front of them?"},{"speaker":"GLAUCON","text":"Nothing else, by Zeus!"},{"speaker":"SOCRATES","text":"All in all, I responded, those who were chained would consider nothing besides the shadows of the artifacts as the unhidden."},{"speaker":"GLAUCON","text":"That would absolutely have to be."}]},{"id":"part2-stage1","label":"PART TWO: THREE STAGES OF LIBERATION","title":"FREEDOM, STAGE ONE","paragraphs":[{"speaker":"SOCRATES","heading":"A prisoner gets free","text":"So now, I replied, watch the process whereby the prisoners are set free from their chains and, along with that, cured of their lack of insight, and likewise consider what kind of lack of insight must be if the following were to happen to those who were chained."},{"speaker":"SOCRATES","heading":"Walks back to the fire","text":"Whenever any of them was unchained and was forced to stand up suddenly, to turn around, to walk, and to look up toward the light, in each case the person would be able to do this only with pain and because of the flickering brightness would be unable to look at those things whose shadows he previously saw."},{"speaker":"SOCRATES","heading":"Is questioned about the objects","text":"If all this were to happen to the prisoner, what do you think he would say if someone were to inform him that what he saw before were [mere] trifles but that now he was much nearer to beings; and that, as a consequence of now being turned toward what is more in being, he also saw more correctly?"},{"speaker":"SOCRATES","heading":"The answer he gives","text":"And if someone were [then] to show him any of the things that were passing by and forced him to answer the question about what it was, don't you think that he would be a wit's end and in addition would consider that what he previously saw [with is own eyes] was more unhidden than what was now being shown [to him by someone else]."},{"speaker":"GLAUCON","text":"Yes, absolutely."},{"speaker":"SOCRATES","heading":"Looking at the fire-light itself","text":"And if someone even forced him to look into the glare of the fire, would his eyes not hurt him, and would he not then turn away and flee [back] to that which he is capable of looking at? And would he not decide that [what he could see before without any help] was in fact clearer than what was now being shown to him?"},{"speaker":"GLAUCON","text":"Precisely."}]},{"id":"part2-stage2","label":"","title":"FREEDOM, STAGE TWO","paragraphs":[{"speaker":"SOCRATES","heading":"Out of the cave into daylight","text":"Now, however, if someone, using force, were to pull him [who had been freed from his chains] away from there and to drag him up the cave's rough and steep ascent and not to let go of him until he had dragged him out into the light of the sun..."},{"speaker":"SOCRATES","heading":"Pain, rage, blindness","text":"...would not the one who had been dragged like this feel, in the process, pain and rage? And when he got into the sunlight, wouldn't his eyes be filled with the glare, and wouldn't he thus be unable to see any of the things that are now revealed to him as the unhidden?"},{"speaker":"GLAUCON","text":"He would not be able to do that at all, at least not right away."},{"speaker":"SOCRATES","heading":"Getting used to the light","text":"It would obviously take some getting accustomed, I think, if it should be a matter of taking into one's eyes that which is up there outside the cave, in the light of the sun."},{"speaker":"SOCRATES","heading":"Shadows and reflections","text":"And in this process of acclimitization he would first and most easily be able to look at (1) shadows and after that (2) the images of people and the rest of things as they are reflected in water."},{"speaker":"SOCRATES","heading":"Looking at things directly","text":"Later, however, he would be able to view (3) the things themselves [the beings, instead of the dim reflections]. But within the range of such things, he might well contemplate what there is in the heavenly dome, and this dome itself, more easily during the night by looking at the light of the stars and the moon, [more easily, that is to say,] than by looking at the sun and its glare during the day."},{"speaker":"GLAUCON","text":"Certainly."}]},{"id":"part2-stage3","label":"","title":"FREEDOM, STAGE THREE: THE SUN","paragraphs":[{"speaker":"SOCRATES","heading":"Looking at the sun itself","text":"But I think that finally he would be in the condition to look at (4) the sun itself, not just at its reflection whether in water or wherever else it might appear, but at the sun itself, as it is in and of itself and in the place proper to it and to contemplate of what sort it is."},{"speaker":"GLAUCON","text":"It would necessarily happen this way."},{"speaker":"SOCRATES","heading":"Thoughts about the sun: its nature and functions","text":"And having done all that, by this time he would also be able to gather the following about the sun: (1) that it is that which grants both the seasons and the years; (2) it is that which governs whatever there is in the now visible region of sunlight; and (3) that it is also the cause of all those things that the people dwelling in the cave have before they eyes in some way or other."},{"speaker":"GLAUCON","text":"It is obvious that he would get to these things -- the sun and whatever stands in its light -- after he had gone out beyond those previous things, the merely reflections and shadows."},{"speaker":"SOCRATES","heading":"Thoughts about the cave","text":"And then what? If he again recalled his first dwelling, and the \"knowing\" that passes as the norm there, and the people with whom he once was chained, don't you think he would consider himself lucky because of the transformation that had happened and, by contrast, feel sorry for them?"},{"speaker":"GLAUCON","text":"Very much so."},{"speaker":"SOCRATES","heading":"What counts for \"wisdom\" in the cave","text":"However, what if among the people in the previous dwelling place, the cave, certain honors and commendations were established for whomever most clearly catches sight of what passes by and also best remembers which of them normally is brought by first, which one later, and which ones at the same time? And what if there were honors for whoever could most easily foresee which one might come by next?"},{"speaker":"SOCRATES","heading":"What would the liberated prisoner now prefer?","text":"Do you think the one who had gotten out of the cave would still envy those within the cave and would want to compete with them who are esteemed and who have power? Or would not he or she much rather wish for the condition that Homer speaks of, namely \"to live on the land [above ground] as the paid menial of another destitute peasant\"? Wouldn't he or she prefer to put up with absolutely anything else rather than associate with those opinions that hold in the cave and be that kind of human being?"},{"speaker":"GLAUCON","text":"I think that he would prefer to endure everything rather than be that kind of human being."}]},{"id":"part3","label":"PART THREE: THE PRISONER RETURNS TO THE CAVE","title":"","paragraphs":[{"speaker":"SOCRATES","heading":"The return: blindness","text":"And now, I responded, consider this: If this person who had gotten out of the cave were to go back down again and sit in the same place as before, would he not find in that case, coming suddenly out of the sunlight, that his eyes ere filled with darkness?\""},{"speaker":"GLAUCON","text":"Yes, very much so."},{"speaker":"SOCRATES","heading":"The debate with the other prisoners","text":"Now if once again, along with those who had remained shackled there, the freed person had to engage in the business of asserting and maintaining opinions about the shadows -- while his eyes are still weak and before they have readjusted, an adjustment that would require quite a bit of time -- would he not then be exposed to ridicule down there? And would they not let him know that he had gone up but only in order to come back down into the cave with his eyes ruined -- and thus it certainly does not pay to go up."},{"speaker":"SOCRATES","heading":"And the final outcome:","text":"And if they can get hold of this person who takes it in hand to free them from their chains and to lead them up, and if they could kill him, will they not actually kill him?"},{"speaker":"GLAUCON","text":"They certainly will."}]}]},
+
+  // Modern Greek pedagogical translation
+  el: {"id":"allegory-cave-modern-greek","title":"Η Αλληγορία του Σπηλαίου","author":"Πλάτων","source":"Πολιτεία, Ζ","reference":"514a – 517a","translator":"Παιδαγωγική απόδοση στα Νέα Ελληνικά","language":"el","sections":[{"id":"intro","label":"Εισαγωγή","title":"","paragraphs":[{"speaker":"ΣΩΚΡΑΤΗΣ","text":"Στη συνέχεια, είπα εγώ [= ο Σωκράτης], σύγκρινε τη φύση μας όσον αφορά την παιδεία και την έλλειψή της με μια τέτοια εμπειρία."}]},{"id":"part1","label":"ΜΕΡΟΣ ΠΡΩΤΟ: Η ΣΚΗΝΟΘΕΣΙΑ: ΤΟ ΣΠΗΛΑΙΟ ΚΑΙ Η ΦΩΤΙΑ","title":"","paragraphs":[{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Το σπήλαιο","text":"Φαντάσου το εξής: Άνθρωποι ζουν κάτω από τη γη σε ένα σπηλαιώδες κατάλυμα. Μια μακριά είσοδος εκτείνεται προς το φως της ημέρας, προς την οποία συγκεντρώνεται ολόκληρο το σπήλαιο. Οι άνθρωποι βρίσκονται σε αυτό το κατάλυμα από την παιδική τους ηλικία, δεμένοι στα πόδια και στον λαιμό. Έτσι μένουν στο ίδιο σημείο, ώστε να μπορούν να κοιτούν μόνο ό,τι βρίσκεται μπροστά στα πρόσωπά τους. Αλλά επειδή είναι δεμένοι, δεν μπορούν να γυρίσουν τα κεφάλια τους."},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Μια φωτιά είναι πίσω τους, και υπάρχει ένας τοίχος ανάμεσα στη φωτιά και τους δεσμώτες","text":"Κάποιο φως, βέβαια, τους επιτρέπεται, και μάλιστα από μια φωτιά που ρίχνει τη λάμψη της πάνω τους από πίσω, βρισκόμενη ψηλότερα και σε κάποια απόσταση. Ανάμεσα στη φωτιά και σε αυτούς που είναι δεμένοι [δηλαδή, πίσω από τις πλάτες τους] υπάρχει ένα πέρασμα σε κάποιο ύψος. Φαντάσου ότι ένας χαμηλός τοίχος έχει χτιστεί σε όλο το μήκος του περάσματος, σαν την κουρτίνα που χρησιμοποιούν οι κουκλοπαίχτες, πάνω από την οποία δείχνουν τις μαριονέτες τους."},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Τα αντικείμενα που μεταφέρονται μπροστά από τη φωτιά","text":"Τώρα φαντάσου ότι κατά μήκος αυτού του χαμηλού τοίχου, άνθρωποι μεταφέρουν κάθε είδους αντικείμενα που υψώνονται πάνω από τον τοίχο: αγάλματα και άλλα γλυπτά φτιαγμένα από πέτρα ή ξύλο και πολλά άλλα χειροτεχνήματα. Όπως θα περίμενες, κάποιοι μιλούν μεταξύ τους [καθώς περπατούν] και κάποιοι σιωπούν."},{"speaker":"ΓΛΑΥΚΩΝ","text":"Αυτή είναι μια ασυνήθιστη εικόνα που παρουσιάζεις εδώ, και αυτοί είναι ασυνήθιστοι δεσμώτες."},{"speaker":"ΣΩΚΡΑΤΗΣ","text":"Μοιάζουν πολύ με εμάς τους ανθρώπους, απάντησα εγώ [ο Σωκράτης]."},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Τι βλέπουν και ακούν οι δεσμώτες","text":"Τι νομίζεις; Από την αρχή, τέτοιοι άνθρωποι δεν κατάφεραν ποτέ, είτε μόνοι τους είτε με τη βοήθεια άλλων, να δουν τίποτα εκτός από τις σκιές που προβάλλονται [συνεχώς] στον απέναντι τοίχο από τη λάμψη της φωτιάς."},{"speaker":"ΓΛΑΥΚΩΝ","text":"Πώς θα μπορούσε να είναι αλλιώς, αφού είναι αναγκασμένοι να κρατούν τα κεφάλια τους ακίνητα σε όλη τους τη ζωή;"},{"speaker":"ΣΩΚΡΑΤΗΣ","text":"Και τι βλέπουν από τα αντικείμενα που μεταφέρονται [πίσω τους]; Δεν βλέπουν απλά αυτά [δηλαδή τις σκιές];"},{"speaker":"ΓΛΑΥΚΩΝ","text":"Βεβαίως."},{"speaker":"ΣΩΚΡΑΤΗΣ","text":"Τώρα, αν μπορούσαν να πουν κάτι για αυτά που έβλεπαν και να τα συζητήσουν, δεν νομίζεις ότι θα θεωρούσαν αυτό που έβλεπαν στον τοίχο ως πραγματικές υπάρξεις;"},{"speaker":"ΓΛΑΥΚΩΝ","text":"Θα έπρεπε αναγκαστικά."},{"speaker":"ΣΩΚΡΑΤΗΣ","text":"Και τώρα, τι θα γινόταν αν αυτή η φυλακή είχε επίσης μια ηχώ που αντηχούσε από τον τοίχο μπροστά τους [αυτόν που πάντα και μόνο κοιτούν]; Κάθε φορά που κάποιος από τους ανθρώπους που περπατούν πίσω από τους δεσμώτες (και μεταφέρουν τα αντικείμενα) έβγαζε κάποιον ήχο, νομίζεις ότι οι δεσμώτες θα φαντάζονταν ότι ο ομιλητής ήταν κάποιος άλλος από τη σκιά που περνούσε μπροστά τους;"},{"speaker":"ΓΛΑΥΚΩΝ","text":"Τίποτα άλλο, μα τον Δία!"},{"speaker":"ΣΩΚΡΑΤΗΣ","text":"Συνολικά, απάντησα, αυτοί που ήταν δεμένοι δεν θα θεωρούσαν τίποτα άλλο εκτός από τις σκιές των χειροτεχνημάτων ως το αληθινό."},{"speaker":"ΓΛΑΥΚΩΝ","text":"Αυτό θα ήταν απολύτως αναγκαίο."}]},{"id":"part2-stage1","label":"ΜΕΡΟΣ ΔΕΥΤΕΡΟ: ΤΑ ΤΡΙΑ ΣΤΑΔΙΑ ΤΗΣ ΑΠΕΛΕΥΘΕΡΩΣΗΣ","title":"ΕΛΕΥΘΕΡΙΑ, ΣΤΑΔΙΟ ΠΡΩΤΟ","paragraphs":[{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Ένας δεσμώτης ελευθερώνεται","text":"Λοιπόν, απάντησα, παρακολούθησε τη διαδικασία με την οποία οι δεσμώτες απελευθερώνονται από τα δεσμά τους και, μαζί με αυτό, θεραπεύονται από την έλλειψη κατανόησης, και επίσης σκέψου τι είδους έλλειψη κατανόησης θα ήταν αν τα ακόλουθα συνέβαιναν σε αυτούς που ήταν δεμένοι."},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Βαδίζει πίσω προς τη φωτιά","text":"Όποτε κάποιος από αυτούς ξεδενόταν και αναγκαζόταν να σηκωθεί ξαφνικά, να γυρίσει, να περπατήσει και να κοιτάξει ψηλά προς το φως, σε κάθε περίπτωση αυτός ο άνθρωπος θα μπορούσε να το κάνει μόνο με πόνο και λόγω της φλογερής λάμψης δεν θα μπορούσε να κοιτάξει εκείνα τα πράγματα των οποίων τις σκιές έβλεπε πριν."},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Ρωτιέται για τα αντικείμενα","text":"Αν όλα αυτά συνέβαιναν στον δεσμώτη, τι νομίζεις ότι θα έλεγε αν κάποιος τον πληροφορούσε ότι αυτά που έβλεπε πριν ήταν [απλές] ασημαντότητες αλλά ότι τώρα βρισκόταν πολύ πιο κοντά στις πραγματικές υπάρξεις; Και ότι, ως συνέπεια του ότι τώρα ήταν στραμμένος προς αυτό που είναι περισσότερο ον, έβλεπε επίσης πιο σωστά;"},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Η απάντηση που δίνει","text":"Και αν κάποιος [τότε] του έδειχνε οποιοδήποτε από τα αντικείμενα που περνούσαν και τον ανάγκαζε να απαντήσει στην ερώτηση τι ήταν, δεν νομίζεις ότι θα βρισκόταν σε αμηχανία και επιπλέον θα θεωρούσε ότι αυτά που έβλεπε πριν [με τα ίδια του τα μάτια] ήταν πιο αληθινά από αυτά που τώρα του δείχνονταν [από κάποιον άλλον];"},{"speaker":"ΓΛΑΥΚΩΝ","text":"Ναι, απολύτως."},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Κοιτάζοντας το φως της φωτιάς","text":"Και αν κάποιος τον ανάγκαζε ακόμη και να κοιτάξει τη λάμψη της φωτιάς, δεν θα πονούσαν τα μάτια του, και δεν θα γύριζε πίσω και θα έτρεχε [πίσω] σε αυτά που ήταν ικανός να κοιτάξει; Και δεν θα αποφάσιζε ότι [αυτά που μπορούσε να δει πριν χωρίς καμία βοήθεια] ήταν στην πραγματικότητα πιο ξεκάθαρα από αυτά που τώρα του δείχνονταν;"},{"speaker":"ΓΛΑΥΚΩΝ","text":"Ακριβώς."}]},{"id":"part2-stage2","label":"","title":"ΕΛΕΥΘΕΡΙΑ, ΣΤΑΔΙΟ ΔΕΥΤΕΡΟ","paragraphs":[{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Έξω από το σπήλαιο στο φως της μέρας","text":"Τώρα, ωστόσο, αν κάποιος, χρησιμοποιώντας βία, τον τραβούσε [αυτόν που είχε ελευθερωθεί από τα δεσμά του] μακριά από εκεί και τον σέρνε επάνω στην τραχιά και απότομη ανάβαση του σπηλαίου και δεν τον άφηνε μέχρι που τον είχε σύρει έξω στο φως του ήλιου..."},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Πόνος, οργή, τύφλωση","text":"...δεν θα ένιωθε αυτός που σύρθηκε με αυτόν τον τρόπο, κατά τη διαδικασία, πόνο και οργή; Και όταν βρεθεί στο ηλιακό φως, δεν θα γέμιζαν τα μάτια του από τη λάμψη, και δεν θα ήταν ανίκανος να δει οτιδήποτε από αυτά που τώρα του αποκαλύπτονται ως το αληθινό;"},{"speaker":"ΓΛΑΥΚΩΝ","text":"Δεν θα μπορούσε να το κάνει καθόλου, τουλάχιστον όχι αμέσως."},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Συνηθίζοντας στο φως","text":"Θα χρειαζόταν προφανώς κάποια εξοικείωση, νομίζω, αν επρόκειτο να μπορέσει να δει αυτά που βρίσκονται εκεί έξω από το σπήλαιο, στο φως του ήλιου."},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Σκιές και αντανακλάσεις","text":"Και σε αυτή τη διαδικασία εγκλιματισμού, θα μπορούσε πρώτα και πιο εύκολα να κοιτάξει (1) σκιές και μετά (2) τα είδωλα ανθρώπων και των υπολοίπων πραγμάτων καθώς αντανακλώνται στο νερό."},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Κοιτάζοντας τα πράγματα απευθείας","text":"Αργότερα, ωστόσο, θα μπορούσε να δει (3) τα ίδια τα πράγματα [τις υπάρξεις, αντί των αμυδρών αντανακλάσεων]. Αλλά μέσα στο φάσμα αυτών των πραγμάτων, θα μπορούσε να παρατηρήσει αυτά που βρίσκονται στον ουράνιο θόλο, και τον ίδιο αυτόν τον θόλο, πιο εύκολα τη νύχτα κοιτάζοντας το φως των αστεριών και της σελήνης, [πιο εύκολα, δηλαδή,] παρά κοιτάζοντας τον ήλιο και τη λάμψη του κατά τη διάρκεια της ημέρας."},{"speaker":"ΓΛΑΥΚΩΝ","text":"Βεβαίως."}]},{"id":"part2-stage3","label":"","title":"ΕΛΕΥΘΕΡΙΑ, ΣΤΑΔΙΟ ΤΡΙΤΟ: Ο ΗΛΙΟΣ","paragraphs":[{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Κοιτάζοντας τον ίδιο τον ήλιο","text":"Αλλά νομίζω ότι τελικά θα ήταν σε θέση να κοιτάξει (4) τον ίδιο τον ήλιο, όχι μόνο την αντανάκλασή του είτε στο νερό είτε οπουδήποτε αλλού θα μπορούσε να εμφανιστεί, αλλά τον ίδιο τον ήλιο, όπως είναι αυτός καθαυτός και στον τόπο που του ανήκει, και να αναλογιστεί τι είδους είναι."},{"speaker":"ΓΛΑΥΚΩΝ","text":"Αναγκαστικά θα συνέβαινε έτσι."},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Σκέψεις για τον ήλιο: η φύση και οι λειτουργίες του","text":"Και αφού τα έκανε όλα αυτά, θα μπορούσε πλέον να συμπεράνει τα ακόλουθα για τον ήλιο: (1) ότι αυτός είναι που χαρίζει τις εποχές και τα χρόνια· (2) αυτός είναι που κυβερνά ό,τι υπάρχει στην τώρα ορατή περιοχή του ηλιακού φωτός· και (3) ότι είναι επίσης η αιτία όλων εκείνων των πραγμάτων που οι άνθρωποι μέσα στο σπήλαιο είχαν μπροστά στα μάτια τους κατά κάποιον τρόπο."},{"speaker":"ΓΛΑΥΚΩΝ","text":"Είναι προφανές ότι θα έφτανε σε αυτά τα πράγματα — τον ήλιο και ό,τι βρίσκεται στο φως του — αφού είχε ξεπεράσει εκείνα τα προηγούμενα, τις απλές αντανακλάσεις και σκιές."},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Σκέψεις για το σπήλαιο","text":"Και μετά τι; Αν θυμόταν ξανά το πρώτο του κατάλυμα, και τη «γνώση» που θεωρείται κανόνας εκεί, και τους ανθρώπους με τους οποίους ήταν κάποτε δεμένος, δεν νομίζεις ότι θα θεωρούσε τον εαυτό του τυχερό λόγω της μεταμόρφωσης που είχε συμβεί και, αντίθετα, θα λυπόταν γι' αυτούς;"},{"speaker":"ΓΛΑΥΚΩΝ","text":"Πολύ σωστά."},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Τι θεωρείται «σοφία» στο σπήλαιο","text":"Ωστόσο, τι θα γινόταν αν ανάμεσα στους ανθρώπους στο προηγούμενο κατάλυμα, το σπήλαιο, είχαν καθιερωθεί ορισμένες τιμές και έπαινοι για όποιον διακρίνει πιο καθαρά αυτά που περνούν και επίσης θυμάται καλύτερα ποια από αυτά συνήθως φέρονται πρώτα, ποια αργότερα, και ποια ταυτόχρονα; Και τι θα γινόταν αν υπήρχαν τιμές για όποιον μπορούσε πιο εύκολα να προβλέψει ποιο θα ερχόταν μετά;"},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Τι θα προτιμούσε τώρα ο απελευθερωμένος δεσμώτης;","text":"Νομίζεις ότι αυτός που είχε βγει από το σπήλαιο θα ζήλευε ακόμα αυτούς μέσα στο σπήλαιο και θα ήθελε να ανταγωνιστεί αυτούς που εκτιμώνται και έχουν εξουσία; Ή δεν θα προτιμούσε πολύ περισσότερο τη συνθήκη για την οποία μιλά ο Όμηρος, δηλαδή «να ζει στη γη [πάνω στην επιφάνεια] ως ημερομίσθιος ενός άλλου εξαθλιωμένου αγρότη»; Δεν θα προτιμούσε να υπομείνει τα πάντα αντί να συνδέεται με εκείνες τις δοξασίες που επικρατούν στο σπήλαιο και να είναι αυτό το είδος ανθρώπου;"},{"speaker":"ΓΛΑΥΚΩΝ","text":"Νομίζω ότι θα προτιμούσε να υπομείνει τα πάντα αντί να είναι αυτό το είδος ανθρώπου."}]},{"id":"part3","label":"ΜΕΡΟΣ ΤΡΙΤΟ: Ο ΔΕΣΜΩΤΗΣ ΕΠΙΣΤΡΕΦΕΙ ΣΤΟ ΣΠΗΛΑΙΟ","title":"","paragraphs":[{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Η επιστροφή: τύφλωση","text":"Και τώρα, απάντησα, σκέψου αυτό: Αν αυτός ο άνθρωπος που είχε βγει από το σπήλαιο ξαναγύριζε κάτω και καθόταν στην ίδια θέση όπως πριν, δεν θα διαπίστωνε σε αυτήν την περίπτωση, ερχόμενος ξαφνικά από το ηλιακό φως, ότι τα μάτια του ήταν γεμάτα σκοτάδι;"},{"speaker":"ΓΛΑΥΚΩΝ","text":"Ναι, πάρα πολύ."},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Η αντιπαράθεση με τους άλλους δεσμώτες","text":"Τώρα, αν για μια ακόμη φορά, μαζί με αυτούς που είχαν παραμείνει δεμένοι εκεί, ο ελευθερωμένος άνθρωπος έπρεπε να ασχοληθεί με το να διατυπώνει και να υπερασπίζεται απόψεις για τις σκιές — ενώ τα μάτια του είναι ακόμα αδύναμα και πριν προσαρμοστούν ξανά, μια προσαρμογή που θα απαιτούσε αρκετό χρόνο — δεν θα εκτιθόταν σε γελοιοποίηση εκεί κάτω; Και δεν θα του έλεγαν ότι ανέβηκε μόνο για να γυρίσει κάτω στο σπήλαιο με τα μάτια του κατεστραμμένα — και ότι σίγουρα δεν αξίζει τον κόπο να ανεβεί κανείς;"},{"speaker":"ΣΩΚΡΑΤΗΣ","heading":"Και η τελική κατάληξη:","text":"Και αν μπορούσαν να πιάσουν αυτόν τον άνθρωπο που αναλαμβάνει να τους ελευθερώσει από τα δεσμά τους και να τους οδηγήσει επάνω, και αν μπορούσαν να τον σκοτώσουν, δεν θα τον σκότωναν πράγματι;"},{"speaker":"ΓΛΑΥΚΩΝ","text":"Σίγουρα θα τον σκότωναν."}]}]}
+};
+
+// Annotations (keyed by language, then by a text snippet to match against)
+const ANNOTATIONS = {
+  en: [
+    {match: "compare our nature in respect of education and its lack to such an experience as this", note: "This opening sentence frames the entire allegory as being about <strong>education</strong> (Greek: <em>paideia</em>) — not schooling, but the formation of a human being. \"Its lack\" signals that the cave represents the <em>uneducated</em> condition."},
+    {match: "shackled by the legs and neck", note: "The chains represent inherited assumptions, cultural conditioning, and uncritical habits of mind. They've been there <strong>since childhood</strong> — the prisoners don't know they're restrained because they've never known anything else."},
+    {match: "from a fire that casts its glow toward them from behind them", note: "The fire is <strong>not</strong> the sun. It's an artificial light source — like propaganda, media, or received opinion. It produces shadows that <em>look real</em> but are projections of manufactured objects."},
+    {match: "like the low curtain that puppeteers put up, over which they show their puppets", note: "Plato explicitly compares the cave to a <strong>puppet show</strong>. The wall-builders control the images. The prisoners see only shadows of manufactured representations — two steps from reality."},
+    {match: "They are very much like us humans", note: "One of the most important lines. Glaucon finds the scenario bizarre; Socrates flatly responds: <strong>we are the prisoners</strong>. This isn't about other people — it's a mirror."},
+    {match: "they would regard that which they saw on the wall as beings", note: "Language itself becomes trapped. When the prisoners name what they see, they believe they're referring to reality. This anticipates modern ideas about how language can reinforce false consensus."},
+    {match: "the shadows of the artifacts as the unhidden", note: "\"Unhidden\" translates the Greek <em>aletheia</em>, often rendered as \"truth.\" The prisoners' \"truth\" is doubly artificial — shadows of manufactured objects. Two layers of remove from reality."},
+    {match: "cured of their lack of insight", note: "Notice the word \"cured\" — Plato frames the cave condition as a kind of <strong>illness</strong>. Education isn't just adding knowledge; it's a <strong>healing</strong>."},
+    {match: "was forced to stand up suddenly", note: "The liberation is <strong>compelled</strong>, not chosen. The first encounter with truth is forced and <em>painful</em>. Education often begins with discomfort imposed by a teacher or circumstance."},
+    {match: "would be a wit's end", note: "The freed prisoner is <strong>worse off</strong> at first — confused, unable to see clearly. This is the uncomfortable middle stage of learning: old certainties gone, new sight not yet focused."},
+    {match: "in fact clearer than what was now being shown to him", note: "The prisoner <strong>prefers the shadows</strong> — they feel more \"clear\" because they're familiar. This is why people resist paradigm shifts and uncomfortable truths."},
+    {match: "drag him up the cave's rough and steep ascent", note: "The path to understanding is described as <strong>rough and steep</strong>. The Greek word for \"dragged\" suggests violence. Education sometimes requires being <em>hauled</em> toward truth."},
+    {match: "pain and rage", note: "Even after being forcibly freed, the response is <strong>anger</strong>, not gratitude. This is the emotional reality of having your worldview shattered. Plato is honest about how disorienting genuine learning is."},
+    {match: "acclimitization", note: "Adjustment takes <strong>time</strong>. Plato describes a gradual sequence: shadows, then reflections, then objects, then the night sky, then the sun. This is a curriculum — a structured progression."},
+    {match: "the light of the stars and the moon", note: "The stars and moon represent <strong>mathematical and abstract truths</strong> — real but intermediary. For Plato, mathematics is a stepping stone to philosophy, not the final destination."},
+    {match: "the sun itself, as it is in and of itself and in the place proper to it", note: "The sun represents the <strong>Form of the Good</strong> — the ultimate reality. Seeing it \"in its own place\" means understanding goodness directly, not through analogies."},
+    {match: "the cause of all those things that the people dwelling in the cave have before they eyes", note: "The sun doesn't just illuminate — it <strong>causes</strong> everything. The Form of the Good is the source of all truth, all being, all intelligibility."},
+    {match: "he would consider himself lucky because of the transformation", note: "The freed prisoner feels <strong>pity</strong>, not superiority. He understands the cave-dwellers aren't stupid — they're <em>trapped</em>."},
+    {match: "honors and commendations were established for whomever most clearly catches sight of what passes by", note: "The cave has its own <strong>hierarchy of expertise</strong>. Being the best at interpreting illusions is still being trapped in illusion. Think: academic credentials, political savvy, market timing."},
+    {match: "to live on the land [above ground] as the paid menial of another destitute peasant", note: "A quote from Homer's <em>Odyssey</em> — Achilles in the underworld says he'd rather be the lowest servant alive than king of the dead. The philosopher would rather be a nobody in truth than a king of shadows."},
+    {match: "his eyes ere filled with darkness", note: "Note \"ere\" (before) — the philosopher returning to the cave is <strong>re-blinded</strong>. Coming back from enlightenment to the old environment means losing your adapted sight all over again."},
+    {match: "he had gone up but only in order to come back down into the cave with his eyes ruined", note: "The cave-dwellers <strong>mock</strong> the philosopher. His confusion looks like stupidity. \"He went up and came back broken.\" This is what happens when you try to explain a transformative experience to people who haven't had it."},
+    {match: "will they not actually kill him", note: "A direct reference to <strong>Socrates' execution</strong>. Athens killed the man who tried to free them from their shadows. Plato wrote this after watching his teacher be sentenced to death."}
+  ],
+  el: []
+};
+
+// ═══════════════════════════════════
+// APP STATE
+// ═══════════════════════════════════
+let currentLang = 'en';
+let selectedText = '';
+let comments = [];
+let commentId = 0;
+
+const textCol = document.getElementById('textColumn');
+const popup = document.getElementById('selectionPopup');
+const popupPassage = document.getElementById('popupPassage');
+const popupInput = document.getElementById('popupInput');
+const commentList = document.getElementById('commentList');
+const emptyState = document.getElementById('emptyState');
+const commentCountEl = document.getElementById('commentCount');
+
+// ═══════════════════════════════════
+// RENDER TEXT
+// ═══════════════════════════════════
+function renderText() {
+  const data = TEXTS[currentLang];
+  if (!data) return;
+
+  document.getElementById('headerTitle').textContent = data.title;
+  document.getElementById('headerSubtitle').textContent =
+    `${data.author} · ${data.source} · ${data.reference} · ${currentLang === 'en' ? 'tr.' : ''} ${data.translator}`;
+
+  let html = '';
+  for (const sec of data.sections) {
+    if (sec.label) {
+      html += `<div class="section-label">${escHtml(sec.label)}</div>`;
+    }
+    if (sec.title) {
+      html += `<div class="section-title">${escHtml(sec.title)}</div>`;
+    }
+    for (const p of sec.paragraphs) {
+      if (p.heading) {
+        html += `<div class="para-heading">${escHtml(p.heading)}</div>`;
+      }
+      const speakerClass = p.speaker === 'SOCRATES' || p.speaker === 'ΣΩΚΡΑΤΗΣ' ? 'socrates' : 'glaucon';
+      const textWithAnnotations = applyAnnotations(p.text, currentLang);
+      html += `<div class="text-paragraph"><span class="speaker-label ${speakerClass}">${escHtml(p.speaker)}:</span> ${textWithAnnotations}</div>`;
+    }
+  }
+  textCol.innerHTML = html;
+}
+
+function applyAnnotations(text, lang) {
+  const annots = ANNOTATIONS[lang] || [];
+  let result = escHtml(text);
+  for (const a of annots) {
+    const escaped = escHtml(a.match);
+    const idx = result.indexOf(escaped);
+    if (idx !== -1) {
+      const before = result.substring(0, idx);
+      const after = result.substring(idx + escaped.length);
+      result = before +
+        `<span class="annotated">${escaped}<span class="tooltip">${a.note}</span></span>` +
+        after;
+    }
+  }
+  return result;
+}
+
+// ═══════════════════════════════════
+// LANGUAGE SWITCHING
+// ═══════════════════════════════════
+function switchLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  renderText();
+}
+
+// ═══════════════════════════════════
+// SELECTION → POPUP
+// ═══════════════════════════════════
+textCol.addEventListener('mouseup', (e) => {
+  const sel = window.getSelection();
+  const text = sel.toString().trim();
+  if (text.length < 3) return;
+  if (e.target.closest('.tooltip')) return;
+
+  selectedText = text;
+  popupPassage.textContent = text.length > 100 ? text.substring(0, 100) + '…' : text;
+
+  const range = sel.getRangeAt(0);
+  const rect = range.getBoundingClientRect();
+  let left = rect.left + rect.width / 2 - 150;
+  let top = rect.bottom + 10;
+  if (left < 10) left = 10;
+  if (left + 300 > window.innerWidth) left = window.innerWidth - 310;
+  if (top + 180 > window.innerHeight) top = rect.top - 150;
+
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+  popup.style.display = 'block';
+  setTimeout(() => popupInput.focus(), 50);
+});
+
+popupInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitComment(); }
+  if (e.key === 'Escape') closePopup();
+});
+
+document.addEventListener('mousedown', (e) => {
+  if (!popup.contains(e.target) && popup.style.display === 'block') closePopup();
+});
+
+function closePopup() {
+  popup.style.display = 'none';
+  popupInput.value = '';
+  selectedText = '';
+}
+
+// ═══════════════════════════════════
+// COMMENTS
+// ═══════════════════════════════════
+async function submitComment() {
+  const question = popupInput.value.trim();
+  if (!question || !selectedText) return;
+
+  const id = ++commentId;
+  const comment = { id, passage: selectedText, question, answer: null, followups: [], lang: currentLang };
+  comments.push(comment);
+  closePopup();
+  renderComments();
+  emptyState.style.display = 'none';
+
+  const el = document.getElementById('comment-' + id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  comment.answer = await askClaude(comment.passage, question, null, comment.lang);
+  renderComments();
+}
+
+async function submitFollowup(cid) {
+  const input = document.getElementById('followup-input-' + cid);
+  const question = input.value.trim();
+  if (!question) return;
+  const comment = comments.find(c => c.id === cid);
+  if (!comment) return;
+
+  const followup = { question, answer: null };
+  comment.followups.push(followup);
+  input.value = '';
+  renderComments();
+
+  let ctx = `Original passage: "${comment.passage}"\nOriginal question: ${comment.question}\nOriginal answer: ${comment.answer}\n`;
+  comment.followups.forEach((f, i) => {
+    if (f.answer && i < comment.followups.length - 1)
+      ctx += `Follow-up Q: ${f.question}\nFollow-up A: ${f.answer}\n`;
+  });
+
+  followup.answer = await askClaude(comment.passage, question, ctx, comment.lang);
+  renderComments();
+}
+
+async function askClaude(passage, question, context, lang) {
+  const langNote = lang === 'el'
+    ? 'The student is reading a Modern Greek translation. Answer in English but acknowledge Greek terms where helpful.'
+    : '';
+
+  const sysContext = `You are an annotation assistant for Plato's Allegory of the Cave (Republic VII, 514a–517a), using the Thomas Sheehan translation. ${langNote}`;
+
+  let prompt;
+  if (context) {
+    prompt = `${sysContext}\n\nHere is the conversation so far:\n${context}\n\nThe student's follow-up question is: ${question}\n\nGive a clear, substantive answer of 2-4 sentences. Build on what was discussed. Use plain language and modern analogies where they illuminate. No bullet points. No sycophancy.`;
+  } else {
+    prompt = `${sysContext}\n\nA student selected this passage:\n"${passage}"\n\nTheir question: ${question}\n\nGive a clear, substantive answer of 3-5 sentences. Explain philosophical meaning, connect to the broader allegory if relevant. Use plain language and modern analogies where they illuminate. No bullet points. No sycophancy.`;
+  }
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    return data.content?.map(b => b.text || '').join('') || 'No response received.';
+  } catch (err) {
+    return 'Error reaching the API. Please try again.';
+  }
+}
+
+function renderComments() {
+  const threads = commentList.querySelectorAll('.comment-thread');
+  threads.forEach(t => t.remove());
+
+  const count = comments.length;
+  commentCountEl.style.display = count > 0 ? 'inline' : 'none';
+  commentCountEl.textContent = count;
+
+  comments.forEach(c => {
+    const thread = document.createElement('div');
+    thread.className = 'comment-thread';
+    thread.id = 'comment-' + c.id;
+
+    let h = `<div class="comment-card">`;
+    h += `<div class="comment-passage">"${escHtml(truncate(c.passage, 90))}"</div>`;
+    h += `<div class="comment-question">${escHtml(c.question)}</div>`;
+    h += c.answer
+      ? `<div class="comment-answer">${escHtml(c.answer)}</div>`
+      : `<div class="comment-answer loading">Thinking…</div>`;
+
+    c.followups.forEach(f => {
+      h += `<div class="sub-comment"><div class="comment-question">${escHtml(f.question)}</div>`;
+      h += f.answer
+        ? `<div class="comment-answer">${escHtml(f.answer)}</div>`
+        : `<div class="comment-answer loading">Thinking…</div>`;
+      h += `</div>`;
+    });
+
+    if (c.answer) {
+      h += `<div class="followup-row">`;
+      h += `<input class="followup-input" id="followup-input-${c.id}" placeholder="Follow up…" onkeydown="if(event.key==='Enter'){event.preventDefault();submitFollowup(${c.id})}">`;
+      h += `<button class="followup-btn" onclick="submitFollowup(${c.id})">Ask</button>`;
+      h += `</div>`;
+    }
+
+    h += `<div class="comment-meta"><span>${c.followups.length + 1} message${c.followups.length > 0 ? 's' : ''}</span>`;
+    h += `<button class="comment-delete" onclick="deleteComment(${c.id})">✕</button></div>`;
+    h += `</div>`;
+
+    thread.innerHTML = h;
+    commentList.appendChild(thread);
+  });
+}
+
+function deleteComment(id) {
+  comments = comments.filter(c => c.id !== id);
+  renderComments();
+  if (comments.length === 0) emptyState.style.display = '';
+}
+
+function truncate(s, n) { return s.length > n ? s.substring(0, n) + '…' : s; }
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+renderText();
+</script>
+</body>
+</html>
