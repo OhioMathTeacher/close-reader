@@ -274,6 +274,66 @@ body {
 .popup-btn.secondary { background: rgba(255,255,255,0.06); color: #9A9083; }
 .popup-btn.secondary:hover { background: rgba(255,255,255,0.12); }
 
+/* ═══ API KEY BUTTON ═══ */
+.key-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem; font-weight: 500;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid rgba(212,168,67,0.25); border-radius: 4px;
+  background: transparent; color: #7A7062; cursor: pointer;
+  transition: all 0.2s; display: flex; align-items: center; gap: 0.35rem;
+}
+.key-btn:hover { border-color: rgba(212,168,67,0.5); color: #BDB3A2; }
+.key-btn.key-set { border-color: rgba(80,160,80,0.4); color: #7AB87A; }
+.key-btn.key-set:hover { border-color: rgba(80,160,80,0.7); }
+.key-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
+
+/* ═══ KEY MODAL ═══ */
+.key-modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6); z-index: 1000;
+  align-items: center; justify-content: center;
+}
+.key-modal-overlay.open { display: flex; }
+.key-modal {
+  background: #1E2D42; border: 1px solid rgba(212,168,67,0.25);
+  border-radius: 10px; padding: 2rem; width: 420px; max-width: calc(100vw - 2rem);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.key-modal h2 {
+  font-family: 'Crimson Pro', serif; font-weight: 400;
+  color: #DDD3C0; font-size: 1.25rem; margin-bottom: 0.5rem;
+}
+.key-modal p {
+  font-family: 'DM Sans', sans-serif; font-size: 0.8rem;
+  color: #9A9083; line-height: 1.5; margin-bottom: 1.2rem;
+}
+.key-modal p a { color: var(--cave-glow); text-decoration: none; }
+.key-modal p a:hover { text-decoration: underline; }
+.key-modal input {
+  width: 100%; padding: 0.6rem 0.75rem;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(212,168,67,0.2);
+  border-radius: 5px; color: #DDD3C0; font-family: 'DM Sans', monospace;
+  font-size: 0.82rem; outline: none; margin-bottom: 0.4rem;
+}
+.key-modal input:focus { border-color: rgba(212,168,67,0.5); }
+.key-modal .key-hint {
+  font-family: 'DM Sans', sans-serif; font-size: 0.72rem;
+  color: #6A6A5A; margin-bottom: 1.2rem; line-height: 1.4;
+}
+.key-modal-actions { display: flex; gap: 0.5rem; }
+.key-modal-actions button {
+  font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500;
+  padding: 0.5rem 1rem; border-radius: 5px; border: none; cursor: pointer;
+  transition: background 0.15s;
+}
+.km-save { background: var(--cave-glow); color: var(--cave-dark); flex: 1; }
+.km-save:hover { background: #E0B84E; }
+.km-clear { background: rgba(255,255,255,0.06); color: #9A9083; }
+.km-clear:hover { background: rgba(255,255,255,0.12); }
+.km-cancel { background: rgba(255,255,255,0.06); color: #9A9083; }
+.km-cancel:hover { background: rgba(255,255,255,0.12); }
+
 /* ═══ RESPONSIVE ═══ */
 @media (max-width: 860px) {
   .main-container { grid-template-columns: 1fr; height: auto; }
@@ -301,9 +361,28 @@ body {
       <div class="instructions">
         <em>Hover</em> dotted phrases for annotations · <em>Select any text</em> to ask a question
       </div>
+      <button class="key-btn" id="keyBtn" onclick="openKeyModal()">
+        <span class="key-dot"></span><span id="keyBtnLabel">Set API Key</span>
+      </button>
     </div>
   </div>
 </header>
+
+<!-- API Key Modal -->
+<div class="key-modal-overlay" id="keyModalOverlay" onclick="if(event.target===this)closeKeyModal()">
+  <div class="key-modal">
+    <h2>Anthropic API Key</h2>
+    <p>Your key is saved only in <strong style="color:#DDD3C0">your browser's localStorage</strong> — it never touches the source code or leaves your device. Get a key at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.</p>
+    <input type="password" id="keyInput" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"
+      onkeydown="if(event.key==='Enter')saveKey();if(event.key==='Escape')closeKeyModal()">
+    <div class="key-hint">Stored locally · Never in source code · Clear anytime</div>
+    <div class="key-modal-actions">
+      <button class="km-save" onclick="saveKey()">Save Key</button>
+      <button class="km-clear" onclick="clearKey()">Clear</button>
+      <button class="km-cancel" onclick="closeKeyModal()">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <div class="main-container">
   <div class="text-column" id="textColumn"></div>
@@ -371,6 +450,49 @@ const ANNOTATIONS = {
   ],
   el: []
 };
+
+// ═══════════════════════════════════
+// API KEY MANAGEMENT
+// ═══════════════════════════════════
+const KEY_STORAGE = 'cr_anthropic_key';
+
+function getApiKey() { return localStorage.getItem(KEY_STORAGE) || ''; }
+
+function updateKeyBtn() {
+  const keyBtn = document.getElementById('keyBtn');
+  const label = document.getElementById('keyBtnLabel');
+  const hasKey = !!getApiKey();
+  keyBtn.classList.toggle('key-set', hasKey);
+  label.textContent = hasKey ? 'API Key ✓' : 'Set API Key';
+}
+
+function openKeyModal() {
+  const overlay = document.getElementById('keyModalOverlay');
+  const input = document.getElementById('keyInput');
+  overlay.classList.add('open');
+  input.value = getApiKey() ? '••••••••••••••••' : '';
+  setTimeout(() => { input.select(); input.focus(); }, 50);
+}
+
+function closeKeyModal() {
+  document.getElementById('keyModalOverlay').classList.remove('open');
+}
+
+function saveKey() {
+  const val = document.getElementById('keyInput').value.trim();
+  if (val && !val.startsWith('•')) {
+    localStorage.setItem(KEY_STORAGE, val);
+  }
+  closeKeyModal();
+  updateKeyBtn();
+}
+
+function clearKey() {
+  localStorage.removeItem(KEY_STORAGE);
+  document.getElementById('keyInput').value = '';
+  closeKeyModal();
+  updateKeyBtn();
+}
 
 // ═══════════════════════════════════
 // APP STATE
@@ -545,20 +667,36 @@ async function askClaude(passage, question, context, lang) {
     prompt = `${sysContext}\n\nA student selected this passage:\n"${passage}"\n\nTheir question: ${question}\n\nGive a clear, substantive answer of 3-5 sentences. Explain philosophical meaning, connect to the broader allegory if relevant. Use plain language and modern analogies where they illuminate. No bullet points. No sycophancy.`;
   }
 
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    openKeyModal();
+    return 'No API key set. Enter your Anthropic key using the button in the header, then try again.';
+  }
+
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-allow-browser': 'true'
+      },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
         messages: [{ role: 'user', content: prompt }]
       })
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      if (res.status === 401) return 'Invalid API key. Click "API Key ✓" in the header to update it.';
+      return `API error ${res.status}: ${err?.error?.message || 'Unknown error'}`;
+    }
     const data = await res.json();
     return data.content?.map(b => b.text || '').join('') || 'No response received.';
   } catch (err) {
-    return 'Error reaching the API. Please try again.';
+    return 'Error reaching the API. Please check your connection and try again.';
   }
 }
 
@@ -619,6 +757,7 @@ function escHtml(s) { const d = document.createElement('div'); d.textContent = s
 // INIT
 // ═══════════════════════════════════
 renderText();
+updateKeyBtn();
 </script>
 </body>
 </html>
