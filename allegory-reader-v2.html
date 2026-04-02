@@ -421,7 +421,7 @@ body {
         <div class="ai-card-badge ai-badge-paid">Own Key</div>
       </div>
       <div class="ai-provider-card" id="card-gemini" onclick="selectProvider('gemini')">
-        <div class="ai-card-title">Gemini 2.0 Flash</div>
+        <div class="ai-card-title">Gemini 2.5 Flash</div>
         <div class="ai-card-desc">Free tier via Google. Use a personal Gmail account.</div>
         <div class="ai-card-badge ai-badge-free">Free</div>
       </div>
@@ -910,7 +910,7 @@ async function askAI(passage, question, context, lang) {
 
   if (provider === 'gemini') {
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
