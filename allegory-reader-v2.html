@@ -283,6 +283,22 @@ body {
 }
 .comment-delete:hover { opacity: 1; color: var(--danger); }
 
+
+/* Margin-column font-size controls — students with low vision can scale up. */
+.comment-column { font-size: var(--margin-font-scale, 1em); }
+.comment-card .comment-passage,
+.comment-card .comment-question,
+.comment-card .comment-answer,
+.comment-card .followup-input { font-size: calc(0.84em * var(--margin-font-scale, 1)); }
+.font-size-controls { display: inline-flex; gap: 0.15rem; margin-right: 0.4rem; }
+.font-size-controls button {
+  font-family: 'DM Sans', sans-serif;
+  background: transparent; border: 1px solid rgba(212,168,67,0.2);
+  color: var(--muted); padding: 0.2rem 0.45rem; border-radius: 3px;
+  cursor: pointer; font-size: 0.75rem; line-height: 1;
+}
+.font-size-controls button:hover { border-color: rgba(212,168,67,0.55); color: var(--accent-light); }
+
 /* Minimize button — collapses everything except passage + meta */
 .comment-min {
   background: none; border: none; color: var(--muted); cursor: pointer;
@@ -600,6 +616,10 @@ body {
         <span class="margin-header-subtitle" data-i18n="personal">Personal — Auto-saved</span>
       </div>
       <div class="margin-header-actions">
+        <span class="font-size-controls" title="Adjust margin-notes text size">
+          <button onclick="adjustMarginFontSize(-1)" title="Smaller">A−</button>
+          <button onclick="adjustMarginFontSize(+1)" title="Larger">A+</button>
+        </span>
         <button class="margin-header-btn" onclick="exportNotes()" title="Download notes as JSON" data-i18n="exportBtn" data-i18n-title="exportTitle">↓ Export</button>
         <button class="margin-header-btn" onclick="document.getElementById('importNotesInput').click()" title="Load notes from a file" data-i18n="importBtn" data-i18n-title="importTitle">↑ Import</button>
         <button class="margin-header-btn danger" onclick="clearAllNotes()" title="Clear all margin notes (highlights and queries)" data-i18n="clearBtn" data-i18n-title="clearTitle">✕ Clear</button>
@@ -805,9 +825,38 @@ function setStoredLocalEndpoints(arr) {
 function parseLocalProvider(id) {
   if (!id || !id.startsWith('local:')) return null;
   const rest = id.slice('local:'.length);
-  const lastColon = rest.lastIndexOf(':');
-  if (lastColon === -1) return null;
-  return { endpoint: rest.slice(0, lastColon), modelId: rest.slice(lastColon + 1) };
+  // Both endpoint and modelId may contain colons — endpoint has port (:11434),
+  // modelId may use Ollama-style tag separators (gemma3:27b). Anchor on the
+  // URL structure: protocol + host + optional port; everything after the next
+  // colon is the model id (colons preserved).
+  const m = rest.match(/^(https?:\/\/[^:/]+(?::\d+)?)(?::(.+))?$/);
+  if (!m || !m[2]) return null;
+  return { endpoint: m[1].replace(/\/+$/, ''), modelId: m[2] };
+}
+
+// Skip known embedding models when listing chat-capable tiles.
+function isEmbeddingModel(modelId) {
+  if (!modelId) return false;
+  const id = String(modelId).toLowerCase();
+  return id.includes('embed') || id.startsWith('nomic-') || id.includes('bge-') || id.startsWith('e5-');
+}
+
+// Friendly display name for a raw model id. Collapses Ollama-style identifiers
+// like 'gemma3:27b' into 'Gemma 3 · 27B' for the AI button label.
+function prettyModelLabel(id) {
+  if (!id || id === 'none') return 'AI';
+  const s = String(id);
+  if (/^athena-v6$/i.test(s)) return 'Athena V6';
+  let m;
+  if ((m = s.match(/^gemma(\d+)(?::([0-9.]+[a-z]+))?$/i)))  return m[2] ? `Gemma ${m[1]} · ${m[2].toUpperCase()}` : `Gemma ${m[1]}`;
+  if ((m = s.match(/^llama(\d+\.?\d*)(?::([0-9.]+[a-z]+))?$/i)))  return m[2] ? `Llama ${m[1]} · ${m[2].toUpperCase()}` : `Llama ${m[1]}`;
+  if ((m = s.match(/^qwen(\d+\.?\d*)[-:]?(\d+[a-z]+)$/i)))  return `Qwen ${m[1]} · ${m[2].toUpperCase()}`;
+  if ((m = s.match(/^mistral(?::([0-9.]+[a-z]+))?$/i)))  return m[1] ? `Mistral · ${m[1].toUpperCase()}` : 'Mistral';
+  if ((m = s.match(/^phi(\d+)(?::([0-9.]+[a-z]+))?$/i)))  return m[2] ? `Phi ${m[1]} · ${m[2].toUpperCase()}` : `Phi ${m[1]}`;
+  return s.charAt(0).toUpperCase() + s.slice(1).replace(/:/g, ' · ');
+}
+function shortModelLabel(id) {
+  return prettyModelLabel(id).split(' · ')[0];
 }
 
 // _runtimeProviderOverride lets the boot-time health check disable a saved
@@ -853,7 +902,7 @@ async function discoverModelsAt(url) {
     const res = await fetch(`${trimmed}/v1/models`, { signal: AbortSignal.timeout(2000) });
     if (!res.ok) return [];
     const data = await res.json();
-    return (data.data || []).filter(m => m?.id).map(m => ({ id: String(m.id), label: String(m.id) }));
+    return (data.data || []).filter(m => m?.id && !isEmbeddingModel(m.id)).map(m => ({ id: String(m.id), label: String(m.id) }));
   } catch { return []; }
 }
 
@@ -893,7 +942,7 @@ function updateAIBtn() {
   } else if (p && p.startsWith('local:')) {
     btn.classList.add('ai-active');
     const parsed = parseLocalProvider(p);
-    label.textContent = `AI: ${parsed?.modelId || 'local'} ✓`;
+    label.textContent = `AI: ${parsed ? prettyModelLabel(parsed.modelId) : 'local'} ✓`;
   } else {
     btn.classList.remove('ai-active');
     label.textContent = t('aiOff');
@@ -2736,6 +2785,24 @@ function renderComments() {
   });
 }
 
+
+// Margin-column font-size (A−/A+). Persisted per browser.
+const FONT_SCALE_KEY = 'cr_margin_font_scale';
+const FONT_SCALE_MIN = 0.85, FONT_SCALE_MAX = 1.6, FONT_SCALE_STEP = 0.1;
+function getMarginFontScale() {
+  const stored = parseFloat(localStorage.getItem(FONT_SCALE_KEY));
+  return Number.isFinite(stored) ? Math.max(FONT_SCALE_MIN, Math.min(FONT_SCALE_MAX, stored)) : 1;
+}
+function applyMarginFontScale() {
+  document.documentElement.style.setProperty('--margin-font-scale', getMarginFontScale());
+}
+function adjustMarginFontSize(direction) {
+  const cur = getMarginFontScale();
+  const next = Math.max(FONT_SCALE_MIN, Math.min(FONT_SCALE_MAX, cur + direction * FONT_SCALE_STEP));
+  localStorage.setItem(FONT_SCALE_KEY, String(next));
+  applyMarginFontScale();
+}
+
 function toggleMinimize(id) {
   const c = comments.find(x => x.id === id);
   if (!c) return;
@@ -2785,6 +2852,7 @@ if (comments.length > 0) {
 }
 updateAIBtn();
 verifySavedLocalProvider();  // probe saved local server; falls back to 'none' if unreachable
+applyMarginFontScale();
 </script>
 </body>
 </html>
