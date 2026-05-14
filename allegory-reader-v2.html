@@ -1142,7 +1142,9 @@ const READINGS = {
       // https://gu.wikisource.org/wiki/હિન્દ_સ્વરાજ ; not blocking the demo.
       es: {
         label: "Español",
+        title: "Hind Swaraj — ¿Qué es la verdadera civilización?",
         translator: "Machine translation (Claude Opus)",
+        machineTranslated: true,
         pending: true,
         sections: [{
           id: 'ch13',
@@ -1162,7 +1164,9 @@ const READINGS = {
       },
       zh: {
         label: "中文",
+        title: "印度自治 — 何谓真正的文明？",
         translator: "Machine translation (Claude Opus)",
+        machineTranslated: true,
         pending: true,
         sections: [{
           id: 'ch13',
@@ -1182,7 +1186,9 @@ const READINGS = {
       },
       hi: {
         label: "हिन्दी",
+        title: "हिंद स्वराज — सच्ची सभ्यता क्या है?",
         translator: "Machine translation (Claude Opus)",
+        machineTranslated: true,
         pending: true,
         sections: [{
           id: 'ch13',
@@ -1263,10 +1269,12 @@ const READINGS = {
       },
       es: {
         label: "Español",
+        title: "Analectas, Libro 1",
         translator: "Machine translation (Claude Opus)",
+        machineTranslated: true,
         pending: true,
         sections: [{
-          id: 'book1', label: "Libro 1", title: "On Learning (學而)",
+          id: 'book1', label: "Libro 1", title: "Sobre el aprendizaje (學而)",
           paragraphs: [
             { heading: "1.1", text: "El Maestro dijo: \"¿No es placentero aprender con perseverancia y constante aplicación? ¿No es delicioso tener amigos que vienen de tierras lejanas? ¿No es hombre de virtud completa aquel que no se inmuta aunque los demás no reparen en él?\"" },
             { heading: "1.2", text: "El filósofo Yu dijo: \"Pocos son aquellos que, siendo filiales y fraternales, gustan de ofender a sus superiores. No ha habido ninguno que, no gustando de ofender a sus superiores, haya gustado de provocar el desorden. El hombre superior aplica su atención a lo radical. Establecido eso, todos los caminos prácticos crecen naturalmente. La piedad filial y la sumisión fraternal — ¿no son acaso la raíz de toda acción benevolente?\"" },
@@ -1289,10 +1297,12 @@ const READINGS = {
       },
       hi: {
         label: "हिन्दी",
+        title: "लुन्यू, पुस्तक 1",
         translator: "Machine translation (Claude Opus)",
+        machineTranslated: true,
         pending: true,
         sections: [{
-          id: 'book1', label: "पुस्तक 1", title: "On Learning (學而)",
+          id: 'book1', label: "पुस्तक 1", title: "अध्ययन (學而)",
           paragraphs: [
             { heading: "1.1", text: "आचार्य ने कहा: \"क्या यह सुखद नहीं कि निरंतर परिश्रम और तत्परता से सीखें? क्या यह आनंदमय नहीं कि दूर देशों से मित्र आएँ? क्या वही पूर्ण सद्गुणी पुरुष नहीं जो विचलित नहीं होता, यद्यपि लोग उसे न जानें?\"" },
             { heading: "1.2", text: "आचार्य यू ने कहा: \"वे थोड़े ही हैं जो श्रवण-शील और भ्रातृ-स्नेही होकर अपने वरिष्ठों के विरुद्ध आचरण को पसंद करते हैं। ऐसा कोई नहीं हुआ जो वरिष्ठों के विरुद्ध आचरण को नापसंद करते हुए, उपद्रव मचाना पसंद करता हो। श्रेष्ठ पुरुष मूल पर ध्यान देता है। मूल स्थापित होने पर सभी व्यावहारिक मार्ग स्वयं प्रकट होते हैं। माता-पिता के प्रति श्रद्धा और भ्राता के प्रति आज्ञाकारिता — क्या ये सभी सत्कर्मों की जड़ नहीं हैं?\"" },
@@ -1340,7 +1350,9 @@ const READINGS = {
       },
       es: {
         label: "Español",
+        title: "Tanatopsis",
         translator: "Machine translation (Claude Opus)",
+        machineTranslated: true,
         pending: true,
         sections: [{
           id: 'poem', label: '', title: '', verse: true,
@@ -1355,7 +1367,9 @@ const READINGS = {
       },
       zh: {
         label: "中文",
+        title: "死亡观",
         translator: "Machine translation (Claude Opus)",
+        machineTranslated: true,
         pending: true,
         sections: [{
           id: 'poem', label: '', title: '', verse: true,
@@ -1370,7 +1384,9 @@ const READINGS = {
       },
       hi: {
         label: "हिन्दी",
+        title: "थैनाटोप्सिस",
         translator: "Machine translation (Claude Opus)",
+        machineTranslated: true,
         pending: true,
         sections: [{
           id: 'poem', label: '', title: '', verse: true,
@@ -1395,7 +1411,7 @@ const READINGS = {
     systemPromptExtra: "You are an annotation assistant for Plato's Allegory of the Cave (Republic VII, 514a–517a), using the Thomas Sheehan English translation paired with a Modern Greek pedagogical rendering.",
     languages: {
       en: { label: 'English (Sheehan)', translator: 'Thomas Sheehan', sections: TEXTS.en.sections },
-      el: { label: 'Ελληνικά', translator: 'Παιδαγωγική απόδοση στα Νέα Ελληνικά', sections: TEXTS.el.sections },
+      el: { label: 'Ελληνικά', title: 'Η Αλληγορία του Σπηλαίου', translator: 'Παιδαγωγική απόδοση στα Νέα Ελληνικά', sections: TEXTS.el.sections },
     },
   },
   'ibsen-dolls-house': {
@@ -1844,7 +1860,7 @@ function renderText() {
   const reading = currentReading();
   if (!reading) return;
 
-  document.getElementById('headerTitle').textContent = reading.title;
+  document.getElementById('headerTitle').textContent = (currentReading()?.languages?.[currentLang]?.title) || reading.title;
 
   // Stub readings show a placeholder instead of text.
   if (reading.stub || !readingHasLang(reading, currentLang)) {
@@ -1866,7 +1882,8 @@ function renderText() {
     `${reading.author} · ${reading.source} · ${reading.reference}`;
   const translatorEl = document.getElementById('headerTranslator');
   if (data.translator || data.pending) {
-    const trText = data.translator ? `${t('translatorPrefix')} ${escHtml(data.translator)}` : '';
+    const translatorString = data.machineTranslated ? t('machineTranslated') : data.translator;
+  const trText = translatorString ? `${t('translatorPrefix')} ${escHtml(translatorString)}` : '';
     const pendingTag = data.pending ? `<span class="pending">${t('pendingReview')}</span>` : '';
     translatorEl.innerHTML = `${trText}${pendingTag}`;
   } else {
@@ -1888,7 +1905,7 @@ function renderText() {
                          : 'glaucon';
       const textWithMarks = applyAnnotations(p.text, currentLang);
       const speakerHtml = p.speaker
-        ? `<span class="speaker-label ${speakerClass}">${escHtml(p.speaker)}:</span> `
+        ? `<span class="speaker-label ${speakerClass}">${escHtml(translateSpeaker(p.speaker))}:</span> `
         : '';
       const verseClass = (sec.verse || p.verse) ? ' verse' : '';
       html += `<div class="text-paragraph${verseClass}">${speakerHtml}${textWithMarks}</div>`;
@@ -2266,7 +2283,8 @@ const UI_TRANSLATIONS = {
     messageCount: (n) => `${n} message${n === 1 ? '' : 's'}`,
     stubFallback: "This reading isn't loaded yet.",
     pendingReview: '(pending native-speaker review)',
-    translatorPrefix: 'tr.',
+    translatorPrefix: 'tr.',,
+    machineTranslated: 'Machine translation (Claude Opus)',
   },
   es: {
     readingLabel: 'Lectura:',
@@ -2309,7 +2327,8 @@ const UI_TRANSLATIONS = {
     messageCount: (n) => `${n} mensaje${n === 1 ? '' : 's'}`,
     stubFallback: 'Esta lectura aún no está cargada.',
     pendingReview: '(pendiente de revisión por hablante nativo)',
-    translatorPrefix: 'tr.',
+    translatorPrefix: 'tr.',,
+    machineTranslated: 'Traducción automática (Claude Opus)',
   },
   el: {
     readingLabel: 'Ανάγνωση:',
@@ -2507,6 +2526,25 @@ function applyTranslations() {
     el.placeholder = t(el.dataset.i18nPlaceholder);
   });
 }
+// Translate a speaker label (READER, EDITOR, SOCRATES, etc.) for display.
+// Keys in the table are the canonical English names found in the section data;
+// fallback returns the original (so Greek-data ΣΩΚΡΑΤΗΣ passes through unchanged
+// when viewing in English or any other language). The original is preserved
+// elsewhere for the PRIMARY_SPEAKERS color-class lookup.
+const SPEAKER_TRANSLATIONS = {
+  en: {},  // identity
+  es: { READER: 'LECTOR', EDITOR: 'EDITOR', SOCRATES: 'SÓCRATES', GLAUCON: 'GLAUCÓN', HELMER: 'HELMER', NORA: 'NORA' },
+  el: { READER: 'ΑΝΑΓΝΩΣΤΗΣ', EDITOR: 'ΣΥΝΤΑΚΤΗΣ' },
+  zh: { READER: '读者', EDITOR: '编者', SOCRATES: '苏格拉底', GLAUCON: '格劳孔', HELMER: '海尔茂', NORA: '娜拉' },
+  hi: { READER: 'पाठक', EDITOR: 'संपादक', SOCRATES: 'सुकरात', GLAUCON: 'ग्लौकोन', HELMER: 'हेल्मर', NORA: 'नोरा' },
+  no: { READER: 'LESER', EDITOR: 'REDAKTØR', SOCRATES: 'SOKRATES', GLAUCON: 'GLAUKON' },
+};
+function translateSpeaker(speaker) {
+  if (!speaker) return '';
+  const dict = SPEAKER_TRANSLATIONS[currentLang] || {};
+  return dict[speaker.toUpperCase()] || speaker;
+}
+
 
 async function askAI(passage, question, context, lang) {
   const reading = currentReading();
