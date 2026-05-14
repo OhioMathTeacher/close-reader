@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Allegory of the Cave — Deep Reader</title>
+<title>Close Reader</title>
 <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -282,6 +282,21 @@ body {
   font-size: 0.68rem; padding: 0 0.2rem; opacity: 0.4; transition: all 0.2s;
 }
 .comment-delete:hover { opacity: 1; color: var(--danger); }
+
+/* Minimize button — collapses everything except passage + meta */
+.comment-min {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 0.85rem; padding: 0 0.2rem; opacity: 0.4; transition: all 0.2s;
+  margin-right: 0.25rem;
+}
+.comment-min:hover { opacity: 1; color: var(--accent-light); }
+.comment-card.minimized .comment-question,
+.comment-card.minimized .comment-answer,
+.comment-card.minimized .followup-row,
+.comment-card.minimized .sub-comment { display: none; }
+.comment-card.minimized .comment-passage {
+  max-height: none;  /* show full passage when minimized — it's the only content visible */
+}
 
 .followup-row {
   display: flex; gap: 0.35rem; margin-top: 0.45rem;
@@ -2351,8 +2366,8 @@ function renderComments() {
       h += `<button class="comment-delete" onclick="deleteComment(${c.id})">✕</button></div>`;
       h += `</div>`;
     } else {
-      h = `<div class="comment-card query-card">`;
-      h += `<div class="comment-passage">"${escHtml(truncate(c.passage, 90))}"</div>`;
+      h = `<div class="comment-card query-card${c.minimized ? ' minimized' : ''}">`;
+      h += `<div class="comment-passage">"${escHtml(c.minimized ? c.passage : truncate(c.passage, 90))}"</div>`;
       h += `<div class="comment-question">${escHtml(c.question)}</div>`;
       h += c.answer
         ? `<div class="comment-answer">${escHtml(c.answer)}</div>`
@@ -2374,14 +2389,23 @@ function renderComments() {
       }
 
       const followupCount = (c.followups || []).length;
-      h += `<div class="comment-meta"><span>${followupCount + 1} message${followupCount > 0 ? 's' : ''}</span>`;
-      h += `<button class="comment-delete" onclick="deleteComment(${c.id})">✕</button></div>`;
+      h += `<div class="comment-meta"><span>${c.minimized ? 'collapsed' : followupCount + 1 + ' message' + (followupCount > 0 ? 's' : '')}</span><span>`;
+      h += `<button class="comment-min" onclick="toggleMinimize(${c.id})" title="${c.minimized ? 'Expand' : 'Minimize'}">${c.minimized ? '⊞' : '☐'}</button>`;
+      h += `<button class="comment-delete" onclick="deleteComment(${c.id})">✕</button></span></div>`;
       h += `</div>`;
     }
 
     thread.innerHTML = h;
     commentList.appendChild(thread);
   });
+}
+
+function toggleMinimize(id) {
+  const c = comments.find(x => x.id === id);
+  if (!c) return;
+  c.minimized = !c.minimized;
+  saveNotesToStorage();
+  renderComments();
 }
 
 function deleteComment(id) {
