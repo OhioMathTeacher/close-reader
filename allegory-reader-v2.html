@@ -426,6 +426,43 @@ body {
 .am-cancel { background: rgba(255,255,255,0.06); color: #9A9083; }
 .am-cancel:hover { background: rgba(255,255,255,0.12); }
 
+/* ═══ READING PICKER ═══ */
+.reading-picker {
+  display: flex; align-items: center; gap: 0.45rem;
+  font-family: 'DM Sans', sans-serif; font-size: 0.78rem;
+  color: var(--muted); letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+}
+.reading-picker label { text-transform: uppercase; font-size: 0.66rem; }
+.reading-picker select {
+  font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--accent-light);
+  border: 1px solid rgba(212, 168, 67, 0.25);
+  border-radius: 4px;
+  padding: 0.32rem 0.55rem;
+  cursor: pointer; outline: none;
+  transition: border-color 0.15s;
+}
+.reading-picker select:hover { border-color: rgba(212, 168, 67, 0.55); }
+.reading-picker select:focus { border-color: var(--cave-glow); }
+.reading-picker select option { background: var(--cave-dark); color: #E8DCC8; }
+
+/* Stub-reading placeholder shown in the text column when a reading isn't ready yet */
+.stub-notice {
+  margin: 4rem auto; max-width: 540px; text-align: center;
+  font-family: 'DM Sans', sans-serif; color: var(--muted);
+  border: 1px dashed rgba(212, 168, 67, 0.3); border-radius: 8px;
+  padding: 2rem 1.6rem;
+}
+.stub-notice .stub-icon { font-size: 2rem; opacity: 0.45; margin-bottom: 0.5rem; }
+.stub-notice h3 {
+  font-family: 'Crimson Pro', serif; color: var(--accent);
+  margin: 0.4rem 0 0.6rem; font-size: 1.25rem; font-weight: 600;
+}
+.stub-notice p { margin: 0.45rem 0; line-height: 1.5; font-size: 0.9rem; }
+.stub-notice a { color: var(--accent-light); }
+
 /* ═══ RESPONSIVE ═══ */
 @media (max-width: 860px) {
   .main-container { grid-template-columns: 1fr; height: auto; }
@@ -446,10 +483,11 @@ body {
       <div class="subtitle" id="headerSubtitle">Plato · Republic VII · 514a–517a · tr. Thomas Sheehan</div>
     </div>
     <div class="header-right">
-      <div class="lang-toggles">
-        <button class="lang-btn active" data-lang="en" onclick="switchLang('en')">English (Sheehan)</button>
-        <button class="lang-btn" data-lang="el" onclick="switchLang('el')">Ελληνικά</button>
+      <div class="reading-picker">
+        <label for="readingSelect">Reading:</label>
+        <select id="readingSelect" onchange="switchReading(this.value)"></select>
       </div>
+      <div class="lang-toggles" id="langToggles"></div>
       <div class="instructions">
         <em>Select any text</em> — choose <strong>🟡 Highlight</strong> or <strong>🔵 Ask LLM</strong>.
       </div>
@@ -580,16 +618,33 @@ const ANNOTATIONS = {
 };
 
 // ═══════════════════════════════════
-// NOTES PERSISTENCE
+// NOTES PERSISTENCE (per-reading)
+//   Notes for each reading live under their own localStorage key so a yellow
+//   highlight on Plato doesn't try to render on top of Gandhi's text.
+//   Legacy single-key notes ('cr_margin_notes') are migrated on first load
+//   into 'cr_margin_notes_plato-allegory' (the only reading until now).
 // ═══════════════════════════════════
-const NOTES_STORAGE = 'cr_margin_notes';
+const NOTES_STORAGE_LEGACY = 'cr_margin_notes';
+function notesStorageKey(slug) { return `cr_margin_notes_${slug}`; }
 
 function saveNotesToStorage() {
-  localStorage.setItem(NOTES_STORAGE, JSON.stringify(comments));
+  localStorage.setItem(notesStorageKey(currentReadingSlug), JSON.stringify(comments));
+}
+
+function migrateLegacyNotesIfPresent() {
+  const legacy = localStorage.getItem(NOTES_STORAGE_LEGACY);
+  if (!legacy) return;
+  const platoKey = notesStorageKey('plato-allegory');
+  if (!localStorage.getItem(platoKey)) {
+    localStorage.setItem(platoKey, legacy);
+  }
+  localStorage.removeItem(NOTES_STORAGE_LEGACY);
 }
 
 function loadNotesFromStorage() {
-  const stored = localStorage.getItem(NOTES_STORAGE);
+  comments = [];
+  commentId = 0;
+  const stored = localStorage.getItem(notesStorageKey(currentReadingSlug));
   if (stored) {
     try {
       comments = JSON.parse(stored);
@@ -963,12 +1018,111 @@ function saveAISettings() {
 }
 
 // ═══════════════════════════════════
+// READINGS LIBRARY
+//   Each reading owns its metadata, its per-language sections, and an optional
+//   systemPromptExtra that the LLM uses for context. To add a reading, fill
+//   in the languages map with { en: { translator, sections: [...] }, ... }.
+//   `stub: true` marks readings that aren't ready to serve text yet.
+// ═══════════════════════════════════
+const READINGS = {
+  'plato-allegory': {
+    id: 'plato-allegory',
+    title: 'The Allegory of the Cave',
+    author: 'Plato',
+    source: 'Republic, VII',
+    reference: '514a–517a',
+    summary: 'Socrates compares uneducated humanity to prisoners in a cave who mistake shadows for reality.',
+    systemPromptExtra: "You are an annotation assistant for Plato's Allegory of the Cave (Republic VII, 514a–517a), using the Thomas Sheehan English translation paired with a Modern Greek pedagogical rendering.",
+    languages: {
+      en: { label: 'English (Sheehan)', translator: 'Thomas Sheehan', sections: TEXTS.en.sections },
+      el: { label: 'Ελληνικά', translator: 'Παιδαγωγική απόδοση στα Νέα Ελληνικά', sections: TEXTS.el.sections },
+    },
+  },
+  'gandhi-hind-swaraj': {
+    id: 'gandhi-hind-swaraj',
+    title: 'Hind Swaraj — What is True Civilization?',
+    author: 'M. K. Gandhi',
+    source: 'Hind Swaraj or Indian Home Rule, Chapter XIII',
+    reference: '1909 / 1910 trans.',
+    summary: 'Reader and Editor argue over what civilization actually means. Gandhi presents his counter-vision to the modern industrial idea of progress.',
+    systemPromptExtra: "You are an annotation assistant for Chapter XIII (\"What is True Civilization?\") of M. K. Gandhi's Hind Swaraj (Indian Home Rule, 1909). Gandhi originally wrote the text in Gujarati and translated it into English himself in 1910. The chapter is a Socratic dialogue between READER and EDITOR (Editor = Gandhi).",
+    languages: {
+      en: {
+        label: 'English (Gandhi, 1910)',
+        translator: "M. K. Gandhi (self-translated from Gujarati)",
+        sections: [{
+          id: 'ch13',
+          label: 'Chapter XIII',
+          title: 'What is True Civilization?',
+          paragraphs: [
+            { speaker: 'READER', text: 'You have denounced railways, lawyers and doctors. I can see that you will discard all machinery. What, then, is civilization?' },
+            { speaker: 'EDITOR', text: 'The answer to that question is not difficult. I believe that the civilization India evolved is not to be beaten in the world. Nothing can equal the seeds sown by our ancestors. Rome went, Greece shared the same fate; the might of the Pharaohs was broken; Japan has become Westernized; of China nothing can be said; but India is still, somehow or other, sound at the foundation. The people of Europe learn their lessons from the writings of the men of Greece or Rome, which exist no longer in their former glory. In trying to learn from them, the Europeans imagine that they will avoid the mistakes of Greece and Rome. Such is their pitiable condition. In the midst of all this India remains immovable and that is her glory. It is a charge against India that her people are so uncivilized, ignorant and stolid, that it is not possible to induce them to adopt any changes. It is a charge really against our merit. What we have tested and found true on the anvil of experience, we dare not change. Many thrust their advice upon India, and she remains steady. This is her beauty: it is the sheet-anchor of our hope.' },
+            { speaker: 'EDITOR', text: 'Civilization is that mode of conduct which points out to man the path of duty. Performance of duty and observance of morality are convertible terms. To observe morality is to attain mastery over our mind and our passions. So doing, we know ourselves. The Gujarati equivalent for civilization means "good conduct".' },
+            { speaker: 'EDITOR', text: 'If this definition be correct, then India, as so many writers have shown, has nothing to learn from anybody else, and this is as it should be. We notice that the mind is a restless bird; the more it gets the more it wants, and still remains unsatisfied. The more we indulge our passions the more unbridled they become. Our ancestors, therefore, set a limit to our indulgences. They saw that happiness was largely a mental condition. A man is not necessarily happy because he is rich, or unhappy because he is poor. The rich are often seen to be unhappy, the poor to be happy. Millions will always remain poor. Observing all this, our ancestors dissuaded us from luxuries and pleasures. We have managed with the same kind of plough as existed thousands of years ago. We have retained the same kind of cottages that we had in former times and our indigenous education remains the same as before. We have had no system of life-corroding competition. Each followed his own occupation or trade and charged a regulation wage. It was not that we did not know how to invent machinery, but our forefathers knew that, if we set our hearts after such things, we would become slaves and lose our moral fibre. They, therefore, after due deliberation decided that we should only do what we could with our hands and feet. They saw that our real happiness and health consisted in a proper use of our hands and feet. They further reasoned that large cities were a snare and a useless encumbrance and that people would not be happy in them, that there would be gangs of thieves and robbers, prostitution and vice flourishing in them and that poor men would be robbed by rich men. They were, therefore, satisfied with small villages. They saw that kings and their swords were inferior to the sword of ethics, and they, therefore, held the sovereigns of the earth to be inferior to the Rishis and the Fakirs. A nation with a constitution like this is fitter to teach others than to learn from. This nation had courts, lawyers and doctors, but they were all within bounds. Everybody knew that these professions were not particularly superior; moreover, these vakils and vaids did not rob people; they were considered people\'s dependants, not their masters. Justice was tolerably fair. The ordinary rule was to avoid courts. There were no touts to lure people into them. This evil, too, was noticeable only in and around capitals. The common people lived independently and followed their agricultural occupation. They enjoyed true Home Rule.' },
+            { speaker: 'EDITOR', text: 'And where this cursed modern civilization has not reached, India remains as it was before. The inhabitants of that part of India will very properly laugh at your newfangled notions. The English do not rule over them, nor will you ever rule over them. Those in whose name we speak we do not know, nor do they know us. I would certainly advise you and those like you who love the motherland to go into the interior that has yet not been polluted by the railways and to live there for six months; you might then be patriotic and speak of Home Rule.' },
+            { speaker: 'EDITOR', text: 'Now you see what I consider to be real civilization. Those who want to change conditions such as I have described are enemies of the country and are sinners.' },
+            { speaker: 'READER', text: 'It would be all right if India were exactly as you have described it, but it is also India where there are hundreds of child widows, where two year old babies are married, where twelve year old girls are mothers and housewives, where women practise polyandry, where the practice of Niyoga obtains, where, in the name of religion, girls dedicate themselves to prostitution, and in the name of religion sheep and goats are killed. Do you consider these also symbols of the civilization that you have described?' },
+            { speaker: 'EDITOR', text: 'You make a mistake. The defects that you have shown are defects. Nobody mistakes them for ancient civilization. They remain in spite of it. Attempts have always been made and will be made to remove them. We may utilize the new spirit that is born in us for purging ourselves of these evils. But what I have described to you as emblems of modern civilization are accepted as such by its votaries. The Indian civilization, as described by me, has been so described by its votaries. In no part of the world, and under no civilization, have all men attained perfection. The tendency of the Indian civilization is to elevate the moral being, that of the Western civilization is to propagate immorality. The latter is godless, the former is based on a belief in God. So understanding and so believing, it behoves every lover of India to cling to the old Indian civilization even as a child clings to the mother\'s breast.' },
+          ],
+        }],
+      },
+      // Gujarati original to be added — sourcing from
+      // https://gu.wikisource.org/wiki/હિન્દ_સ્વરાજ ; not blocking the demo.
+    },
+  },
+  'ibsen-dolls-house': {
+    id: 'ibsen-dolls-house',
+    title: "A Doll's House — Act 3 (the door-slam)",
+    author: 'Henrik Ibsen',
+    source: 'Et dukkehjem, Act III',
+    reference: '1879',
+    summary: 'Krogstad\'s letter arrives, Helmer reads it, and Nora makes her decision.',
+    systemPromptExtra: "You are an annotation assistant for the climactic scene of Act III of Ibsen's A Doll's House (Et dukkehjem, 1879) — from Krogstad's letter through Nora's final exit. The speaker labels are HELMER, NORA.",
+    stub: true,
+    stubNote: 'Will source from Project Gutenberg: <a href="https://www.gutenberg.org/ebooks/2542" target="_blank" rel="noopener">William Archer\'s 1889 English translation</a> + the Norwegian Bokmål original from <a href="https://no.wikisource.org/wiki/Et_dukkehjem" target="_blank" rel="noopener">Wikikilden</a>. Both public domain.',
+    languages: {},
+  },
+  'lu-xun-madmans-diary': {
+    id: 'lu-xun-madmans-diary',
+    title: "A Madman's Diary",
+    author: 'Lu Xun (鲁迅)',
+    source: '《狂人日记》',
+    reference: '1918',
+    summary: "A man's diary entries record his slow recognition that the people around him are 'cannibals' — a foundational text of modern Chinese literature.",
+    systemPromptExtra: "You are an annotation assistant for Lu Xun's '狂人日记' (A Madman's Diary, 1918), the foundational text of modern vernacular Chinese literature. The narrator is unnamed; the text is presented as a series of diary entries.",
+    stub: true,
+    stubNote: '⚠ <strong>Translation copyright concern:</strong> the Chinese original is clearly public domain (pre-1929 + Lu Xun died 1936, China entered 50-yr PD), but every published English translation I know of is post-1929 and copyrighted (Yang Hsien-yi 1956, William Lyell 1990, Julia Lovell 2009). Options for v2: commission a fresh translation, ship the Chinese original alone with student-supplied translations, or substitute another modern Chinese voice with cleaner English-translation provenance. <strong>Needs your call.</strong>',
+    languages: {},
+  },
+  'confucius-analects-1': {
+    id: 'confucius-analects-1',
+    title: 'Analects, Book 1',
+    author: 'Confucius (孔子)',
+    source: '《論語》學而第一',
+    reference: 'compiled c. 5th C. BCE',
+    summary: 'The opening chapter of the Analects: short aphorisms on learning, friendship, and conduct.',
+    systemPromptExtra: "You are an annotation assistant for Book 1 ('學而', 'On Learning') of the Analects of Confucius, using the James Legge 1893 English translation paired with the Classical Chinese (文言文) original.",
+    stub: true,
+    stubNote: 'Will source from <a href="https://ctext.org/analects/xue-er" target="_blank" rel="noopener">Chinese Text Project</a> (Legge English + Classical Chinese, both PD).',
+    languages: {},
+  },
+};
+
+// ═══════════════════════════════════
 // APP STATE
 // ═══════════════════════════════════
+const READING_KEY = 'cr_current_reading';
+let currentReadingSlug = localStorage.getItem(READING_KEY) || 'plato-allegory';
+if (!READINGS[currentReadingSlug]) currentReadingSlug = 'plato-allegory';
 let currentLang = 'en';
 let selectedText = '';
 let comments = [];
 let commentId = 0;
+
+function currentReading() { return READINGS[currentReadingSlug]; }
+function readingHasLang(reading, lang) {
+  return !!(reading && reading.languages && reading.languages[lang]);
+}
 
 const textCol = document.getElementById('textColumn');
 const popup = document.getElementById('selectionPopup');
@@ -982,31 +1136,105 @@ const commentCountEl = document.getElementById('commentCount');
 // RENDER TEXT
 // ═══════════════════════════════════
 function renderText() {
-  const data = TEXTS[currentLang];
-  if (!data) return;
+  const reading = currentReading();
+  if (!reading) return;
 
-  document.getElementById('headerTitle').textContent = data.title;
+  document.getElementById('headerTitle').textContent = reading.title;
+
+  // Stub readings show a placeholder instead of text.
+  if (reading.stub || !readingHasLang(reading, currentLang)) {
+    document.getElementById('headerSubtitle').textContent =
+      `${reading.author} · ${reading.source} · ${reading.reference}`;
+    textCol.innerHTML = `
+      <div class="stub-notice">
+        <div class="stub-icon">📖</div>
+        <h3>${escHtml(reading.title)}</h3>
+        <p><em>${escHtml(reading.summary || '')}</em></p>
+        <p>${reading.stubNote || 'This reading isn\'t loaded yet.'}</p>
+      </div>`;
+    return;
+  }
+
+  const data = reading.languages[currentLang];
   document.getElementById('headerSubtitle').textContent =
-    `${data.author} · ${data.source} · ${data.reference} · ${currentLang === 'en' ? 'tr.' : ''} ${data.translator}`;
+    `${reading.author} · ${reading.source} · ${reading.reference}${data.translator ? ' · tr. ' + data.translator : ''}`;
 
   let html = '';
-  for (const sec of data.sections) {
-    if (sec.label) {
-      html += `<div class="section-label">${escHtml(sec.label)}</div>`;
-    }
-    if (sec.title) {
-      html += `<div class="section-title">${escHtml(sec.title)}</div>`;
-    }
-    for (const p of sec.paragraphs) {
-      if (p.heading) {
-        html += `<div class="para-heading">${escHtml(p.heading)}</div>`;
-      }
-      const speakerClass = p.speaker === 'SOCRATES' || p.speaker === 'ΣΩΚΡΑΤΗΣ' ? 'socrates' : 'glaucon';
-      const textWithAnnotations = applyAnnotations(p.text, currentLang);
-      html += `<div class="text-paragraph"><span class="speaker-label ${speakerClass}">${escHtml(p.speaker)}:</span> ${textWithAnnotations}</div>`;
+  for (const sec of (data.sections || [])) {
+    if (sec.label) html += `<div class="section-label">${escHtml(sec.label)}</div>`;
+    if (sec.title) html += `<div class="section-title">${escHtml(sec.title)}</div>`;
+    for (const p of (sec.paragraphs || [])) {
+      if (p.heading) html += `<div class="para-heading">${escHtml(p.heading)}</div>`;
+      // Two visual styles for dialogue: "socrates" for the primary/teacher voice,
+      // "glaucon" for the questioner/respondent. Extend PRIMARY_SPEAKERS as new
+      // dialogue readings are added.
+      const PRIMARY_SPEAKERS = new Set(['SOCRATES', 'ΣΩΚΡΑΤΗΣ', 'EDITOR', 'HELMER']);
+      const speakerClass = !p.speaker ? ''
+                         : PRIMARY_SPEAKERS.has(p.speaker) ? 'socrates'
+                         : 'glaucon';
+      const textWithMarks = applyAnnotations(p.text, currentLang);
+      const speakerHtml = p.speaker
+        ? `<span class="speaker-label ${speakerClass}">${escHtml(p.speaker)}:</span> `
+        : '';
+      html += `<div class="text-paragraph">${speakerHtml}${textWithMarks}</div>`;
     }
   }
   textCol.innerHTML = html;
+}
+
+// ═══════════════════════════════════
+// READING / LANGUAGE PICKERS
+// ═══════════════════════════════════
+function rebuildReadingPicker() {
+  const sel = document.getElementById('readingSelect');
+  if (!sel) return;
+  sel.innerHTML = '';
+  for (const slug of Object.keys(READINGS)) {
+    const r = READINGS[slug];
+    const opt = document.createElement('option');
+    opt.value = slug;
+    opt.textContent = `${r.author} — ${r.title}${r.stub ? ' (coming soon)' : ''}`;
+    if (slug === currentReadingSlug) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function rebuildLangButtons() {
+  const wrap = document.getElementById('langToggles');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const reading = currentReading();
+  const langs = reading && reading.languages ? Object.keys(reading.languages) : [];
+  if (!langs.length) {
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = '';
+  // If currentLang isn't available in this reading, fall back to first.
+  if (!langs.includes(currentLang)) currentLang = langs[0];
+  for (const lang of langs) {
+    const b = document.createElement('button');
+    b.className = 'lang-btn' + (lang === currentLang ? ' active' : '');
+    b.dataset.lang = lang;
+    b.textContent = reading.languages[lang].label || lang;
+    b.onclick = () => switchLang(lang);
+    wrap.appendChild(b);
+  }
+}
+
+function switchReading(slug) {
+  if (!READINGS[slug]) return;
+  // Persist current reading's notes (already auto-saved per change), then load the new reading's.
+  closeSelectionMenu();
+  closePopup();
+  currentReadingSlug = slug;
+  localStorage.setItem(READING_KEY, slug);
+  loadNotesFromStorage();
+  rebuildLangButtons();   // also picks a default lang if currentLang isn't supported
+  rebuildReadingPicker(); // re-render so selected option matches in case called from boot
+  renderText();
+  renderComments();
+  emptyState.style.display = comments.length > 0 ? 'none' : '';
 }
 
 function applyAnnotations(text, lang) {
@@ -1032,6 +1260,7 @@ function applyAnnotations(text, lang) {
 // LANGUAGE SWITCHING
 // ═══════════════════════════════════
 function switchLang(lang) {
+  if (!readingHasLang(currentReading(), lang)) return;
   currentLang = lang;
   document.querySelectorAll('.lang-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.lang === lang);
@@ -1180,11 +1409,16 @@ async function submitFollowup(cid) {
 }
 
 async function askAI(passage, question, context, lang) {
-  const langNote = lang === 'el'
-    ? 'The student is reading a Modern Greek translation. Answer in English but acknowledge Greek terms where helpful.'
+  const reading = currentReading();
+  const langData = reading?.languages?.[lang];
+  const langName = langData?.label || lang;
+  const langNote = (lang !== 'en')
+    ? `The student is reading the ${langName} version. Answer in English but acknowledge original-language terms where helpful.`
     : '';
 
-  const sysContext = `You are an annotation assistant for Plato's Allegory of the Cave (Republic VII, 514a–517a), using the Thomas Sheehan translation. ${langNote}`;
+  const baseContext = reading?.systemPromptExtra
+    || `You are an annotation assistant for ${reading?.title || 'this reading'}.`;
+  const sysContext = `${baseContext} ${langNote}`.trim();
 
   let prompt;
   if (context) {
@@ -1395,6 +1629,9 @@ function escHtml(s) { const d = document.createElement('div'); d.textContent = s
 // ═══════════════════════════════════
 // INIT
 // ═══════════════════════════════════
+migrateLegacyNotesIfPresent();
+rebuildReadingPicker();
+rebuildLangButtons();
 loadNotesFromStorage();
 renderText();
 if (comments.length > 0) {
