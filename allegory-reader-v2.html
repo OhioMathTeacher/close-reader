@@ -796,7 +796,35 @@ function parseLocalProvider(id) {
   return { endpoint: rest.slice(0, lastColon), modelId: rest.slice(lastColon + 1) };
 }
 
-function getProvider() { return localStorage.getItem(PROVIDER_KEY) || 'none'; }
+// _runtimeProviderOverride lets the boot-time health check disable a saved
+// local provider for THIS SESSION without clearing the user's localStorage
+// preference. If a local server isn't reachable at startup, we don't want
+// the AI button to lie about being "connected" — we present an honest
+// "AI: Off" state. When the user reopens AI Setup later, the discovery
+// probe in the modal will find the server (if it's now up) and they can
+// re-select with one click.
+let _runtimeProviderOverride = null;
+function getProvider() {
+  if (_runtimeProviderOverride !== null) return _runtimeProviderOverride;
+  return localStorage.getItem(PROVIDER_KEY) || 'none';
+}
+
+// Probe the saved local provider once at boot. If unreachable, override to
+// 'none' for the session (without touching localStorage).
+async function verifySavedLocalProvider() {
+  const stored = localStorage.getItem(PROVIDER_KEY) || 'none';
+  const parsed = parseLocalProvider(stored);
+  if (!parsed) return;  // cloud or 'none' — nothing to verify
+  const url = parsed.endpoint.replace(/\/+$/, '') + '/v1/models';
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(1500) });
+    if (!res.ok) throw new Error(`${res.status}`);
+    // Reachable — leave override null so getProvider() uses the stored value
+  } catch {
+    _runtimeProviderOverride = 'none';
+    updateAIBtn();
+  }
+}
 function getStoredKey(provider) {
   if (provider === 'anthropic') return localStorage.getItem(ANTHROPIC_KEY) || '';
   if (provider === 'gemini')    return localStorage.getItem(GEMINI_KEY) || '';
@@ -1041,6 +1069,7 @@ function saveAISettings() {
   // Local model already selected: just persist the choice.
   if (_modalProvider && _modalProvider.startsWith('local:')) {
     localStorage.setItem(PROVIDER_KEY, _modalProvider);
+    _runtimeProviderOverride = null;  // user explicit choice — drop the boot-time fallback
     closeAIModal();
     updateAIBtn();
     return;
@@ -1048,6 +1077,7 @@ function saveAISettings() {
   // Cloud or "none".
   const val = document.getElementById('aiKeyInput').value.trim();
   localStorage.setItem(PROVIDER_KEY, _modalProvider);
+  _runtimeProviderOverride = null;  // user explicit choice — drop the boot-time fallback
   if (['anthropic','gemini','groq'].includes(_modalProvider) && val && !val.startsWith('•')) {
     const storageKey = _modalProvider === 'anthropic' ? ANTHROPIC_KEY
                      : _modalProvider === 'gemini'    ? GEMINI_KEY
@@ -2393,6 +2423,7 @@ if (comments.length > 0) {
   renderComments();
 }
 updateAIBtn();
+verifySavedLocalProvider();  // probe saved local server; falls back to 'none' if unreachable
 </script>
 </body>
 </html>
