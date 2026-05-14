@@ -65,6 +65,13 @@ body {
   color: var(--cave-glow); opacity: 0.55; margin-top: 0.15rem;
 }
 .header-text .subtitle-translator:empty { display: none; }
+.header-text .subtitle-translator .pending {
+  color: rgba(255, 200, 100, 0.95);
+  font-style: italic;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  margin-left: 0.5rem;
+}
 
 /* Small utility-row button (e.g., "Copy reading text"). Matches lang-btn weight. */
 .utility-row { display: flex; justify-content: flex-end; }
@@ -1340,7 +1347,8 @@ const READINGS = {
       },
       es: {
         label: "Español",
-        translator: "Machine translation (Claude Opus) — review before classroom use",
+        translator: "Machine translation (Claude Opus)",
+        pending: true,
         sections: [{
           id: 'poem', label: '', title: '', verse: true,
           paragraphs: [
@@ -1354,7 +1362,8 @@ const READINGS = {
       },
       zh: {
         label: "中文",
-        translator: "Machine translation (Claude Opus) — review before classroom use",
+        translator: "Machine translation (Claude Opus)",
+        pending: true,
         sections: [{
           id: 'poem', label: '', title: '', verse: true,
           paragraphs: [
@@ -1368,7 +1377,8 @@ const READINGS = {
       },
       hi: {
         label: "हिन्दी",
-        translator: "Machine translation (Claude Opus) — Hindi may need a native-speaker pass",
+        translator: "Machine translation (Claude Opus)",
+        pending: true,
         sections: [{
           id: 'poem', label: '', title: '', verse: true,
           paragraphs: [
@@ -1496,8 +1506,14 @@ function renderText() {
   const data = reading.languages[currentLang];
   document.getElementById('headerSubtitle').textContent =
     `${reading.author} · ${reading.source} · ${reading.reference}`;
-  document.getElementById('headerTranslator').textContent =
-    data.translator ? `tr. ${data.translator}` : '';
+  const translatorEl = document.getElementById('headerTranslator');
+  if (data.translator || data.pending) {
+    const trText = data.translator ? `tr. ${escHtml(data.translator)}` : '';
+    const pendingTag = data.pending ? '<span class="pending">(pending native-speaker review)</span>' : '';
+    translatorEl.innerHTML = `${trText}${pendingTag}`;
+  } else {
+    translatorEl.textContent = '';
+  }
 
   let html = '';
   for (const sec of (data.sections || [])) {
