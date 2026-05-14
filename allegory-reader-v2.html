@@ -536,18 +536,18 @@ body {
     </div>
     <div class="header-right">
       <div class="reading-picker">
-        <label for="readingSelect">Reading:</label>
+        <label for="readingSelect" data-i18n="readingLabel">Reading:</label>
         <select id="readingSelect" onchange="switchReading(this.value)"></select>
       </div>
       <div class="lang-toggles" id="langToggles"></div>
       <div class="utility-row">
-        <button class="utility-btn" id="copyReadingBtn" onclick="copyReadingText()" title="Copy the full reading text in the current language">📋 Copy text</button>
+        <button class="utility-btn" id="copyReadingBtn" onclick="copyReadingText()" title="Copy the full reading text in the current language" data-i18n="copyReading" data-i18n-title="copyReadingTitle">📋 Copy text</button>
       </div>
-      <div class="instructions">
+      <div class="instructions" data-i18n-html="instructionsHtml">
         <em>Select any text</em> — choose <strong>🟡 Highlight</strong> or <strong>🔵 Ask LLM</strong>.
       </div>
       <button class="ai-btn" id="aiBtn" onclick="openAIModal()">
-        <span class="ai-dot"></span><span id="aiBtnLabel">AI: Off</span>
+        <span class="ai-dot"></span><span id="aiBtnLabel" data-i18n="aiOff">AI: Off</span>
       </button>
     </div>
   </div>
@@ -556,7 +556,7 @@ body {
 <!-- AI Settings Modal -->
 <div class="ai-modal-overlay" id="aiModalOverlay" onclick="if(event.target===this)closeAIModal()">
   <div class="ai-modal">
-    <h2>AI Assistant</h2>
+    <h2 data-i18n="aiAssistant">AI Assistant</h2>
     <div class="ai-provider-cards">
       <div class="ai-provider-card" id="card-anthropic" onclick="selectProvider('anthropic')">
         <div class="ai-card-title">Anthropic Claude</div>
@@ -585,8 +585,8 @@ body {
       <div class="ai-key-hint" id="aiKeyHint">Stored only in your browser · Never in the source code</div>
     </div>
     <div class="ai-modal-actions">
-      <button class="am-save" onclick="saveAISettings()">Save</button>
-      <button class="am-cancel" onclick="closeAIModal()">Cancel</button>
+      <button class="am-save" onclick="saveAISettings()" data-i18n="aiSave">Save</button>
+      <button class="am-cancel" onclick="closeAIModal()" data-i18n="aiCancel">Cancel</button>
     </div>
   </div>
 </div>
@@ -596,13 +596,13 @@ body {
   <div class="comment-column" id="commentColumn">
     <div class="margin-header">
       <div class="margin-header-title">
-        <span>Margin Notes</span>
-        <span class="margin-header-subtitle">Personal — Auto-saved</span>
+        <span data-i18n="marginNotes">Margin Notes</span>
+        <span class="margin-header-subtitle" data-i18n="personal">Personal — Auto-saved</span>
       </div>
       <div class="margin-header-actions">
-        <button class="margin-header-btn" onclick="exportNotes()" title="Download notes as JSON">↓ Export</button>
-        <button class="margin-header-btn" onclick="document.getElementById('importNotesInput').click()" title="Load notes from a file">↑ Import</button>
-        <button class="margin-header-btn danger" onclick="clearAllNotes()" title="Clear all margin notes (highlights and queries)">✕ Clear</button>
+        <button class="margin-header-btn" onclick="exportNotes()" title="Download notes as JSON" data-i18n="exportBtn" data-i18n-title="exportTitle">↓ Export</button>
+        <button class="margin-header-btn" onclick="document.getElementById('importNotesInput').click()" title="Load notes from a file" data-i18n="importBtn" data-i18n-title="importTitle">↑ Import</button>
+        <button class="margin-header-btn danger" onclick="clearAllNotes()" title="Clear all margin notes (highlights and queries)" data-i18n="clearBtn" data-i18n-title="clearTitle">✕ Clear</button>
         <input type="file" id="importNotesInput" accept=".json" onchange="importNotes(event)">
         <span class="comment-count" id="commentCount" style="display:none">0</span>
       </div>
@@ -610,25 +610,24 @@ body {
     <div id="commentList">
       <div class="empty-state" id="emptyState">
         <div class="icon">✎</div>
-        Select any passage in the text,<br>then ask a question.<br>
-        Your thread will appear here.
+        <span data-i18n-html="emptyStateHtml">Select any passage in the text,<br>then ask a question.<br>Your thread will appear here.</span>
       </div>
     </div>
   </div>
 </div>
 
 <div class="selection-menu" id="selectionMenu">
-  <button class="menu-btn highlight-btn" onclick="markHighlight()" title="Highlight without asking">🟡 Highlight</button>
-  <button class="menu-btn query-btn" id="menuAskBtn" onclick="openQueryPopup()" title="Ask the selected LLM about this passage">🔵 Ask LLM</button>
-  <button class="menu-btn copy-btn" id="menuCopyBtn" onclick="copySelectedText()" title="Copy selection to clipboard">📋 Copy</button>
+  <button class="menu-btn highlight-btn" onclick="markHighlight()" title="Highlight without asking" data-i18n="highlightBtn" data-i18n-title="highlightTitle">🟡 Highlight</button>
+  <button class="menu-btn query-btn" id="menuAskBtn" onclick="openQueryPopup()" title="Ask the selected LLM about this passage" data-i18n="askLLMBtn">🔵 Ask LLM</button>
+  <button class="menu-btn copy-btn" id="menuCopyBtn" onclick="copySelectedText()" title="Copy selection to clipboard" data-i18n="copyBtn" data-i18n-title="copyTitle">📋 Copy</button>
 </div>
 
 <div class="selection-popup" id="selectionPopup">
   <div class="popup-passage" id="popupPassage"></div>
-  <input type="text" id="popupInput" placeholder="Ask about this passage…" autocomplete="off">
+  <input type="text" id="popupInput" placeholder="Ask about this passage…" autocomplete="off" data-i18n-placeholder="askPlaceholder">
   <div class="popup-actions">
-    <button class="popup-btn secondary" onclick="closePopup()">Cancel</button>
-    <button class="popup-btn primary" id="popupAskBtn" onclick="submitComment()">Ask</button>
+    <button class="popup-btn secondary" onclick="closePopup()" data-i18n="cancelBtn">Cancel</button>
+    <button class="popup-btn primary" id="popupAskBtn" onclick="submitComment()" data-i18n="askBtn">Ask</button>
   </div>
 </div>
 
@@ -897,7 +896,7 @@ function updateAIBtn() {
     label.textContent = `AI: ${parsed?.modelId || 'local'} ✓`;
   } else {
     btn.classList.remove('ai-active');
-    label.textContent = 'AI: Off';
+    label.textContent = t('aiOff');
   }
 }
 
@@ -1857,7 +1856,7 @@ function renderText() {
         <div class="stub-icon">📖</div>
         <h3>${escHtml(reading.title)}</h3>
         <p><em>${escHtml(reading.summary || '')}</em></p>
-        <p>${reading.stubNote || 'This reading isn\'t loaded yet.'}</p>
+        <p>${reading.stubNote || t('stubFallback')}</p>
       </div>`;
     return;
   }
@@ -1867,8 +1866,8 @@ function renderText() {
     `${reading.author} · ${reading.source} · ${reading.reference}`;
   const translatorEl = document.getElementById('headerTranslator');
   if (data.translator || data.pending) {
-    const trText = data.translator ? `tr. ${escHtml(data.translator)}` : '';
-    const pendingTag = data.pending ? '<span class="pending">(pending native-speaker review)</span>' : '';
+    const trText = data.translator ? `${t('translatorPrefix')} ${escHtml(data.translator)}` : '';
+    const pendingTag = data.pending ? `<span class="pending">${t('pendingReview')}</span>` : '';
     translatorEl.innerHTML = `${trText}${pendingTag}`;
   } else {
     translatorEl.textContent = '';
@@ -1940,6 +1939,7 @@ function rebuildLangButtons() {
 
 function switchReading(slug) {
   if (!READINGS[slug]) return;
+  applyTranslations();
   // Persist current reading's notes (already auto-saved per change), then load the new reading's.
   closeSelectionMenu();
   closePopup();
@@ -1978,6 +1978,7 @@ function applyAnnotations(text, lang) {
 function switchLang(lang) {
   if (!readingHasLang(currentReading(), lang)) return;
   currentLang = lang;
+  applyTranslations();
   document.querySelectorAll('.lang-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.lang === lang);
   });
@@ -2019,9 +2020,7 @@ function showSelectionMenu() {
   const askBtn = document.getElementById('menuAskBtn');
   const hasProvider = getProvider() !== 'none';
   askBtn.disabled = !hasProvider;
-  askBtn.title = hasProvider
-    ? 'Ask the selected LLM about this passage'
-    : 'AI is off — pick a model in the AI button (top right) to enable this';
+  askBtn.title = hasProvider ? t('askLLMTitleEnabled') : t('askLLMTitleDisabled');
 }
 
 function closeSelectionMenu() {
@@ -2068,15 +2067,15 @@ async function copyReadingText() {
   };
   try {
     await navigator.clipboard.writeText(text);
-    flash('✓ Copied to clipboard');
+    flash(t('copiedToClipboard'));
   } catch (err) {
     const ta = document.createElement('textarea');
     ta.value = text;
     ta.style.position = 'fixed'; ta.style.left = '-9999px';
     document.body.appendChild(ta);
     ta.select();
-    try { document.execCommand('copy'); flash('✓ Copied to clipboard'); }
-    catch { flash('✕ Copy failed'); }
+    try { document.execCommand('copy'); flash(t('copiedToClipboard')); }
+    catch { flash(t('copyFailed')); }
     document.body.removeChild(ta);
   }
 }
@@ -2088,7 +2087,7 @@ async function copySelectedText() {
     await navigator.clipboard.writeText(selectedText);
     if (btn) {
       const original = btn.textContent;
-      btn.textContent = '✓ Copied';
+      btn.textContent = t('copied');
       setTimeout(() => {
         btn.textContent = original;
         closeSelectionMenu();
@@ -2106,7 +2105,7 @@ async function copySelectedText() {
     ta.select();
     try { document.execCommand('copy'); } catch { /* give up */ }
     document.body.removeChild(ta);
-    if (btn) btn.textContent = '✓ Copied';
+    if (btn) btn.textContent = t('copied');
     setTimeout(closeSelectionMenu, 650);
   }
 }
@@ -2219,6 +2218,295 @@ const RESPONSE_LANGUAGE_NAMES = {
   hi: 'Hindi',
   no: 'Norwegian Bokmål',
 };
+
+
+// ═══════════════════════════════════
+// UI TRANSLATIONS — every user-visible string keyed for the 6 reading languages
+// (en, es, el, zh, hi, no). UI language follows the reading-language toggle.
+// ═══════════════════════════════════
+const UI_TRANSLATIONS = {
+  en: {
+    readingLabel: 'Reading:',
+    copyReading: '📋 Copy text',
+    copyReadingTitle: 'Copy the full reading text in the current language',
+    instructionsHtml: '<em>Select any text</em> — choose <strong>🟡 Highlight</strong> or <strong>🔵 Ask LLM</strong>.',
+    aiOff: 'AI: Off',
+    marginNotes: 'Margin Notes',
+    personal: 'Personal — Auto-saved',
+    exportBtn: '↓ Export',
+    exportTitle: 'Download notes as JSON',
+    importBtn: '↑ Import',
+    importTitle: 'Load notes from a file',
+    clearBtn: '✕ Clear',
+    clearTitle: 'Clear all margin notes (highlights and queries)',
+    emptyStateHtml: 'Select any passage in the text,<br>then ask a question.<br>Your thread will appear here.',
+    highlightBtn: '🟡 Highlight',
+    highlightTitle: 'Highlight without asking',
+    askLLMBtn: '🔵 Ask LLM',
+    askLLMTitleEnabled: 'Ask the selected LLM about this passage',
+    askLLMTitleDisabled: 'AI is off — pick a model in the AI button (top right) to enable this',
+    copyBtn: '📋 Copy',
+    copyTitle: 'Copy selection to clipboard',
+    copied: '✓ Copied',
+    copiedToClipboard: '✓ Copied to clipboard',
+    copyFailed: '✕ Copy failed',
+    askPlaceholder: 'Ask about this passage…',
+    cancelBtn: 'Cancel',
+    askBtn: 'Ask',
+    aiAssistant: 'AI Assistant',
+    aiSave: 'Save',
+    aiCancel: 'Cancel',
+    highlightLabel: 'highlight',
+    collapsedLabel: 'collapsed',
+    thinking: 'Thinking…',
+    followUpPlaceholder: 'Follow up…',
+    followUpAsk: 'Ask',
+    minimize: 'Minimize',
+    expand: 'Expand',
+    messageCount: (n) => `${n} message${n === 1 ? '' : 's'}`,
+    stubFallback: "This reading isn't loaded yet.",
+    pendingReview: '(pending native-speaker review)',
+    translatorPrefix: 'tr.',
+  },
+  es: {
+    readingLabel: 'Lectura:',
+    copyReading: '📋 Copiar texto',
+    copyReadingTitle: 'Copiar todo el texto de la lectura en el idioma actual',
+    instructionsHtml: '<em>Selecciona cualquier texto</em> — elige <strong>🟡 Resaltar</strong> o <strong>🔵 Preguntar al LLM</strong>.',
+    aiOff: 'IA: Off',
+    marginNotes: 'Notas al margen',
+    personal: 'Personal — Guardado automático',
+    exportBtn: '↓ Exportar',
+    exportTitle: 'Descargar notas como JSON',
+    importBtn: '↑ Importar',
+    importTitle: 'Cargar notas desde un archivo',
+    clearBtn: '✕ Borrar',
+    clearTitle: 'Borrar todas las notas al margen (resaltados y consultas)',
+    emptyStateHtml: 'Selecciona cualquier pasaje en el texto,<br>luego haz una pregunta.<br>Tu hilo aparecerá aquí.',
+    highlightBtn: '🟡 Resaltar',
+    highlightTitle: 'Resaltar sin preguntar',
+    askLLMBtn: '🔵 Preguntar al LLM',
+    askLLMTitleEnabled: 'Preguntar al LLM seleccionado sobre este pasaje',
+    askLLMTitleDisabled: 'La IA está apagada — elige un modelo en el botón de IA (arriba a la derecha) para habilitarlo',
+    copyBtn: '📋 Copiar',
+    copyTitle: 'Copiar la selección al portapapeles',
+    copied: '✓ Copiado',
+    copiedToClipboard: '✓ Copiado al portapapeles',
+    copyFailed: '✕ Error al copiar',
+    askPlaceholder: 'Pregunta sobre este pasaje…',
+    cancelBtn: 'Cancelar',
+    askBtn: 'Preguntar',
+    aiAssistant: 'Asistente de IA',
+    aiSave: 'Guardar',
+    aiCancel: 'Cancelar',
+    highlightLabel: 'resaltado',
+    collapsedLabel: 'contraído',
+    thinking: 'Pensando…',
+    followUpPlaceholder: 'Continuar…',
+    followUpAsk: 'Preguntar',
+    minimize: 'Minimizar',
+    expand: 'Expandir',
+    messageCount: (n) => `${n} mensaje${n === 1 ? '' : 's'}`,
+    stubFallback: 'Esta lectura aún no está cargada.',
+    pendingReview: '(pendiente de revisión por hablante nativo)',
+    translatorPrefix: 'tr.',
+  },
+  el: {
+    readingLabel: 'Ανάγνωση:',
+    copyReading: '📋 Αντιγραφή κειμένου',
+    copyReadingTitle: 'Αντιγραφή όλου του κειμένου ανάγνωσης στην τρέχουσα γλώσσα',
+    instructionsHtml: '<em>Επίλεξε κείμενο</em> — διάλεξε <strong>🟡 Επισήμανση</strong> ή <strong>🔵 Ρώτα το LLM</strong>.',
+    aiOff: 'AI: Ανενεργό',
+    marginNotes: 'Σημειώσεις στο περιθώριο',
+    personal: 'Προσωπικές — Αυτόματη αποθήκευση',
+    exportBtn: '↓ Εξαγωγή',
+    exportTitle: 'Λήψη σημειώσεων ως JSON',
+    importBtn: '↑ Εισαγωγή',
+    importTitle: 'Φόρτωση σημειώσεων από αρχείο',
+    clearBtn: '✕ Καθαρισμός',
+    clearTitle: 'Διαγραφή όλων των σημειώσεων (επισημάνσεις και ερωτήσεις)',
+    emptyStateHtml: 'Επίλεξε ένα απόσπασμα στο κείμενο,<br>μετά κάνε μια ερώτηση.<br>Η συζήτησή σου θα εμφανιστεί εδώ.',
+    highlightBtn: '🟡 Επισήμανση',
+    highlightTitle: 'Επισήμανση χωρίς ερώτηση',
+    askLLMBtn: '🔵 Ρώτα το LLM',
+    askLLMTitleEnabled: 'Ρώτα το επιλεγμένο LLM για αυτό το απόσπασμα',
+    askLLMTitleDisabled: 'Το AI είναι ανενεργό — επίλεξε μοντέλο από το κουμπί AI (επάνω δεξιά)',
+    copyBtn: '📋 Αντιγραφή',
+    copyTitle: 'Αντιγραφή επιλογής στο πρόχειρο',
+    copied: '✓ Αντιγράφηκε',
+    copiedToClipboard: '✓ Αντιγράφηκε στο πρόχειρο',
+    copyFailed: '✕ Αποτυχία αντιγραφής',
+    askPlaceholder: 'Ρώτα για αυτό το απόσπασμα…',
+    cancelBtn: 'Άκυρο',
+    askBtn: 'Ρώτα',
+    aiAssistant: 'Βοηθός AI',
+    aiSave: 'Αποθήκευση',
+    aiCancel: 'Άκυρο',
+    highlightLabel: 'επισήμανση',
+    collapsedLabel: 'συμπτυγμένο',
+    thinking: 'Σκέφτεται…',
+    followUpPlaceholder: 'Συνέχισε…',
+    followUpAsk: 'Ρώτα',
+    minimize: 'Σύμπτυξη',
+    expand: 'Επέκταση',
+    messageCount: (n) => n === 1 ? '1 μήνυμα' : `${n} μηνύματα`,
+    stubFallback: 'Αυτή η ανάγνωση δεν έχει φορτωθεί ακόμα.',
+    pendingReview: '(εκκρεμεί έλεγχος από ομιλητή της μητρικής γλώσσας)',
+    translatorPrefix: 'μτφρ.',
+  },
+  zh: {
+    readingLabel: '阅读：',
+    copyReading: '📋 复制文本',
+    copyReadingTitle: '复制当前语言下的完整阅读文本',
+    instructionsHtml: '<em>选择任何文本</em> — 选择 <strong>🟡 高亮</strong> 或 <strong>🔵 询问 LLM</strong>。',
+    aiOff: 'AI：关闭',
+    marginNotes: '旁注',
+    personal: '个人 — 自动保存',
+    exportBtn: '↓ 导出',
+    exportTitle: '将笔记下载为 JSON',
+    importBtn: '↑ 导入',
+    importTitle: '从文件加载笔记',
+    clearBtn: '✕ 清除',
+    clearTitle: '清除所有旁注（高亮和询问）',
+    emptyStateHtml: '在文本中选择任意段落，<br>然后提问。<br>您的对话将出现在这里。',
+    highlightBtn: '🟡 高亮',
+    highlightTitle: '高亮不提问',
+    askLLMBtn: '🔵 询问 LLM',
+    askLLMTitleEnabled: '就此段落询问所选 LLM',
+    askLLMTitleDisabled: 'AI 已关闭 — 在右上角的 AI 按钮中选择模型以启用此功能',
+    copyBtn: '📋 复制',
+    copyTitle: '复制所选内容到剪贴板',
+    copied: '✓ 已复制',
+    copiedToClipboard: '✓ 已复制到剪贴板',
+    copyFailed: '✕ 复制失败',
+    askPlaceholder: '就此段落提问…',
+    cancelBtn: '取消',
+    askBtn: '提问',
+    aiAssistant: 'AI 助手',
+    aiSave: '保存',
+    aiCancel: '取消',
+    highlightLabel: '高亮',
+    collapsedLabel: '已折叠',
+    thinking: '思考中…',
+    followUpPlaceholder: '继续提问…',
+    followUpAsk: '提问',
+    minimize: '最小化',
+    expand: '展开',
+    messageCount: (n) => `${n} 条消息`,
+    stubFallback: '此阅读尚未加载。',
+    pendingReview: '（待母语者审核）',
+    translatorPrefix: '译',
+  },
+  hi: {
+    readingLabel: 'पठन:',
+    copyReading: '📋 पाठ कॉपी करें',
+    copyReadingTitle: 'वर्तमान भाषा में पूरा पठन पाठ कॉपी करें',
+    instructionsHtml: '<em>कोई भी पाठ चुनें</em> — चुनें <strong>🟡 हाइलाइट</strong> या <strong>🔵 LLM से पूछें</strong>।',
+    aiOff: 'AI: बंद',
+    marginNotes: 'हाशिये के नोट्स',
+    personal: 'व्यक्तिगत — स्वतः सहेजा गया',
+    exportBtn: '↓ निर्यात',
+    exportTitle: 'नोट्स को JSON के रूप में डाउनलोड करें',
+    importBtn: '↑ आयात',
+    importTitle: 'फ़ाइल से नोट्स लोड करें',
+    clearBtn: '✕ साफ़ करें',
+    clearTitle: 'सभी हाशिये के नोट्स साफ़ करें (हाइलाइट और प्रश्न)',
+    emptyStateHtml: 'पाठ में कोई भी अनुच्छेद चुनें,<br>फिर एक प्रश्न पूछें।<br>आपका सूत्र यहाँ दिखाई देगा।',
+    highlightBtn: '🟡 हाइलाइट',
+    highlightTitle: 'पूछे बिना हाइलाइट करें',
+    askLLMBtn: '🔵 LLM से पूछें',
+    askLLMTitleEnabled: 'चयनित LLM से इस अनुच्छेद के बारे में पूछें',
+    askLLMTitleDisabled: 'AI बंद है — इसे सक्षम करने के लिए ऊपर दाएँ AI बटन में मॉडल चुनें',
+    copyBtn: '📋 कॉपी',
+    copyTitle: 'चयन को क्लिपबोर्ड पर कॉपी करें',
+    copied: '✓ कॉपी हो गया',
+    copiedToClipboard: '✓ क्लिपबोर्ड पर कॉपी हो गया',
+    copyFailed: '✕ कॉपी विफल',
+    askPlaceholder: 'इस अनुच्छेद के बारे में पूछें…',
+    cancelBtn: 'रद्द करें',
+    askBtn: 'पूछें',
+    aiAssistant: 'AI सहायक',
+    aiSave: 'सहेजें',
+    aiCancel: 'रद्द करें',
+    highlightLabel: 'हाइलाइट',
+    collapsedLabel: 'संकुचित',
+    thinking: 'सोच रहा है…',
+    followUpPlaceholder: 'और पूछें…',
+    followUpAsk: 'पूछें',
+    minimize: 'न्यूनतम करें',
+    expand: 'विस्तार करें',
+    messageCount: (n) => `${n} संदेश`,
+    stubFallback: 'यह पठन अभी लोड नहीं हुआ है।',
+    pendingReview: '(मूल वक्ता समीक्षा लंबित)',
+    translatorPrefix: 'अनु.',
+  },
+  no: {
+    readingLabel: 'Lesing:',
+    copyReading: '📋 Kopier tekst',
+    copyReadingTitle: 'Kopier hele lesingsteksten på gjeldende språk',
+    instructionsHtml: '<em>Velg en tekst</em> — velg <strong>🟡 Fremhev</strong> eller <strong>🔵 Spør LLM</strong>.',
+    aiOff: 'AI: Av',
+    marginNotes: 'Margnotater',
+    personal: 'Personlig — Automatisk lagret',
+    exportBtn: '↓ Eksporter',
+    exportTitle: 'Last ned notater som JSON',
+    importBtn: '↑ Importer',
+    importTitle: 'Last inn notater fra en fil',
+    clearBtn: '✕ Tøm',
+    clearTitle: 'Tøm alle margnotater (fremhevninger og spørsmål)',
+    emptyStateHtml: 'Velg et avsnitt i teksten,<br>og still et spørsmål.<br>Tråden din vises her.',
+    highlightBtn: '🟡 Fremhev',
+    highlightTitle: 'Fremhev uten å spørre',
+    askLLMBtn: '🔵 Spør LLM',
+    askLLMTitleEnabled: 'Spør den valgte LLM om dette avsnittet',
+    askLLMTitleDisabled: 'AI er av — velg en modell i AI-knappen (øverst til høyre) for å aktivere dette',
+    copyBtn: '📋 Kopier',
+    copyTitle: 'Kopier valg til utklippstavlen',
+    copied: '✓ Kopiert',
+    copiedToClipboard: '✓ Kopiert til utklippstavlen',
+    copyFailed: '✕ Kopiering mislyktes',
+    askPlaceholder: 'Spør om dette avsnittet…',
+    cancelBtn: 'Avbryt',
+    askBtn: 'Spør',
+    aiAssistant: 'AI-assistent',
+    aiSave: 'Lagre',
+    aiCancel: 'Avbryt',
+    highlightLabel: 'fremheving',
+    collapsedLabel: 'sammenklappet',
+    thinking: 'Tenker…',
+    followUpPlaceholder: 'Følg opp…',
+    followUpAsk: 'Spør',
+    minimize: 'Minimer',
+    expand: 'Utvid',
+    messageCount: (n) => n === 1 ? '1 melding' : `${n} meldinger`,
+    stubFallback: 'Denne lesingen er ikke lastet enda.',
+    pendingReview: '(venter på morsmålsgjennomgang)',
+    translatorPrefix: 'overs.',
+  },
+};
+
+function t(key, ...args) {
+  const dict = UI_TRANSLATIONS[currentLang] || UI_TRANSLATIONS.en;
+  const fallback = UI_TRANSLATIONS.en;
+  const val = dict[key] !== undefined ? dict[key] : fallback[key];
+  if (typeof val === 'function') return val(...args);
+  return val !== undefined ? val : key;
+}
+
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    el.innerHTML = t(el.dataset.i18nHtml);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    el.title = t(el.dataset.i18nTitle);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+}
 
 async function askAI(passage, question, context, lang) {
   const reading = currentReading();
@@ -2372,7 +2660,7 @@ function renderComments() {
       // Compact yellow card: just the passage + delete affordance.
       h = `<div class="comment-card highlight-only">`;
       h += `<div class="comment-passage">"${escHtml(truncate(c.passage, 120))}"</div>`;
-      h += `<div class="comment-meta"><span>highlight</span>`;
+      h += `<div class="comment-meta"><span>${t('highlightLabel')}</span>`;
       h += `<button class="comment-delete" onclick="deleteComment(${c.id})">✕</button></div>`;
       h += `</div>`;
     } else {
@@ -2381,26 +2669,26 @@ function renderComments() {
       h += `<div class="comment-question">${escHtml(c.question)}</div>`;
       h += c.answer
         ? `<div class="comment-answer">${escHtml(c.answer)}</div>`
-        : `<div class="comment-answer loading">Thinking…</div>`;
+        : `<div class="comment-answer loading">${t('thinking')}</div>`;
 
       (c.followups || []).forEach(f => {
         h += `<div class="sub-comment"><div class="comment-question">${escHtml(f.question)}</div>`;
         h += f.answer
           ? `<div class="comment-answer">${escHtml(f.answer)}</div>`
-          : `<div class="comment-answer loading">Thinking…</div>`;
+          : `<div class="comment-answer loading">${t('thinking')}</div>`;
         h += `</div>`;
       });
 
       if (c.answer) {
         h += `<div class="followup-row">`;
-        h += `<input class="followup-input" id="followup-input-${c.id}" placeholder="Follow up…" onkeydown="if(event.key==='Enter'){event.preventDefault();submitFollowup(${c.id})}">`;
-        h += `<button class="followup-btn" onclick="submitFollowup(${c.id})">Ask</button>`;
+        h += `<input class="followup-input" id="followup-input-${c.id}" placeholder="${t('followUpPlaceholder')}" onkeydown="if(event.key==='Enter'){event.preventDefault();submitFollowup(${c.id})}">`;
+        h += `<button class="followup-btn" onclick="submitFollowup(${c.id})">${t('followUpAsk')}</button>`;
         h += `</div>`;
       }
 
       const followupCount = (c.followups || []).length;
-      h += `<div class="comment-meta"><span>${c.minimized ? 'collapsed' : followupCount + 1 + ' message' + (followupCount > 0 ? 's' : '')}</span><span>`;
-      h += `<button class="comment-min" onclick="toggleMinimize(${c.id})" title="${c.minimized ? 'Expand' : 'Minimize'}">${c.minimized ? '⊞' : '☐'}</button>`;
+      h += `<div class="comment-meta"><span>${c.minimized ? t('collapsedLabel') : t('messageCount', followupCount + 1)}</span><span>`;
+      h += `<button class="comment-min" onclick="toggleMinimize(${c.id})" title="${c.minimized ? t('expand') : t('minimize')}">${c.minimized ? '⊞' : '☐'}</button>`;
       h += `<button class="comment-delete" onclick="deleteComment(${c.id})">✕</button></span></div>`;
       h += `</div>`;
     }
@@ -2450,6 +2738,7 @@ function escHtml(s) { const d = document.createElement('div'); d.textContent = s
 migrateLegacyNotesIfPresent();
 rebuildReadingPicker();
 rebuildLangButtons();
+applyTranslations();
 loadNotesFromStorage();
 renderText();
 if (comments.length > 0) {
