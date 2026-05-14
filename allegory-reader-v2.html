@@ -59,6 +59,18 @@ body {
   font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--cave-glow); opacity: 0.75; margin-top: 0.1rem;
 }
+.header-text .subtitle-translator {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.62rem; letter-spacing: 0.10em; text-transform: uppercase;
+  color: var(--cave-glow); opacity: 0.55; margin-top: 0.15rem;
+}
+.header-text .subtitle-translator:empty { display: none; }
+
+/* Verse paragraphs preserve line breaks (for poetry). */
+.text-paragraph.verse {
+  white-space: pre-line;
+  margin: 1.2rem 0;
+}
 .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
 .lang-toggles { display: flex; gap: 0.4rem; }
 .lang-btn {
@@ -480,7 +492,8 @@ body {
   <div class="header-inner">
     <div class="header-text">
       <h1 id="headerTitle">The Allegory of the Cave</h1>
-      <div class="subtitle" id="headerSubtitle">Plato · Republic VII · 514a–517a · tr. Thomas Sheehan</div>
+      <div class="subtitle" id="headerSubtitle">Plato · Republic VII · 514a–517a</div>
+      <div class="subtitle-translator" id="headerTranslator">tr. Thomas Sheehan</div>
     </div>
     <div class="header-right">
       <div class="reading-picker">
@@ -1281,17 +1294,30 @@ const READINGS = {
       // https://no.wikisource.org/wiki/Et_dukkehjem (Wikikilden).
     },
   },
-  'lu-xun-madmans-diary': {
-    id: 'lu-xun-madmans-diary',
-    title: "A Madman's Diary",
-    author: 'Lu Xun (鲁迅)',
-    source: '《狂人日记》',
-    reference: '1918',
-    summary: "A man's diary entries record his slow recognition that the people around him are 'cannibals' — a foundational text of modern Chinese literature.",
-    systemPromptExtra: "You are an annotation assistant for Lu Xun's '狂人日记' (A Madman's Diary, 1918), the foundational text of modern vernacular Chinese literature. The narrator is unnamed; the text is presented as a series of diary entries.",
-    stub: true,
-    stubNote: '⚠ <strong>Translation copyright concern:</strong> the Chinese original is clearly public domain (pre-1929 + Lu Xun died 1936, China entered 50-yr PD), but every published English translation I know of is post-1929 and copyrighted (Yang Hsien-yi 1956, William Lyell 1990, Julia Lovell 2009). Options for v2: commission a fresh translation, ship the Chinese original alone with student-supplied translations, or substitute another modern Chinese voice with cleaner English-translation provenance. <strong>Needs your call.</strong>',
-    languages: {},
+  'bryant-thanatopsis': {
+    id: 'bryant-thanatopsis',
+    title: 'Thanatopsis',
+    author: 'William Cullen Bryant',
+    source: 'Poems (1821)',
+    reference: '1817 / rev. 1821',
+    summary: 'A young American Romantic\'s meditation on death: Nature\'s consoling voice answers the speaker\'s dread, locating each death in the great human company that has gone before.',
+    systemPromptExtra: "You are an annotation assistant for William Cullen Bryant's 'Thanatopsis' (Greek: 'a view of death'), first published 1817, revised for the 1821 Poems. Blank verse, Romantic-pastoral meditation, no formal stanza breaks — the text moves in long thought-paragraphs from the opening invocation through Nature's voice and the closing 'So live...' exhortation.",
+    languages: {
+      en: {
+        label: 'English',
+        translator: '',
+        sections: [{
+          id: 'poem', label: '', title: '', verse: true,
+          paragraphs: [
+            { text: 'To him who in the love of Nature holds\nCommunion with her visible forms, she speaks\nA various language; for his gayer hours\nShe has a voice of gladness, and a smile\nAnd eloquence of beauty, and she glides\nInto his darker musings, with a mild\nAnd gentle sympathy, that steals away\nTheir sharpness, ere he is aware. When thoughts\nOf the last bitter hour come like a blight\nOver thy spirit, and sad images\nOf the stern agony, and shroud, and pall,\nAnd breathless darkness, and the narrow house,\nMake thee to shudder, and grow sick at heart;—' },
+            { text: 'Go forth under the open sky, and list\nTo Nature\'s teachings, while from all around—\nEarth and her waters, and the depths of air,—\nComes a still voice—Yet a few days, and thee\nThe all-beholding sun shall see no more\nIn all his course; nor yet in the cold ground,\nWhere thy pale form was laid, with many tears,\nNor in the embrace of ocean shall exist\nThy image. Earth, that nourished thee, shall claim\nThy growth, to be resolv\'d to earth again;\nAnd, lost each human trace, surrend\'ring up\nThine individual being, shalt thou go\nTo mix forever with the elements,\nTo be a brother to th\' insensible rock\nAnd to the sluggish clod, which the rude swain\nTurns with his share, and treads upon. The oak\nShall send his roots abroad, and pierce thy mould.' },
+            { text: 'Yet not to thy eternal resting place\nShalt thou retire alone—nor couldst thou wish\nCouch more magnificent. Thou shalt lie down\nWith patriarchs of the infant world—with kings\nThe powerful of the earth—the wise, the good,\nFair forms, and hoary seers of ages past,\nAll in one mighty sepulchre.—The hills\nRock-ribb\'d and ancient as the sun,—the vales\nStretching in pensive quietness between;\nThe venerable woods—rivers that move\nIn majesty, and the complaining brooks\nThat make the meadows green; and pour\'d round all,\nOld ocean\'s grey and melancholy waste,—\nAre but the solemn decorations all\nOf the great tomb of man. The golden sun,\nThe planets, all the infinite host of heaven,\nAre shining on the sad abodes of death,\nThrough the still lapse of ages. All that tread\nThe globe are but a handful to the tribes\nThat slumber in its bosom.—Take the wings\nOf morning—and the Barcan desert pierce,\nOr lose thyself in the continuous woods\nWhere rolls the Oregan, and hears no sound,\nSave his own dashings—yet—the dead are there,\nAnd millions in those solitudes, since first\nThe flight of years began, have laid them down\nIn their last sleep—the dead reign there alone.—' },
+            { text: 'So shalt thou rest—and what if thou shalt fall\nUnnoticed by the living—and no friend\nTake note of thy departure? All that breathe\nWill share thy destiny. The gay will laugh\nWhen thou art gone, the solemn brood of care\nPlod on, and each one as before will chase\nHis favourite phantom; yet all these shall leave\nTheir mirth and their employments, and shall come,\nAnd make their bed with thee. As the long train\nOf ages glide away, the sons of men,\nThe youth in life\'s green spring, and he who goes\nIn the full strength of years, matron, and maid,\nThe bow\'d with age, the infant in the smiles\nAnd beauty of its innocent age cut off,—\nShall one by one be gathered to thy side,\nBy those, who in their turn shall follow them.' },
+            { text: 'So live, that when thy summons comes to join\nThe innumerable caravan, that moves\nTo the pale realms of shade, where each shall take\nHis chamber in the silent halls of death,\nThou go not, like the quarry-slave at night,\nScourged to his dungeon, but sustain\'d and sooth\'d\nBy an unfaltering trust, approach thy grave,\nLike one who wraps the drapery of his couch\nAbout him, and lies down to pleasant dreams.' },
+          ],
+        }],
+      },
+    },
   },
   'confucius-analects-1': {
     id: 'confucius-analects-1',
@@ -1393,6 +1419,7 @@ function renderText() {
   if (reading.stub || !readingHasLang(reading, currentLang)) {
     document.getElementById('headerSubtitle').textContent =
       `${reading.author} · ${reading.source} · ${reading.reference}`;
+    document.getElementById('headerTranslator').textContent = '';
     textCol.innerHTML = `
       <div class="stub-notice">
         <div class="stub-icon">📖</div>
@@ -1405,7 +1432,9 @@ function renderText() {
 
   const data = reading.languages[currentLang];
   document.getElementById('headerSubtitle').textContent =
-    `${reading.author} · ${reading.source} · ${reading.reference}${data.translator ? ' · tr. ' + data.translator : ''}`;
+    `${reading.author} · ${reading.source} · ${reading.reference}`;
+  document.getElementById('headerTranslator').textContent =
+    data.translator ? `tr. ${data.translator}` : '';
 
   let html = '';
   for (const sec of (data.sections || [])) {
@@ -1424,7 +1453,8 @@ function renderText() {
       const speakerHtml = p.speaker
         ? `<span class="speaker-label ${speakerClass}">${escHtml(p.speaker)}:</span> `
         : '';
-      html += `<div class="text-paragraph">${speakerHtml}${textWithMarks}</div>`;
+      const verseClass = (sec.verse || p.verse) ? ' verse' : '';
+      html += `<div class="text-paragraph${verseClass}">${speakerHtml}${textWithMarks}</div>`;
     }
   }
   textCol.innerHTML = html;
