@@ -147,6 +147,19 @@ body {
 .annotated:hover .tooltip { display: block; }
 ::selection { background: var(--highlight-active); }
 
+/* User marks: yellow = highlight only, blue = highlight + AI query */
+.user-highlight {
+  background: rgba(250, 199, 117, 0.50);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+.user-query {
+  background: rgba(120, 180, 240, 0.42);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+.user-highlight:hover, .user-query:hover { filter: brightness(1.06); }
+
 /* ═══ COMMENT COLUMN ═══ */
 .comment-column {
   background: var(--margin-bg);
@@ -182,7 +195,19 @@ body {
   cursor: pointer; transition: all 0.15s; white-space: nowrap;
 }
 .margin-header-btn:hover { border-color: rgba(212,168,67,0.4); color: var(--accent-light); }
+.margin-header-btn.danger:hover { border-color: rgba(190,62,62,0.55); color: var(--danger); }
 #importNotesInput { display: none; }
+
+/* Compact card variant for highlight-only entries (no question/answer) */
+.comment-card.highlight-only {
+  border-left: 3px solid rgba(250, 199, 117, 0.85);
+  padding: 0.45rem 0.6rem;
+}
+.comment-card.highlight-only .comment-passage {
+  margin-bottom: 0; border-left: none; padding-left: 0; max-height: none;
+  font-style: normal; color: var(--ink);
+}
+.comment-card.query-card { border-left: 3px solid rgba(120, 180, 240, 0.85); }
 .comment-thread {
   margin-bottom: 1rem;
   animation: slideIn 0.25s ease;
@@ -255,6 +280,31 @@ body {
   font-size: 0.82rem; line-height: 1.6;
 }
 .empty-state .icon { font-size: 1.8rem; margin-bottom: 0.4rem; opacity: 0.35; }
+
+/* ═══ SELECTION FLOATING MENU ═══ */
+.selection-menu {
+  display: none; position: fixed; z-index: 200;
+  background: var(--cave-dark); border-radius: 7px;
+  padding: 0.35rem; box-shadow: 0 4px 22px rgba(0,0,0,0.3);
+  animation: popIn 0.12s ease;
+  gap: 0.3rem;
+}
+.selection-menu.open { display: flex; }
+.menu-btn {
+  font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 500;
+  padding: 0.45rem 0.75rem; border-radius: 4px;
+  border: none; cursor: pointer; white-space: nowrap;
+}
+.menu-btn.highlight-btn { background: rgba(250, 199, 117, 0.92); color: #5a3a00; }
+.menu-btn.highlight-btn:hover { background: rgba(250, 199, 117, 1); }
+.menu-btn.query-btn { background: rgba(120, 180, 240, 0.92); color: #0c2a55; }
+.menu-btn.query-btn:hover:not(:disabled) { background: rgba(120, 180, 240, 1); }
+.menu-btn:disabled {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.30) !important;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
 
 /* ═══ SELECTION POPUP ═══ */
 .selection-popup {
@@ -401,7 +451,7 @@ body {
         <button class="lang-btn" data-lang="el" onclick="switchLang('el')">Ελληνικά</button>
       </div>
       <div class="instructions">
-        <em>Hover</em> dotted phrases for annotations · <em>Select any text</em> to ask a question
+        <em>Select any text</em> — choose <strong>🟡 Highlight</strong> or <strong>🔵 Ask LLM</strong>.
       </div>
       <button class="ai-btn" id="aiBtn" onclick="openAIModal()">
         <span class="ai-dot"></span><span id="aiBtnLabel">AI: Off</span>
@@ -459,6 +509,7 @@ body {
       <div class="margin-header-actions">
         <button class="margin-header-btn" onclick="exportNotes()" title="Download notes as JSON">↓ Export</button>
         <button class="margin-header-btn" onclick="document.getElementById('importNotesInput').click()" title="Load notes from a file">↑ Import</button>
+        <button class="margin-header-btn danger" onclick="clearAllNotes()" title="Clear all margin notes (highlights and queries)">✕ Clear</button>
         <input type="file" id="importNotesInput" accept=".json" onchange="importNotes(event)">
         <span class="comment-count" id="commentCount" style="display:none">0</span>
       </div>
@@ -471,6 +522,11 @@ body {
       </div>
     </div>
   </div>
+</div>
+
+<div class="selection-menu" id="selectionMenu">
+  <button class="menu-btn highlight-btn" onclick="markHighlight()" title="Highlight without asking">🟡 Highlight</button>
+  <button class="menu-btn query-btn" id="menuAskBtn" onclick="openQueryPopup()" title="Ask the selected LLM about this passage">🔵 Ask LLM</button>
 </div>
 
 <div class="selection-popup" id="selectionPopup">
@@ -537,6 +593,11 @@ function loadNotesFromStorage() {
   if (stored) {
     try {
       comments = JSON.parse(stored);
+      // Backfill: legacy entries (saved before the highlight/query split) had no kind.
+      for (const c of comments) {
+        if (!c.kind) c.kind = 'query';
+        if (c.kind === 'query' && !Array.isArray(c.followups)) c.followups = [];
+      }
       commentId = comments.length > 0 ? Math.max(...comments.map(c => c.id)) : 0;
     } catch (e) {
       console.error('Failed to load notes:', e);
@@ -578,9 +639,15 @@ function importNotes(event) {
       const data = JSON.parse(e.target.result);
       if (!Array.isArray(data.notes)) throw new Error('Invalid notes format');
       comments = data.notes;
+      // Backfill the same way loadNotesFromStorage does, so older exports work.
+      for (const c of comments) {
+        if (!c.kind) c.kind = 'query';
+        if (c.kind === 'query' && !Array.isArray(c.followups)) c.followups = [];
+      }
       commentId = comments.length > 0 ? Math.max(...comments.map(c => c.id)) : 0;
       saveNotesToStorage();
       renderComments();
+      renderText();  // paint imported marks onto the text column
       emptyState.style.display = comments.length > 0 ? 'none' : 'block';
     } catch (err) {
       alert('Could not import notes: ' + err.message);
@@ -597,13 +664,77 @@ const PROVIDER_KEY  = 'cr_provider';
 const ANTHROPIC_KEY = 'cr_anthropic_key';
 const GEMINI_KEY    = 'cr_gemini_key';
 const GROQ_KEY      = 'cr_groq_key';
+const LOCAL_ENDPOINTS_KEY = 'cr_local_endpoints';
+
+// Well-known ports for popular local LLM servers. Probed when the AI modal
+// opens so users running these don't have to type a URL. The result is shown
+// as one-click "Detected:" tiles in the existing cards grid — the user
+// still picks; nothing is auto-saved.
+const WELL_KNOWN_LOCAL_PORTS = [
+  { url: 'http://127.0.0.1:8765',  hint: 'Athena / OpenAI-compatible shim' },
+  { url: 'http://127.0.0.1:11434', hint: 'Ollama' },
+  { url: 'http://127.0.0.1:1234',  hint: 'LM Studio' },
+];
+
+// In-memory state for the modal (cleared when modal closes).
+let _detectedLocalServers = [];                   // [{url, hint, models: [{id, label}]}]
+let _localModelsByEndpoint = {};                  // { url: [{id, label}] } — for user-saved endpoints
+let _showAddLocal = false;                        // when the user has clicked "+ Add local server"
+
+function getStoredLocalEndpoints() {
+  try {
+    const arr = JSON.parse(localStorage.getItem(LOCAL_ENDPOINTS_KEY) || '[]');
+    return arr.filter(u => /^https?:\/\//i.test(String(u)));
+  } catch { return []; }
+}
+function setStoredLocalEndpoints(arr) {
+  localStorage.setItem(LOCAL_ENDPOINTS_KEY, JSON.stringify(arr));
+}
+
+// "local:<endpoint>:<modelId>" — endpoint may contain colons, so modelId is after the LAST colon.
+function parseLocalProvider(id) {
+  if (!id || !id.startsWith('local:')) return null;
+  const rest = id.slice('local:'.length);
+  const lastColon = rest.lastIndexOf(':');
+  if (lastColon === -1) return null;
+  return { endpoint: rest.slice(0, lastColon), modelId: rest.slice(lastColon + 1) };
+}
 
 function getProvider() { return localStorage.getItem(PROVIDER_KEY) || 'none'; }
 function getStoredKey(provider) {
   if (provider === 'anthropic') return localStorage.getItem(ANTHROPIC_KEY) || '';
   if (provider === 'gemini')    return localStorage.getItem(GEMINI_KEY) || '';
   if (provider === 'groq')      return localStorage.getItem(GROQ_KEY) || '';
+  if (provider && provider.startsWith('local:')) return 'local';  // no key needed
   return '';
+}
+
+async function discoverModelsAt(url) {
+  const trimmed = url.replace(/\/+$/, '');
+  try {
+    const res = await fetch(`${trimmed}/v1/models`, { signal: AbortSignal.timeout(2000) });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.data || []).filter(m => m?.id).map(m => ({ id: String(m.id), label: String(m.id) }));
+  } catch { return []; }
+}
+
+async function refreshUserLocalModels() {
+  const endpoints = getStoredLocalEndpoints();
+  await Promise.all(endpoints.map(async (url) => {
+    _localModelsByEndpoint[url] = await discoverModelsAt(url);
+  }));
+}
+
+async function probeWellKnownLocalServers() {
+  const saved = new Set(getStoredLocalEndpoints());
+  const candidates = WELL_KNOWN_LOCAL_PORTS.filter(c => !saved.has(c.url));
+  const settled = await Promise.all(candidates.map(async (c) => {
+    const models = await discoverModelsAt(c.url);
+    if (!models.length) return null;
+    return { url: c.url, hint: c.hint, models };
+  }));
+  _detectedLocalServers = settled.filter(Boolean);
 }
 
 let _modalProvider = 'none';
@@ -621,6 +752,10 @@ function updateAIBtn() {
   } else if (p === 'groq') {
     btn.classList.add('ai-active');
     label.textContent = getStoredKey('groq') ? 'AI: Groq ✓' : 'AI: Groq (no key)';
+  } else if (p && p.startsWith('local:')) {
+    btn.classList.add('ai-active');
+    const parsed = parseLocalProvider(p);
+    label.textContent = `AI: ${parsed?.modelId || 'local'} ✓`;
   } else {
     btn.classList.remove('ai-active');
     label.textContent = 'AI: Off';
@@ -629,40 +764,149 @@ function updateAIBtn() {
 
 function openAIModal() {
   _modalProvider = getProvider();
-  _refreshModalCards();
+  _showAddLocal = false;
+  _detectedLocalServers = [];
+  _localModelsByEndpoint = {};
+  _refreshModalCards();   // initial render with what we have
   _refreshKeySection();
   document.getElementById('aiModalOverlay').classList.add('open');
-  if (_modalProvider !== 'none') {
+  if (['anthropic','gemini','groq'].includes(_modalProvider)) {
     setTimeout(() => document.getElementById('aiKeyInput').focus(), 50);
   }
+  // Probe + discover in the background; re-render when results arrive.
+  refreshUserLocalModels().then(_refreshModalCards);
+  probeWellKnownLocalServers().then(_refreshModalCards);
 }
 
 function closeAIModal() {
   document.getElementById('aiModalOverlay').classList.remove('open');
+  _showAddLocal = false;
 }
 
 function selectProvider(p) {
   _modalProvider = p;
+  _showAddLocal = (p === '__add_local__');
   _refreshModalCards();
   _refreshKeySection();
-  if (p !== 'none') setTimeout(() => document.getElementById('aiKeyInput').focus(), 30);
+  if (['anthropic','gemini','groq'].includes(p)) {
+    setTimeout(() => document.getElementById('aiKeyInput').focus(), 30);
+  } else if (_showAddLocal) {
+    setTimeout(() => document.getElementById('aiKeyInput').focus(), 30);
+  }
 }
 
 function _refreshModalCards() {
+  // Static cards: anthropic / gemini / groq / none
   ['anthropic','gemini','groq','none'].forEach(p => {
     document.getElementById('card-' + p).classList.toggle('selected', p === _modalProvider);
   });
+  // Dynamic cards: discovered local models, "Detected" suggestions, "+ Add local server"
+  const container = document.querySelector('.ai-provider-cards');
+  // Drop any previously-injected dynamic cards (those carry a data-dynamic flag)
+  container.querySelectorAll('[data-dynamic="1"]').forEach(el => el.remove());
+
+  const inject = (opts) => {
+    const div = document.createElement('div');
+    div.className = `ai-provider-card${opts.selected ? ' selected' : ''}`;
+    div.dataset.dynamic = '1';
+    if (opts.dashed) div.style.borderStyle = 'dashed';
+    div.innerHTML = `
+      <div class="ai-card-title">${escHtml(opts.title)}</div>
+      <div class="ai-card-desc">${escHtml(opts.desc)}</div>
+      ${opts.badge ? `<div class="ai-card-badge ${opts.badgeClass}">${escHtml(opts.badge)}</div>` : ''}
+    `;
+    div.onclick = opts.onClick;
+    container.appendChild(div);
+  };
+
+  // Saved local-endpoint model tiles
+  for (const url of getStoredLocalEndpoints()) {
+    const models = _localModelsByEndpoint[url] || [];
+    if (models.length === 0) {
+      inject({
+        title: prettyUrl(url),
+        desc: 'No models found yet — is this server running?',
+        badge: 'Local', badgeClass: 'ai-badge-none',
+        onClick: () => discoverModelsAt(url).then(ms => { _localModelsByEndpoint[url] = ms; _refreshModalCards(); }),
+      });
+    } else {
+      for (const m of models) {
+        const provId = `local:${url}:${m.id}`;
+        inject({
+          title: m.label,
+          desc: `Runs on ${prettyUrl(url)}.`,
+          badge: 'Local', badgeClass: 'ai-badge-none',
+          selected: provId === _modalProvider,
+          onClick: () => selectProvider(provId),
+        });
+      }
+    }
+  }
+
+  // "Detected:" tiles for well-known ports that responded but aren't saved
+  for (const sug of _detectedLocalServers) {
+    const firstModel = sug.models[0];
+    const provId = `local:${sug.url}:${firstModel.id}`;
+    inject({
+      title: `Detected: ${prettyUrl(sug.url)}`,
+      desc: `${sug.hint} · ${firstModel.label}${sug.models.length > 1 ? ` (+${sug.models.length - 1} more)` : ''} · click to add`,
+      badge: 'Local', badgeClass: 'ai-badge-none',
+      dashed: true,
+      onClick: () => {
+        const list = getStoredLocalEndpoints();
+        if (!list.includes(sug.url)) {
+          list.push(sug.url);
+          setStoredLocalEndpoints(list);
+        }
+        _localModelsByEndpoint[sug.url] = sug.models;
+        _detectedLocalServers = _detectedLocalServers.filter(s => s.url !== sug.url);
+        selectProvider(provId);
+      },
+    });
+  }
+
+  // "+ Add local server" tile (always present, last)
+  inject({
+    title: '+ Add local server',
+    desc: 'Connect to an OpenAI-compatible LLM on your machine or network.',
+    dashed: true,
+    selected: _modalProvider === '__add_local__',
+    onClick: () => selectProvider('__add_local__'),
+  });
+}
+
+function prettyUrl(url) {
+  return String(url).replace(/^https?:\/\//, '').replace(/\/+$/, '');
 }
 
 function _refreshKeySection() {
   const section = document.getElementById('aiKeySection');
   const input   = document.getElementById('aiKeyInput');
   const hint    = document.getElementById('aiKeyHint');
-  if (_modalProvider === 'none') {
+
+  // Local model selected — no key, no URL needed.
+  if (_modalProvider && _modalProvider.startsWith('local:')) {
     section.style.display = 'none';
     return;
   }
+  // Add-local-server flow — show URL input.
+  if (_showAddLocal) {
+    section.style.display = 'block';
+    input.type = 'url';
+    input.value = '';
+    input.placeholder = 'http://… or https://…  (URL only, NOT an API key)';
+    hint.innerHTML = 'Connect an OpenAI-compatible server you\'re running locally. Discovered models will appear as tiles above.';
+    return;
+  }
+  // No AI selected — hide.
+  if (_modalProvider === 'none') {
+    section.style.display = 'none';
+    input.type = 'password';
+    return;
+  }
+  // Cloud provider — show API key input.
   section.style.display = 'block';
+  input.type = 'password';
   const stored = getStoredKey(_modalProvider);
   input.value = stored ? '••••••••••••••••' : '';
   if (_modalProvider === 'anthropic') {
@@ -678,9 +922,37 @@ function _refreshKeySection() {
 }
 
 function saveAISettings() {
+  // Add-local-server flow: parse the URL, save to storage, probe, then re-render.
+  if (_showAddLocal) {
+    const raw = document.getElementById('aiKeyInput').value.trim();
+    if (!/^https?:\/\//i.test(raw)) {
+      alert('Local endpoint must be a URL starting with http:// or https://\n\nIf you meant to enter an API key, click a cloud provider card above first.');
+      return;
+    }
+    const clean = raw.replace(/\/+$/, '');
+    const list = getStoredLocalEndpoints();
+    if (!list.includes(clean)) {
+      list.push(clean);
+      setStoredLocalEndpoints(list);
+    }
+    _showAddLocal = false;
+    _modalProvider = 'none';  // wait for the user to pick a discovered model
+    document.getElementById('aiKeyInput').value = '';
+    discoverModelsAt(clean).then(ms => { _localModelsByEndpoint[clean] = ms; _refreshModalCards(); });
+    _refreshKeySection();
+    return;
+  }
+  // Local model already selected: just persist the choice.
+  if (_modalProvider && _modalProvider.startsWith('local:')) {
+    localStorage.setItem(PROVIDER_KEY, _modalProvider);
+    closeAIModal();
+    updateAIBtn();
+    return;
+  }
+  // Cloud or "none".
   const val = document.getElementById('aiKeyInput').value.trim();
   localStorage.setItem(PROVIDER_KEY, _modalProvider);
-  if (_modalProvider !== 'none' && val && !val.startsWith('•')) {
+  if (['anthropic','gemini','groq'].includes(_modalProvider) && val && !val.startsWith('•')) {
     const storageKey = _modalProvider === 'anthropic' ? ANTHROPIC_KEY
                      : _modalProvider === 'gemini'    ? GEMINI_KEY
                      :                                  GROQ_KEY;
@@ -738,18 +1010,20 @@ function renderText() {
 }
 
 function applyAnnotations(text, lang) {
-  const annots = ANNOTATIONS[lang] || [];
+  // Render the user's own marks (yellow highlight / blue query) for the
+  // current language. The pre-baked editor annotations were removed because
+  // they pre-told students what to notice — the point is for them to read
+  // and ask on their own.
   let result = escHtml(text);
-  for (const a of annots) {
-    const escaped = escHtml(a.match);
+  const userMarks = comments.filter(c => c.lang === lang);
+  for (const c of userMarks) {
+    const escaped = escHtml(c.passage);
     const idx = result.indexOf(escaped);
-    if (idx !== -1) {
-      const before = result.substring(0, idx);
-      const after = result.substring(idx + escaped.length);
-      result = before +
-        `<span class="annotated">${escaped}<span class="tooltip">${a.note}</span></span>` +
-        after;
-    }
+    if (idx === -1) continue;
+    const cls = c.kind === 'highlight' ? 'user-highlight' : 'user-query';
+    result = result.substring(0, idx) +
+      `<span class="${cls}" data-cid="${c.id}">${escaped}</span>` +
+      result.substring(idx + escaped.length);
   }
   return result;
 }
@@ -766,31 +1040,79 @@ function switchLang(lang) {
 }
 
 // ═══════════════════════════════════
-// SELECTION → POPUP
+// SELECTION → FLOATING MENU → (highlight | query popup)
 // ═══════════════════════════════════
+let selectedRect = null;
+const selectionMenu = document.getElementById('selectionMenu');
+
 textCol.addEventListener('mouseup', (e) => {
   const sel = window.getSelection();
   const text = sel.toString().trim();
   if (text.length < 3) return;
   if (e.target.closest('.tooltip')) return;
-  if (getProvider() === 'none') return;
+  // Don't re-trigger when the user clicks on an existing mark — let them re-select fresh text first.
+  if (e.target.closest('.user-highlight, .user-query')) return;
 
   selectedText = text;
-  popupPassage.textContent = text.length > 100 ? text.substring(0, 100) + '…' : text;
+  selectedRect = sel.getRangeAt(0).getBoundingClientRect();
+  showSelectionMenu();
+});
 
-  const range = sel.getRangeAt(0);
-  const rect = range.getBoundingClientRect();
+function showSelectionMenu() {
+  const rect = selectedRect;
+  if (!rect) return;
+  const menuW = 240, menuH = 44;
+  let left = rect.left + rect.width / 2 - menuW / 2;
+  let top = rect.bottom + 8;
+  if (left < 10) left = 10;
+  if (left + menuW > window.innerWidth) left = window.innerWidth - menuW - 10;
+  if (top + menuH > window.innerHeight) top = rect.top - menuH - 8;
+  selectionMenu.style.left = left + 'px';
+  selectionMenu.style.top = top + 'px';
+  selectionMenu.classList.add('open');
+
+  const askBtn = document.getElementById('menuAskBtn');
+  const hasProvider = getProvider() !== 'none';
+  askBtn.disabled = !hasProvider;
+  askBtn.title = hasProvider
+    ? 'Ask the selected LLM about this passage'
+    : 'AI is off — pick a model in the AI button (top right) to enable this';
+}
+
+function closeSelectionMenu() {
+  selectionMenu.classList.remove('open');
+}
+
+function markHighlight() {
+  if (!selectedText) return;
+  const id = ++commentId;
+  comments.push({ id, kind: 'highlight', passage: selectedText, lang: currentLang });
+  saveNotesToStorage();
+  closeSelectionMenu();
+  selectedText = '';
+  selectedRect = null;
+  emptyState.style.display = 'none';
+  renderText();
+  renderComments();
+  // Drop the visible selection so the yellow paint shows clearly
+  window.getSelection()?.removeAllRanges();
+}
+
+function openQueryPopup() {
+  if (!selectedText || !selectedRect) return;
+  closeSelectionMenu();
+  popupPassage.textContent = selectedText.length > 100 ? selectedText.substring(0, 100) + '…' : selectedText;
+  const rect = selectedRect;
   let left = rect.left + rect.width / 2 - 150;
   let top = rect.bottom + 10;
   if (left < 10) left = 10;
   if (left + 300 > window.innerWidth) left = window.innerWidth - 310;
   if (top + 180 > window.innerHeight) top = rect.top - 150;
-
   popup.style.left = left + 'px';
   popup.style.top = top + 'px';
   popup.style.display = 'block';
   setTimeout(() => popupInput.focus(), 50);
-});
+}
 
 popupInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitComment(); }
@@ -798,13 +1120,15 @@ popupInput.addEventListener('keydown', (e) => {
 });
 
 document.addEventListener('mousedown', (e) => {
-  if (!popup.contains(e.target) && popup.style.display === 'block') closePopup();
+  if (selectionMenu.classList.contains('open') && !selectionMenu.contains(e.target)) closeSelectionMenu();
+  if (popup.style.display === 'block' && !popup.contains(e.target)) closePopup();
 });
 
 function closePopup() {
   popup.style.display = 'none';
   popupInput.value = '';
   selectedText = '';
+  selectedRect = null;
 }
 
 // ═══════════════════════════════════
@@ -815,11 +1139,12 @@ async function submitComment() {
   if (!question || !selectedText) return;
 
   const id = ++commentId;
-  const comment = { id, passage: selectedText, question, answer: null, followups: [], lang: currentLang };
+  const comment = { id, kind: 'query', passage: selectedText, question, answer: null, followups: [], lang: currentLang };
   comments.push(comment);
   saveNotesToStorage();
   closePopup();
   renderComments();
+  renderText();  // paint the blue mark on the queried passage
   emptyState.style.display = 'none';
 
   const el = document.getElementById('comment-' + id);
@@ -878,6 +1203,32 @@ async function askAI(passage, question, context, lang) {
   if (!apiKey) {
     openAIModal();
     return 'No API key found. Enter your key in the AI settings.';
+  }
+
+  // Local OpenAI-compatible endpoint: POST to <endpoint>/v1/chat/completions.
+  if (provider.startsWith('local:')) {
+    const parsed = parseLocalProvider(provider);
+    if (!parsed) return 'Local provider id is malformed. Re-pick a model in AI settings.';
+    const url = parsed.endpoint.replace(/\/+$/, '') + '/v1/chat/completions';
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: parsed.modelId,
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      });
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        return `Local server error ${res.status}: ${errText.slice(0, 200) || 'Unknown error'}`;
+      }
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || 'No response received from local model.';
+    } catch (err) {
+      return `Couldn't reach local model at ${parsed.endpoint}. Is the server running? (${err.message || err})`;
+    }
   }
 
   if (provider === 'anthropic') {
@@ -973,31 +1324,42 @@ function renderComments() {
     thread.className = 'comment-thread';
     thread.id = 'comment-' + c.id;
 
-    let h = `<div class="comment-card">`;
-    h += `<div class="comment-passage">"${escHtml(truncate(c.passage, 90))}"</div>`;
-    h += `<div class="comment-question">${escHtml(c.question)}</div>`;
-    h += c.answer
-      ? `<div class="comment-answer">${escHtml(c.answer)}</div>`
-      : `<div class="comment-answer loading">Thinking…</div>`;
-
-    c.followups.forEach(f => {
-      h += `<div class="sub-comment"><div class="comment-question">${escHtml(f.question)}</div>`;
-      h += f.answer
-        ? `<div class="comment-answer">${escHtml(f.answer)}</div>`
-        : `<div class="comment-answer loading">Thinking…</div>`;
+    let h;
+    if (c.kind === 'highlight') {
+      // Compact yellow card: just the passage + delete affordance.
+      h = `<div class="comment-card highlight-only">`;
+      h += `<div class="comment-passage">"${escHtml(truncate(c.passage, 120))}"</div>`;
+      h += `<div class="comment-meta"><span>highlight</span>`;
+      h += `<button class="comment-delete" onclick="deleteComment(${c.id})">✕</button></div>`;
       h += `</div>`;
-    });
+    } else {
+      h = `<div class="comment-card query-card">`;
+      h += `<div class="comment-passage">"${escHtml(truncate(c.passage, 90))}"</div>`;
+      h += `<div class="comment-question">${escHtml(c.question)}</div>`;
+      h += c.answer
+        ? `<div class="comment-answer">${escHtml(c.answer)}</div>`
+        : `<div class="comment-answer loading">Thinking…</div>`;
 
-    if (c.answer) {
-      h += `<div class="followup-row">`;
-      h += `<input class="followup-input" id="followup-input-${c.id}" placeholder="Follow up…" onkeydown="if(event.key==='Enter'){event.preventDefault();submitFollowup(${c.id})}">`;
-      h += `<button class="followup-btn" onclick="submitFollowup(${c.id})">Ask</button>`;
+      (c.followups || []).forEach(f => {
+        h += `<div class="sub-comment"><div class="comment-question">${escHtml(f.question)}</div>`;
+        h += f.answer
+          ? `<div class="comment-answer">${escHtml(f.answer)}</div>`
+          : `<div class="comment-answer loading">Thinking…</div>`;
+        h += `</div>`;
+      });
+
+      if (c.answer) {
+        h += `<div class="followup-row">`;
+        h += `<input class="followup-input" id="followup-input-${c.id}" placeholder="Follow up…" onkeydown="if(event.key==='Enter'){event.preventDefault();submitFollowup(${c.id})}">`;
+        h += `<button class="followup-btn" onclick="submitFollowup(${c.id})">Ask</button>`;
+        h += `</div>`;
+      }
+
+      const followupCount = (c.followups || []).length;
+      h += `<div class="comment-meta"><span>${followupCount + 1} message${followupCount > 0 ? 's' : ''}</span>`;
+      h += `<button class="comment-delete" onclick="deleteComment(${c.id})">✕</button></div>`;
       h += `</div>`;
     }
-
-    h += `<div class="comment-meta"><span>${c.followups.length + 1} message${c.followups.length > 0 ? 's' : ''}</span>`;
-    h += `<button class="comment-delete" onclick="deleteComment(${c.id})">✕</button></div>`;
-    h += `</div>`;
 
     thread.innerHTML = h;
     commentList.appendChild(thread);
@@ -1006,8 +1368,25 @@ function renderComments() {
 
 function deleteComment(id) {
   comments = comments.filter(c => c.id !== id);
+  saveNotesToStorage();
   renderComments();
+  renderText();  // re-paint to remove the highlight from the text column
   if (comments.length === 0) emptyState.style.display = '';
+}
+
+function clearAllNotes() {
+  if (comments.length === 0) {
+    alert('No notes to clear.');
+    return;
+  }
+  const n = comments.length;
+  if (!confirm(`Clear all ${n} margin note${n === 1 ? '' : 's'} (highlights and queries)? This cannot be undone.`)) return;
+  comments = [];
+  commentId = 0;
+  saveNotesToStorage();
+  renderComments();
+  renderText();
+  emptyState.style.display = '';
 }
 
 function truncate(s, n) { return s.length > n ? s.substring(0, n) + '…' : s; }
