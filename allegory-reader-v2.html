@@ -66,6 +66,21 @@ body {
 }
 .header-text .subtitle-translator:empty { display: none; }
 
+/* Small utility-row button (e.g., "Copy reading text"). Matches lang-btn weight. */
+.utility-row { display: flex; justify-content: flex-end; }
+.utility-btn {
+  font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 500;
+  letter-spacing: 0.04em;
+  background: transparent; color: var(--muted);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.utility-btn:hover { border-color: rgba(212, 168, 67, 0.55); color: var(--accent-light); }
+.utility-btn.flash { background: rgba(120, 200, 140, 0.18); border-color: rgba(120, 200, 140, 0.45); color: #7EC88A; }
+
 /* Verse paragraphs preserve line breaks (for poetry). */
 .text-paragraph.verse {
   white-space: pre-line;
@@ -311,6 +326,8 @@ body {
 .menu-btn.highlight-btn:hover { background: rgba(250, 199, 117, 1); }
 .menu-btn.query-btn { background: rgba(120, 180, 240, 0.92); color: #0c2a55; }
 .menu-btn.query-btn:hover:not(:disabled) { background: rgba(120, 180, 240, 1); }
+.menu-btn.copy-btn { background: rgba(255, 255, 255, 0.88); color: #2c2a23; }
+.menu-btn.copy-btn:hover:not(:disabled) { background: #fff; }
 .menu-btn:disabled {
   background: rgba(255, 255, 255, 0.06) !important;
   color: rgba(255, 255, 255, 0.30) !important;
@@ -501,6 +518,9 @@ body {
         <select id="readingSelect" onchange="switchReading(this.value)"></select>
       </div>
       <div class="lang-toggles" id="langToggles"></div>
+      <div class="utility-row">
+        <button class="utility-btn" id="copyReadingBtn" onclick="copyReadingText()" title="Copy the full reading text in the current language">📋 Copy text</button>
+      </div>
       <div class="instructions">
         <em>Select any text</em> — choose <strong>🟡 Highlight</strong> or <strong>🔵 Ask LLM</strong>.
       </div>
@@ -578,6 +598,7 @@ body {
 <div class="selection-menu" id="selectionMenu">
   <button class="menu-btn highlight-btn" onclick="markHighlight()" title="Highlight without asking">🟡 Highlight</button>
   <button class="menu-btn query-btn" id="menuAskBtn" onclick="openQueryPopup()" title="Ask the selected LLM about this passage">🔵 Ask LLM</button>
+  <button class="menu-btn copy-btn" id="menuCopyBtn" onclick="copySelectedText()" title="Copy selection to clipboard">📋 Copy</button>
 </div>
 
 <div class="selection-popup" id="selectionPopup">
@@ -1630,6 +1651,89 @@ function showSelectionMenu() {
 
 function closeSelectionMenu() {
   selectionMenu.classList.remove('open');
+}
+
+// Build a plain-text rendering of the current reading in the current language,
+// stripping HTML, speaker labels formatted, headings, etc. Used by the "Copy text"
+// utility button — much cleaner than Ctrl+A, which also grabs margin notes.
+function readingAsPlainText() {
+  const reading = currentReading();
+  if (!reading) return '';
+  const data = reading.languages?.[currentLang];
+  if (!data) return '';
+  const lines = [];
+  lines.push(reading.title);
+  lines.push(`${reading.author} · ${reading.source} · ${reading.reference}`);
+  if (data.translator) lines.push(`tr. ${data.translator}`);
+  lines.push('');
+  for (const sec of (data.sections || [])) {
+    if (sec.label) lines.push(sec.label);
+    if (sec.title) lines.push(sec.title);
+    if (sec.label || sec.title) lines.push('');
+    for (const p of (sec.paragraphs || [])) {
+      if (p.heading) lines.push(p.heading);
+      const speaker = p.speaker ? `${p.speaker}: ` : '';
+      lines.push(`${speaker}${p.text}`);
+      lines.push('');
+    }
+  }
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
+}
+
+async function copyReadingText() {
+  const text = readingAsPlainText();
+  if (!text) return;
+  const btn = document.getElementById('copyReadingBtn');
+  const flash = (msg) => {
+    if (!btn) return;
+    const original = btn.textContent;
+    btn.textContent = msg;
+    btn.classList.add('flash');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('flash'); }, 1200);
+  };
+  try {
+    await navigator.clipboard.writeText(text);
+    flash('✓ Copied to clipboard');
+  } catch (err) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); flash('✓ Copied to clipboard'); }
+    catch { flash('✕ Copy failed'); }
+    document.body.removeChild(ta);
+  }
+}
+
+async function copySelectedText() {
+  if (!selectedText) return;
+  const btn = document.getElementById('menuCopyBtn');
+  try {
+    await navigator.clipboard.writeText(selectedText);
+    if (btn) {
+      const original = btn.textContent;
+      btn.textContent = '✓ Copied';
+      setTimeout(() => {
+        btn.textContent = original;
+        closeSelectionMenu();
+        selectedText = '';
+        selectedRect = null;
+        window.getSelection()?.removeAllRanges();
+      }, 650);
+    }
+  } catch (err) {
+    // Fallback for older browsers / insecure contexts
+    const ta = document.createElement('textarea');
+    ta.value = selectedText;
+    ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch { /* give up */ }
+    document.body.removeChild(ta);
+    if (btn) btn.textContent = '✓ Copied';
+    setTimeout(closeSelectionMenu, 650);
+  }
 }
 
 function markHighlight() {
