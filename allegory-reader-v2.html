@@ -2207,13 +2207,23 @@ async function submitFollowup(cid) {
   renderComments();
 }
 
+// Map a reading-language code to the natural language the AI should reply in.
+// Note the special case for 'zh': readings carry Classical Chinese (文言文)
+// for ancient texts like the Analects, but a chat reply in 文言文 would be
+// useless for a modern student — so we ask for Modern Mandarin instead.
+const RESPONSE_LANGUAGE_NAMES = {
+  en: 'English',
+  es: 'Spanish',
+  el: 'Modern Greek',
+  zh: 'Modern Mandarin Chinese',
+  hi: 'Hindi',
+  no: 'Norwegian Bokmål',
+};
+
 async function askAI(passage, question, context, lang) {
   const reading = currentReading();
-  const langData = reading?.languages?.[lang];
-  const langName = langData?.label || lang;
-  const langNote = (lang !== 'en')
-    ? `The student is reading the ${langName} version. Answer in English but acknowledge original-language terms where helpful.`
-    : '';
+  const responseLanguage = RESPONSE_LANGUAGE_NAMES[lang] || lang;
+  const langNote = `Respond in ${responseLanguage}.`;
 
   const baseContext = reading?.systemPromptExtra
     || `You are an annotation assistant for ${reading?.title || 'this reading'}.`;
