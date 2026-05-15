@@ -473,7 +473,14 @@ body {
 .ai-badge-free { background: rgba(40,120,60,0.3); color: #7EC88A; }
 .ai-badge-none { background: rgba(90,90,90,0.3); color: #888; }
 .ai-badge-groq { background: rgba(60,80,160,0.3); color: #8AABE0; }
-.ai-key-section { margin-bottom: 1.1rem; }
+.ai-key-section {
+  margin-bottom: 1.1rem;
+  /* Reserve enough vertical space for the input + 3-line Gemini hint so the
+     modal doesn't change height when a card is clicked. Hidden state uses
+     visibility: hidden (not display: none) to keep that space reserved. */
+  min-height: 110px;
+}
+.ai-key-section[hidden] { visibility: hidden; }
 .ai-key-section input {
   width: 100%; padding: 0.6rem 0.75rem;
   background: rgba(255,255,255,0.06); border: 1px solid rgba(212,168,67,0.2);
@@ -615,7 +622,7 @@ body {
       <button type="button" class="ai-tab" data-tab="pay"   onclick="setModalTab('pay')" data-i18n="tabPay">Pay</button>
     </div>
     <div class="ai-provider-cards" id="aiProviderCards"></div>
-    <div class="ai-key-section" id="aiKeySection" style="display:none">
+    <div class="ai-key-section" id="aiKeySection" style="visibility:hidden">
       <input type="password" id="aiKeyInput" placeholder="Paste your API key here…" autocomplete="off" spellcheck="false"
         onkeydown="if(event.key==='Enter')saveAISettings();if(event.key==='Escape')closeAIModal()">
       <div class="ai-key-hint" id="aiKeyHint">Stored only in your browser · Never in the source code</div>
@@ -1184,12 +1191,12 @@ function _refreshKeySection() {
 
   // Local model selected — no key, no URL needed.
   if (_modalProvider && _modalProvider.startsWith('local:')) {
-    section.style.display = 'none';
+    section.style.visibility = 'hidden';
     return;
   }
   // Add-local-server flow — show URL input.
   if (_showAddLocal) {
-    section.style.display = 'block';
+    section.style.visibility = 'visible';
     input.type = 'url';
     input.value = '';
     input.placeholder = 'http://… or https://…  (URL only, NOT an API key)';
@@ -1198,22 +1205,22 @@ function _refreshKeySection() {
   }
   // No AI selected — hide.
   if (_modalProvider === 'none') {
-    section.style.display = 'none';
+    section.style.visibility = 'hidden';
     input.type = 'password';
     return;
   }
   // Cloud provider — show API key input.
   if (!CLOUD_PROVIDERS.includes(_modalProvider)) {
-    section.style.display = 'none';
+    section.style.visibility = 'hidden';
     return;
   }
   // If the selected provider lives on a different tab, hide the key section
   // — otherwise you get e.g. the Gemini key prompt visible on the Local tab.
   if (tabForProvider(_modalProvider) !== _modalActiveTab) {
-    section.style.display = 'none';
+    section.style.visibility = 'hidden';
     return;
   }
-  section.style.display = 'block';
+  section.style.visibility = 'visible';
   input.type = 'password';
   const stored = getStoredKey(_modalProvider);
   input.value = stored ? '••••••••••••••••' : '';
