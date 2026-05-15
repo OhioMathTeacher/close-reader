@@ -1128,7 +1128,7 @@ function _refreshModalCards() {
     }
     inject({
       title: '+ Add local server',
-      desc: 'Connect to an OpenAI-compatible LLM on your machine or network.',
+      desc: 'Point to a local LLM (Ollama, LM Studio, llama.cpp) running on your machine or network.',
       dashed: true,
       selected: _modalProvider === '__add_local__',
       onClick: () => selectProvider('__add_local__'),
@@ -1165,7 +1165,7 @@ function _refreshModalCards() {
     });
     inject({
       title: 'DeepSeek',
-      desc: 'Your own key. Inexpensive per token; OpenAI-compatible.',
+      desc: 'Your own key. Inexpensive per-token pricing.',
       badge: 'Own Key', badgeClass: 'ai-badge-paid',
       selected: _modalProvider === 'deepseek',
       onClick: () => selectProvider('deepseek'),
@@ -1193,7 +1193,7 @@ function _refreshKeySection() {
     input.type = 'url';
     input.value = '';
     input.placeholder = 'http://… or https://…  (URL only, NOT an API key)';
-    hint.innerHTML = 'Connect an OpenAI-compatible server you\'re running locally. Discovered models will appear as tiles above.';
+    hint.innerHTML = 'Enter the URL of a local LLM server you\'re running (Ollama, LM Studio, llama.cpp). Discovered models will appear as tiles above.';
     return;
   }
   // No AI selected — hide.
