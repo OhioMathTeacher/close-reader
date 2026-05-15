@@ -456,10 +456,11 @@ body {
   display: grid; grid-template-columns: repeat(2,1fr); gap: 0.6rem;
   margin-bottom: 1.1rem;
   /* Fixed height so the modal stays one size across Local/$0/Pay tabs.
-     Sized to comfortably fit two rows of multi-line cards; if a user has
+     Sized to comfortably fit two rows of multi-line cards with badges
+     (DeepSeek was getting its badge clipped at 240px). If a user adds
      many local models, the cards area scrolls inside the box rather than
      pushing the footer down. */
-  height: 240px;
+  height: 280px;
   overflow-y: auto;
   align-content: start;
 }
