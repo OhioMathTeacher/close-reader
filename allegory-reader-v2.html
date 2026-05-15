@@ -453,15 +453,19 @@ body {
   color: #DDD3C0; font-size: 1.3rem; margin-bottom: 1.1rem;
 }
 .ai-provider-cards {
-  display: grid; grid-template-columns: repeat(2,1fr); gap: 0.6rem;
+  display: grid; grid-template-columns: repeat(2,1fr);
+  /* Every card is the same height regardless of description length, so
+     the grid reads as a clean rectangle instead of a ragged mosaic. */
+  grid-auto-rows: 130px;
+  gap: 0.6rem;
   margin-bottom: 1.1rem;
-  /* Fixed height so the modal stays one size across Local/$0/Pay tabs.
-     Sized to comfortably fit two rows of multi-line cards with badges
-     (DeepSeek was getting its badge clipped at 240px). If a user adds
-     many local models, the cards area scrolls inside the box rather than
-     pushing the footer down. */
+  /* Fixed container height keeps the modal one size across Local/$0/Pay.
+     Two rows of 130px cards + the 0.6rem gap fit cleanly. With three
+     tabs splitting the providers, no panel needs scrolling — overflow
+     is hidden so no scrollbar ever appears (it was a leftover from when
+     all cards lived in one grid). */
   height: 280px;
-  overflow-y: auto;
+  overflow-y: hidden;
   align-content: start;
 }
 .ai-provider-card {
