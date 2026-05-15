@@ -980,7 +980,14 @@ let _modalActiveTab = 'local';  // 'local' | 'free' | 'pay'
 
 function setModalTab(tab) {
   _modalActiveTab = tab;
+  // Leaving the Local tab should also exit the "+ Add local server" URL-entry
+  // flow so the modal doesn't trail a stale text input onto another tab.
+  if (tab !== 'local' && _showAddLocal) {
+    _showAddLocal = false;
+    if (_modalProvider === '__add_local__') _modalProvider = 'none';
+  }
   _refreshModalCards();
+  _refreshKeySection();
 }
 
 function updateAIBtn() {
@@ -1197,6 +1204,12 @@ function _refreshKeySection() {
   }
   // Cloud provider — show API key input.
   if (!CLOUD_PROVIDERS.includes(_modalProvider)) {
+    section.style.display = 'none';
+    return;
+  }
+  // If the selected provider lives on a different tab, hide the key section
+  // — otherwise you get e.g. the Gemini key prompt visible on the Local tab.
+  if (tabForProvider(_modalProvider) !== _modalActiveTab) {
     section.style.display = 'none';
     return;
   }
