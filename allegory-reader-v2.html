@@ -443,9 +443,12 @@ body {
 .ai-provider-cards {
   display: grid; grid-template-columns: repeat(2,1fr); gap: 0.6rem;
   margin-bottom: 1.1rem;
-  /* Lock to "2 rows of cards" so the modal doesn't jump in height when
-     switching between tabs with different card counts (Local/$0/Pay). */
-  min-height: 210px;
+  /* Fixed height so the modal stays one size across Local/$0/Pay tabs.
+     Sized to comfortably fit two rows of multi-line cards; if a user has
+     many local models, the cards area scrolls inside the box rather than
+     pushing the footer down. */
+  height: 240px;
+  overflow-y: auto;
   align-content: start;
 }
 .ai-provider-card {
