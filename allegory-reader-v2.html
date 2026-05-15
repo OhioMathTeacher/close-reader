@@ -33,6 +33,14 @@ body {
   line-height: 1.78;
   font-size: 18px;
   -webkit-font-smoothing: antialiased;
+  /* Lock the page to the viewport so scrolling happens only inside the text or
+     margin column. Without this, a tall header (translator line + multi-row
+     controls) pushes main-container past 100vh and the whole window scrolls,
+     hiding the header. */
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* ═══ HEADER ═══ */
@@ -47,6 +55,8 @@ body {
      muted page frame shows on either side of the whole card on wide viewports. */
   max-width: 1220px;
   margin: 0 auto;
+  width: 100%;
+  flex-shrink: 0;  /* in body's flex-column, never shrink to make room for main */
 }
 .site-header::before {
   content:''; position:absolute; inset:0;
@@ -124,7 +134,9 @@ body {
 .main-container {
   display: grid; grid-template-columns: 1fr 360px;
   max-width: 1220px; margin: 0 auto;
-  height: calc(100vh - 110px);
+  width: 100%;
+  flex: 1 1 0;     /* fill remaining viewport height under the sticky header */
+  min-height: 0;   /* allow grid children to size by their own overflow rules */
 }
 
 /* ═══ TEXT COLUMN ═══ */
@@ -133,6 +145,7 @@ body {
   /* L padding aligns with header text; R padding falls inside the inner column rule. */
   padding: 2rem var(--content-gutter) 4rem;
   overflow-y: auto; position: relative;
+  min-height: 0;   /* required for the column's own scroll inside the flex/grid layout */
 }
 .text-column::after {
   content:''; position: absolute; top:0; right:0; bottom:0;
@@ -209,15 +222,24 @@ body {
   background: var(--margin-bg);
   /* Right padding matches the header gutter so the margin notes' inner edge lines
      up with the reading controls' right edge. Left padding stays tighter to keep
-     the panel content area generous. */
-  padding: 1.5rem var(--content-gutter) 1.5rem 1.1rem;
+     the panel content area generous. Padding-top is 0 so the sticky .margin-header
+     sits flush at the top — its own padding-top (set below) provides the spacing. */
+  padding: 0 var(--content-gutter) 1.5rem 1.1rem;
   overflow-y: auto; position: relative;
+  min-height: 0;   /* required for the column's own scroll inside the flex/grid layout */
 }
 .margin-header {
   font-family: 'DM Sans', sans-serif;
   font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase;
   color: var(--muted); margin-bottom: 0.8rem;
-  padding-bottom: 0.5rem; border-bottom: 1px solid var(--comment-border);
+  /* Stays at the top of the margin column when the user scrolls notes — the
+     A-/A+/Export/Import/Clear controls remain reachable without scrolling back up.
+     padding-top supplies the gap that comment-column used to provide; the matching
+     background prevents notes from showing through as they scroll under it. */
+  position: sticky; top: 0; z-index: 5;
+  background: var(--margin-bg);
+  padding-top: 1.5rem; padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--comment-border);
   display: flex; justify-content: space-between; align-items: flex-start;
 }
 .margin-header-title {
@@ -594,7 +616,10 @@ body {
 
 /* ═══ RESPONSIVE ═══ */
 @media (max-width: 860px) {
-  .main-container { grid-template-columns: 1fr; height: auto; }
+  /* Stacked layout on narrow viewports — let the body scroll natively since the
+     two columns are no longer side-by-side. */
+  body { height: auto; overflow: visible; display: block; }
+  .main-container { grid-template-columns: 1fr; height: auto; flex: none; }
   .comment-column { border-top: 1px solid var(--comment-border); max-height: 50vh; }
   .text-column { padding: 1.5rem 1.2rem; max-height: none; }
   .tooltip { width: 260px; }
