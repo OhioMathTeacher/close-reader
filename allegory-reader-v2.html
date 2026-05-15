@@ -492,6 +492,36 @@ body {
 .am-save:hover { background: #E0B84E; }
 .am-cancel { background: rgba(255,255,255,0.06); color: #9A9083; }
 .am-cancel:hover { background: rgba(255,255,255,0.12); }
+.am-off { background: rgba(139,51,51,0.18); color: #E08585; border: 1px solid rgba(139,51,51,0.45); }
+.am-off:hover { background: rgba(139,51,51,0.34); color: #FF9F9F; border-color: rgba(139,51,51,0.7); }
+
+.ai-tabs {
+  display: flex; gap: 0.2rem; margin-bottom: 0.9rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.ai-tab {
+  font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 500;
+  letter-spacing: 0.03em;
+  background: transparent; border: none; color: #8A8A7C;
+  padding: 0.45rem 0.95rem; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.ai-tab:hover { color: #DDD3C0; }
+.ai-tab.active { color: var(--cave-glow); border-bottom-color: var(--cave-glow); }
+
+.ai-setup-hint {
+  font-family: 'DM Sans', sans-serif; font-size: 0.78rem;
+  color: var(--cave-glow);
+  background: rgba(212,168,67,0.08);
+  border: 1px solid rgba(212,168,67,0.25);
+  border-radius: 5px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.9rem;
+  line-height: 1.4;
+}
+.ai-setup-hint[hidden] { display: none; }
 
 /* ═══ READING PICKER ═══ */
 .reading-picker {
@@ -573,28 +603,13 @@ body {
 <div class="ai-modal-overlay" id="aiModalOverlay" onclick="if(event.target===this)closeAIModal()">
   <div class="ai-modal">
     <h2 data-i18n="aiAssistant">AI Assistant</h2>
-    <div class="ai-provider-cards">
-      <div class="ai-provider-card" id="card-anthropic" onclick="selectProvider('anthropic')">
-        <div class="ai-card-title">Anthropic Claude</div>
-        <div class="ai-card-desc">Your own key. Claude Sonnet — powerful and precise.</div>
-        <div class="ai-card-badge ai-badge-paid">Own Key</div>
-      </div>
-      <div class="ai-provider-card" id="card-gemini" onclick="selectProvider('gemini')">
-        <div class="ai-card-title">Gemini 2.5 Flash</div>
-        <div class="ai-card-desc">Free tier via Google. Use a personal Gmail account.</div>
-        <div class="ai-card-badge ai-badge-free">Free</div>
-      </div>
-      <div class="ai-provider-card" id="card-groq" onclick="selectProvider('groq')">
-        <div class="ai-card-title">Groq (Llama 3.3)</div>
-        <div class="ai-card-desc">Free tier. Any email — no Google account needed.</div>
-        <div class="ai-card-badge ai-badge-groq">Free</div>
-      </div>
-      <div class="ai-provider-card" id="card-none" onclick="selectProvider('none')">
-        <div class="ai-card-title">No AI</div>
-        <div class="ai-card-desc">Read and annotate without AI assistance.</div>
-        <div class="ai-card-badge ai-badge-none">Off</div>
-      </div>
+    <div class="ai-setup-hint" id="aiSetupHint" data-i18n="aiSetupHint">Pick a model below to enable Ask LLM.</div>
+    <div class="ai-tabs" id="aiTabs">
+      <button type="button" class="ai-tab" data-tab="local" onclick="setModalTab('local')" data-i18n="tabLocal">Local</button>
+      <button type="button" class="ai-tab" data-tab="free"  onclick="setModalTab('free')">$0</button>
+      <button type="button" class="ai-tab" data-tab="pay"   onclick="setModalTab('pay')" data-i18n="tabPay">Pay</button>
     </div>
+    <div class="ai-provider-cards" id="aiProviderCards"></div>
     <div class="ai-key-section" id="aiKeySection" style="display:none">
       <input type="password" id="aiKeyInput" placeholder="Paste your API key here…" autocomplete="off" spellcheck="false"
         onkeydown="if(event.key==='Enter')saveAISettings();if(event.key==='Escape')closeAIModal()">
@@ -603,6 +618,7 @@ body {
     <div class="ai-modal-actions">
       <button class="am-save" onclick="saveAISettings()" data-i18n="aiSave">Save</button>
       <button class="am-cancel" onclick="closeAIModal()" data-i18n="aiCancel">Cancel</button>
+      <button class="am-off" onclick="turnOffAI()" data-i18n="turnOffAI">Turn off AI</button>
     </div>
   </div>
 </div>
@@ -794,7 +810,19 @@ const PROVIDER_KEY  = 'cr_provider';
 const ANTHROPIC_KEY = 'cr_anthropic_key';
 const GEMINI_KEY    = 'cr_gemini_key';
 const GROQ_KEY      = 'cr_groq_key';
+const OPENAI_KEY    = 'cr_openai_key';
+const DEEPSEEK_KEY  = 'cr_deepseek_key';
 const LOCAL_ENDPOINTS_KEY = 'cr_local_endpoints';
+
+// OpenAI-compatible cloud providers share one wire protocol: POST to a
+// /v1/chat/completions endpoint with Bearer auth. Add a row here and the
+// askAI() generic branch picks it up automatically.
+const OPENAI_COMPAT_PROVIDERS = {
+  groq:     { name: 'Groq',     endpoint: 'https://api.groq.com/openai/v1/chat/completions', model: 'llama-3.3-70b-versatile' },
+  openai:   { name: 'OpenAI',   endpoint: 'https://api.openai.com/v1/chat/completions',      model: 'gpt-4o' },
+  deepseek: { name: 'DeepSeek', endpoint: 'https://api.deepseek.com/v1/chat/completions',    model: 'deepseek-chat' },
+};
+const CLOUD_PROVIDERS = ['anthropic','gemini','groq','openai','deepseek'];
 
 // Well-known ports for popular local LLM servers. Probed when the AI modal
 // opens so users running these don't have to type a URL. The result is shown
@@ -890,10 +918,28 @@ async function verifySavedLocalProvider() {
 }
 function getStoredKey(provider) {
   if (provider === 'anthropic') return localStorage.getItem(ANTHROPIC_KEY) || '';
-  if (provider === 'gemini')    return localStorage.getItem(GEMINI_KEY) || '';
-  if (provider === 'groq')      return localStorage.getItem(GROQ_KEY) || '';
+  if (provider === 'gemini')    return localStorage.getItem(GEMINI_KEY)    || '';
+  if (provider === 'groq')      return localStorage.getItem(GROQ_KEY)      || '';
+  if (provider === 'openai')    return localStorage.getItem(OPENAI_KEY)    || '';
+  if (provider === 'deepseek')  return localStorage.getItem(DEEPSEEK_KEY)  || '';
   if (provider && provider.startsWith('local:')) return 'local';  // no key needed
   return '';
+}
+
+function storageKeyForProvider(p) {
+  if (p === 'anthropic') return ANTHROPIC_KEY;
+  if (p === 'gemini')    return GEMINI_KEY;
+  if (p === 'groq')      return GROQ_KEY;
+  if (p === 'openai')    return OPENAI_KEY;
+  if (p === 'deepseek')  return DEEPSEEK_KEY;
+  return null;
+}
+
+function tabForProvider(p) {
+  if (!p || p === 'none' || p === '__add_local__') return 'local';
+  if (p.startsWith('local:')) return 'local';
+  if (p === 'gemini' || p === 'groq') return 'free';
+  return 'pay';  // anthropic, openai, deepseek
 }
 
 async function discoverModelsAt(url) {
@@ -925,20 +971,27 @@ async function probeWellKnownLocalServers() {
 }
 
 let _modalProvider = 'none';
+let _modalActiveTab = 'local';  // 'local' | 'free' | 'pay'
+
+function setModalTab(tab) {
+  _modalActiveTab = tab;
+  _refreshModalCards();
+}
 
 function updateAIBtn() {
   const btn   = document.getElementById('aiBtn');
   const label = document.getElementById('aiBtnLabel');
   const p = getProvider();
-  if (p === 'anthropic') {
+  const cloudLabel = {
+    anthropic: 'Claude',
+    gemini:    'Gemini',
+    groq:      'Groq',
+    openai:    'GPT-4o',
+    deepseek:  'DeepSeek',
+  };
+  if (cloudLabel[p]) {
     btn.classList.add('ai-active');
-    label.textContent = getStoredKey('anthropic') ? 'AI: Claude ✓' : 'AI: Claude (no key)';
-  } else if (p === 'gemini') {
-    btn.classList.add('ai-active');
-    label.textContent = getStoredKey('gemini') ? 'AI: Gemini ✓' : 'AI: Gemini (no key)';
-  } else if (p === 'groq') {
-    btn.classList.add('ai-active');
-    label.textContent = getStoredKey('groq') ? 'AI: Groq ✓' : 'AI: Groq (no key)';
+    label.textContent = getStoredKey(p) ? `AI: ${cloudLabel[p]} ✓` : `AI: ${cloudLabel[p]} (no key)`;
   } else if (p && p.startsWith('local:')) {
     btn.classList.add('ai-active');
     const parsed = parseLocalProvider(p);
@@ -951,13 +1004,17 @@ function updateAIBtn() {
 
 function openAIModal() {
   _modalProvider = getProvider();
+  _modalActiveTab = tabForProvider(_modalProvider);
   _showAddLocal = false;
   _detectedLocalServers = [];
   _localModelsByEndpoint = {};
+  // Show the orientation hint only when nothing is configured yet.
+  const hint = document.getElementById('aiSetupHint');
+  if (hint) hint.style.display = (_modalProvider === 'none') ? '' : 'none';
   _refreshModalCards();   // initial render with what we have
   _refreshKeySection();
   document.getElementById('aiModalOverlay').classList.add('open');
-  if (['anthropic','gemini','groq'].includes(_modalProvider)) {
+  if (CLOUD_PROVIDERS.includes(_modalProvider)) {
     setTimeout(() => document.getElementById('aiKeyInput').focus(), 50);
   }
   // Probe + discover in the background; re-render when results arrive.
@@ -973,29 +1030,35 @@ function closeAIModal() {
 function selectProvider(p) {
   _modalProvider = p;
   _showAddLocal = (p === '__add_local__');
+  // User has made a choice — hide the orientation hint.
+  const hint = document.getElementById('aiSetupHint');
+  if (hint) hint.style.display = 'none';
   _refreshModalCards();
   _refreshKeySection();
-  if (['anthropic','gemini','groq'].includes(p)) {
-    setTimeout(() => document.getElementById('aiKeyInput').focus(), 30);
-  } else if (_showAddLocal) {
+  if (CLOUD_PROVIDERS.includes(p) || _showAddLocal) {
     setTimeout(() => document.getElementById('aiKeyInput').focus(), 30);
   }
 }
 
+function turnOffAI() {
+  localStorage.setItem(PROVIDER_KEY, 'none');
+  _runtimeProviderOverride = null;
+  closeAIModal();
+  updateAIBtn();
+}
+
 function _refreshModalCards() {
-  // Static cards: anthropic / gemini / groq / none
-  ['anthropic','gemini','groq','none'].forEach(p => {
-    document.getElementById('card-' + p).classList.toggle('selected', p === _modalProvider);
+  // Active-tab indicator
+  document.querySelectorAll('.ai-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === _modalActiveTab);
   });
-  // Dynamic cards: discovered local models, "Detected" suggestions, "+ Add local server"
-  const container = document.querySelector('.ai-provider-cards');
-  // Drop any previously-injected dynamic cards (those carry a data-dynamic flag)
-  container.querySelectorAll('[data-dynamic="1"]').forEach(el => el.remove());
+
+  const container = document.getElementById('aiProviderCards');
+  container.innerHTML = '';
 
   const inject = (opts) => {
     const div = document.createElement('div');
     div.className = `ai-provider-card${opts.selected ? ' selected' : ''}`;
-    div.dataset.dynamic = '1';
     if (opts.dashed) div.style.borderStyle = 'dashed';
     div.innerHTML = `
       <div class="ai-card-title">${escHtml(opts.title)}</div>
@@ -1006,60 +1069,96 @@ function _refreshModalCards() {
     container.appendChild(div);
   };
 
-  // Saved local-endpoint model tiles
-  for (const url of getStoredLocalEndpoints()) {
-    const models = _localModelsByEndpoint[url] || [];
-    if (models.length === 0) {
-      inject({
-        title: prettyUrl(url),
-        desc: 'No models found yet — is this server running?',
-        badge: 'Local', badgeClass: 'ai-badge-none',
-        onClick: () => discoverModelsAt(url).then(ms => { _localModelsByEndpoint[url] = ms; _refreshModalCards(); }),
-      });
-    } else {
-      for (const m of models) {
-        const provId = `local:${url}:${m.id}`;
+  if (_modalActiveTab === 'local') {
+    // Saved local-endpoint model tiles
+    for (const url of getStoredLocalEndpoints()) {
+      const models = _localModelsByEndpoint[url] || [];
+      if (models.length === 0) {
         inject({
-          title: m.label,
-          desc: `Runs on ${prettyUrl(url)}.`,
+          title: prettyUrl(url),
+          desc: 'No models found yet — is this server running?',
           badge: 'Local', badgeClass: 'ai-badge-none',
-          selected: provId === _modalProvider,
-          onClick: () => selectProvider(provId),
+          onClick: () => discoverModelsAt(url).then(ms => { _localModelsByEndpoint[url] = ms; _refreshModalCards(); }),
         });
+      } else {
+        for (const m of models) {
+          const provId = `local:${url}:${m.id}`;
+          inject({
+            title: m.label,
+            desc: `Runs on ${prettyUrl(url)}.`,
+            badge: 'Local', badgeClass: 'ai-badge-none',
+            selected: provId === _modalProvider,
+            onClick: () => selectProvider(provId),
+          });
+        }
       }
     }
-  }
-
-  // "Detected:" tiles for well-known ports that responded but aren't saved
-  for (const sug of _detectedLocalServers) {
-    const firstModel = sug.models[0];
-    const provId = `local:${sug.url}:${firstModel.id}`;
+    // "Detected:" tiles for well-known ports that responded but aren't saved
+    for (const sug of _detectedLocalServers) {
+      const firstModel = sug.models[0];
+      const provId = `local:${sug.url}:${firstModel.id}`;
+      inject({
+        title: `Detected: ${prettyUrl(sug.url)}`,
+        desc: `${sug.hint} · ${firstModel.label}${sug.models.length > 1 ? ` (+${sug.models.length - 1} more)` : ''} · click to add`,
+        badge: 'Local', badgeClass: 'ai-badge-none',
+        dashed: true,
+        onClick: () => {
+          const list = getStoredLocalEndpoints();
+          if (!list.includes(sug.url)) {
+            list.push(sug.url);
+            setStoredLocalEndpoints(list);
+          }
+          _localModelsByEndpoint[sug.url] = sug.models;
+          _detectedLocalServers = _detectedLocalServers.filter(s => s.url !== sug.url);
+          selectProvider(provId);
+        },
+      });
+    }
     inject({
-      title: `Detected: ${prettyUrl(sug.url)}`,
-      desc: `${sug.hint} · ${firstModel.label}${sug.models.length > 1 ? ` (+${sug.models.length - 1} more)` : ''} · click to add`,
-      badge: 'Local', badgeClass: 'ai-badge-none',
+      title: '+ Add local server',
+      desc: 'Connect to an OpenAI-compatible LLM on your machine or network.',
       dashed: true,
-      onClick: () => {
-        const list = getStoredLocalEndpoints();
-        if (!list.includes(sug.url)) {
-          list.push(sug.url);
-          setStoredLocalEndpoints(list);
-        }
-        _localModelsByEndpoint[sug.url] = sug.models;
-        _detectedLocalServers = _detectedLocalServers.filter(s => s.url !== sug.url);
-        selectProvider(provId);
-      },
+      selected: _modalProvider === '__add_local__',
+      onClick: () => selectProvider('__add_local__'),
+    });
+  } else if (_modalActiveTab === 'free') {
+    inject({
+      title: 'Gemini 2.5 Flash',
+      desc: 'Free tier via Google. Use a personal Gmail account.',
+      badge: 'Free', badgeClass: 'ai-badge-free',
+      selected: _modalProvider === 'gemini',
+      onClick: () => selectProvider('gemini'),
+    });
+    inject({
+      title: 'Groq (Llama 3.3)',
+      desc: 'Free tier. Any email — no Google account needed.',
+      badge: 'Free', badgeClass: 'ai-badge-groq',
+      selected: _modalProvider === 'groq',
+      onClick: () => selectProvider('groq'),
+    });
+  } else if (_modalActiveTab === 'pay') {
+    inject({
+      title: 'Anthropic Claude',
+      desc: 'Your own key. Claude Sonnet — powerful and precise.',
+      badge: 'Own Key', badgeClass: 'ai-badge-paid',
+      selected: _modalProvider === 'anthropic',
+      onClick: () => selectProvider('anthropic'),
+    });
+    inject({
+      title: 'OpenAI (GPT-4o)',
+      desc: 'Your own key. ChatGPT models via the OpenAI API.',
+      badge: 'Own Key', badgeClass: 'ai-badge-paid',
+      selected: _modalProvider === 'openai',
+      onClick: () => selectProvider('openai'),
+    });
+    inject({
+      title: 'DeepSeek',
+      desc: 'Your own key. Inexpensive per token; OpenAI-compatible.',
+      badge: 'Own Key', badgeClass: 'ai-badge-paid',
+      selected: _modalProvider === 'deepseek',
+      onClick: () => selectProvider('deepseek'),
     });
   }
-
-  // "+ Add local server" tile (always present, last)
-  inject({
-    title: '+ Add local server',
-    desc: 'Connect to an OpenAI-compatible LLM on your machine or network.',
-    dashed: true,
-    selected: _modalProvider === '__add_local__',
-    onClick: () => selectProvider('__add_local__'),
-  });
 }
 
 function prettyUrl(url) {
@@ -1092,6 +1191,10 @@ function _refreshKeySection() {
     return;
   }
   // Cloud provider — show API key input.
+  if (!CLOUD_PROVIDERS.includes(_modalProvider)) {
+    section.style.display = 'none';
+    return;
+  }
   section.style.display = 'block';
   input.type = 'password';
   const stored = getStoredKey(_modalProvider);
@@ -1102,9 +1205,15 @@ function _refreshKeySection() {
   } else if (_modalProvider === 'gemini') {
     input.placeholder = 'AIza…';
     hint.innerHTML = 'Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com</a> to get your free key — <strong style="color:#D4A843">use a personal Gmail, not a school account.</strong> Stored only in your browser. Never shared.';
-  } else {
+  } else if (_modalProvider === 'groq') {
     input.placeholder = 'gsk_…';
     hint.innerHTML = 'Visit <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com</a> to get your free key — any email works, no Google account needed. Stored only in your browser. Never shared.';
+  } else if (_modalProvider === 'openai') {
+    input.placeholder = 'sk-…';
+    hint.innerHTML = 'Get a key at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a>. Requires a paid OpenAI account. Stored only in your browser. Never shared.';
+  } else if (_modalProvider === 'deepseek') {
+    input.placeholder = 'sk-…';
+    hint.innerHTML = 'Get a key at <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener">platform.deepseek.com</a>. Inexpensive per-token pricing. Stored only in your browser. Never shared.';
   }
 }
 
@@ -1141,11 +1250,9 @@ function saveAISettings() {
   const val = document.getElementById('aiKeyInput').value.trim();
   localStorage.setItem(PROVIDER_KEY, _modalProvider);
   _runtimeProviderOverride = null;  // user explicit choice — drop the boot-time fallback
-  if (['anthropic','gemini','groq'].includes(_modalProvider) && val && !val.startsWith('•')) {
-    const storageKey = _modalProvider === 'anthropic' ? ANTHROPIC_KEY
-                     : _modalProvider === 'gemini'    ? GEMINI_KEY
-                     :                                  GROQ_KEY;
-    localStorage.setItem(storageKey, val);
+  if (CLOUD_PROVIDERS.includes(_modalProvider) && val && !val.startsWith('•')) {
+    const storageKey = storageKeyForProvider(_modalProvider);
+    if (storageKey) localStorage.setItem(storageKey, val);
   }
   closeAIModal();
   updateAIBtn();
@@ -2083,10 +2190,12 @@ function showSelectionMenu() {
   selectionMenu.style.top = top + 'px';
   selectionMenu.classList.add('open');
 
+  // Always enabled: if no provider is configured, the click opens AI Setup
+  // instead of doing nothing — the disabled state was hiding the path forward.
   const askBtn = document.getElementById('menuAskBtn');
   const hasProvider = getProvider() !== 'none';
-  askBtn.disabled = !hasProvider;
-  askBtn.title = hasProvider ? t('askLLMTitleEnabled') : t('askLLMTitleDisabled');
+  askBtn.disabled = false;
+  askBtn.title = hasProvider ? t('askLLMTitleEnabled') : t('askLLMTitleSetup');
 }
 
 function closeSelectionMenu() {
@@ -2193,6 +2302,14 @@ function markHighlight() {
 
 function openQueryPopup() {
   if (!selectedText || !selectedRect) return;
+  // No provider yet — open AI Setup so the user can pick one. The disabled-
+  // button-with-tooltip pattern was hiding the path forward; this turns the
+  // dead-end into the on-ramp.
+  if (getProvider() === 'none') {
+    closeSelectionMenu();
+    openAIModal();
+    return;
+  }
   closeSelectionMenu();
   popupPassage.textContent = selectedText.length > 100 ? selectedText.substring(0, 100) + '…' : selectedText;
   const rect = selectedRect;
@@ -2310,7 +2427,11 @@ const UI_TRANSLATIONS = {
     highlightTitle: 'Highlight without asking',
     askLLMBtn: '🔵 Ask LLM',
     askLLMTitleEnabled: 'Ask the selected LLM about this passage',
-    askLLMTitleDisabled: 'AI is off — pick a model in the AI button (top right) to enable this',
+    askLLMTitleSetup: 'Click to set up a model and enable Ask LLM',
+    tabLocal: 'Local',
+    tabPay: 'Pay',
+    turnOffAI: 'Turn off AI',
+    aiSetupHint: 'Pick a model below to enable Ask LLM.',
     copyBtn: '📋 Copy',
     copyTitle: 'Copy selection to clipboard',
     copied: '✓ Copied',
@@ -2354,7 +2475,11 @@ const UI_TRANSLATIONS = {
     highlightTitle: 'Resaltar sin preguntar',
     askLLMBtn: '🔵 Preguntar al LLM',
     askLLMTitleEnabled: 'Preguntar al LLM seleccionado sobre este pasaje',
-    askLLMTitleDisabled: 'La IA está apagada — elige un modelo en el botón de IA (arriba a la derecha) para habilitarlo',
+    askLLMTitleSetup: 'Haz clic para configurar un modelo y habilitar Preguntar al LLM',
+    tabLocal: 'Local',
+    tabPay: 'Pago',
+    turnOffAI: 'Apagar IA',
+    aiSetupHint: 'Elige un modelo abajo para habilitar Preguntar al LLM.',
     copyBtn: '📋 Copiar',
     copyTitle: 'Copiar la selección al portapapeles',
     copied: '✓ Copiado',
@@ -2398,7 +2523,11 @@ const UI_TRANSLATIONS = {
     highlightTitle: 'Επισήμανση χωρίς ερώτηση',
     askLLMBtn: '🔵 Ρώτα το LLM',
     askLLMTitleEnabled: 'Ρώτα το επιλεγμένο LLM για αυτό το απόσπασμα',
-    askLLMTitleDisabled: 'Το AI είναι ανενεργό — επίλεξε μοντέλο από το κουμπί AI (επάνω δεξιά)',
+    askLLMTitleSetup: 'Κάνε κλικ για να ρυθμίσεις ένα μοντέλο και να ενεργοποιήσεις το Ρώτα το LLM',
+    tabLocal: 'Τοπικά',
+    tabPay: 'Με χρέωση',
+    turnOffAI: 'Απενεργοποίηση AI',
+    aiSetupHint: 'Επίλεξε ένα μοντέλο παρακάτω για να ενεργοποιήσεις το Ρώτα το LLM.',
     copyBtn: '📋 Αντιγραφή',
     copyTitle: 'Αντιγραφή επιλογής στο πρόχειρο',
     copied: '✓ Αντιγράφηκε',
@@ -2441,7 +2570,11 @@ const UI_TRANSLATIONS = {
     highlightTitle: '高亮不提问',
     askLLMBtn: '🔵 询问 LLM',
     askLLMTitleEnabled: '就此段落询问所选 LLM',
-    askLLMTitleDisabled: 'AI 已关闭 — 在右上角的 AI 按钮中选择模型以启用此功能',
+    askLLMTitleSetup: '点击设置一个模型以启用询问 LLM',
+    tabLocal: '本地',
+    tabPay: '付费',
+    turnOffAI: '关闭 AI',
+    aiSetupHint: '在下方选择一个模型以启用询问 LLM。',
     copyBtn: '📋 复制',
     copyTitle: '复制所选内容到剪贴板',
     copied: '✓ 已复制',
@@ -2484,7 +2617,11 @@ const UI_TRANSLATIONS = {
     highlightTitle: 'पूछे बिना हाइलाइट करें',
     askLLMBtn: '🔵 LLM से पूछें',
     askLLMTitleEnabled: 'चयनित LLM से इस अनुच्छेद के बारे में पूछें',
-    askLLMTitleDisabled: 'AI बंद है — इसे सक्षम करने के लिए ऊपर दाएँ AI बटन में मॉडल चुनें',
+    askLLMTitleSetup: 'LLM से पूछें सक्षम करने के लिए मॉडल सेट करने हेतु क्लिक करें',
+    tabLocal: 'स्थानीय',
+    tabPay: 'भुगतान',
+    turnOffAI: 'AI बंद करें',
+    aiSetupHint: 'LLM से पूछें सक्षम करने के लिए नीचे एक मॉडल चुनें।',
     copyBtn: '📋 कॉपी',
     copyTitle: 'चयन को क्लिपबोर्ड पर कॉपी करें',
     copied: '✓ कॉपी हो गया',
@@ -2527,7 +2664,11 @@ const UI_TRANSLATIONS = {
     highlightTitle: 'Fremhev uten å spørre',
     askLLMBtn: '🔵 Spør LLM',
     askLLMTitleEnabled: 'Spør den valgte LLM om dette avsnittet',
-    askLLMTitleDisabled: 'AI er av — velg en modell i AI-knappen (øverst til høyre) for å aktivere dette',
+    askLLMTitleSetup: 'Klikk for å sette opp en modell og aktivere Spør LLM',
+    tabLocal: 'Lokal',
+    tabPay: 'Betal',
+    turnOffAI: 'Slå av AI',
+    aiSetupHint: 'Velg en modell nedenfor for å aktivere Spør LLM.',
     copyBtn: '📋 Kopier',
     copyTitle: 'Kopier valg til utklippstavlen',
     copied: '✓ Kopiert',
@@ -2700,29 +2841,31 @@ async function askAI(passage, question, context, lang) {
     }
   }
 
-  if (provider === 'groq') {
+  // OpenAI-compatible providers (groq, openai, deepseek) share one wire format.
+  if (OPENAI_COMPAT_PROVIDERS[provider]) {
+    const cfg = OPENAI_COMPAT_PROVIDERS[provider];
     try {
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      const res = await fetch(cfg.endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
+          model: cfg.model,
           max_tokens: 1000,
-          messages: [{ role: 'user', content: prompt }]
-        })
+          messages: [{ role: 'user', content: prompt }],
+        }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        if (res.status === 401) return 'Invalid Groq key. Update it via the AI button in the header.';
-        return `Groq API error ${res.status}: ${err?.error?.message || 'Unknown error'}`;
+        if (res.status === 401) return `Invalid ${cfg.name} key. Update it via the AI button in the header.`;
+        return `${cfg.name} API error ${res.status}: ${err?.error?.message || 'Unknown error'}`;
       }
       const data = await res.json();
       return data.choices?.[0]?.message?.content || 'No response received.';
     } catch (err) {
-      return 'Error reaching Groq. Please check your connection and try again.';
+      return `Error reaching ${cfg.name}. Please check your connection and try again.`;
     }
   }
 
