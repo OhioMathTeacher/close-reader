@@ -116,6 +116,7 @@ body {
 .main-container {
   display: grid; grid-template-columns: 1fr 360px;
   max-width: 1220px; margin: 0 auto;
+  padding: 0 1.5rem;
   height: calc(100vh - 110px);
 }
 
@@ -442,6 +443,10 @@ body {
 .ai-provider-cards {
   display: grid; grid-template-columns: repeat(2,1fr); gap: 0.6rem;
   margin-bottom: 1.1rem;
+  /* Lock to "2 rows of cards" so the modal doesn't jump in height when
+     switching between tabs with different card counts (Local/$0/Pay). */
+  min-height: 210px;
+  align-content: start;
 }
 .ai-provider-card {
   background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.08);
