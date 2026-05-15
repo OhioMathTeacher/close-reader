@@ -10,6 +10,8 @@
   --parchment: #F8F4EC;
   --ink: #2C2416;
   --margin-bg: #EFEBE2;
+  --page-frame: #B5AC95;        /* muted tan that frames the page card on wide screens */
+  --content-gutter: 2rem;       /* shared L/R padding so header text + body text align */
   --accent: #7A3B10;
   --accent-light: #C69A5C;
   --highlight-soft: rgba(198, 154, 92, 0.18);
@@ -26,7 +28,7 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
   font-family: 'Crimson Pro', Georgia, serif;
-  background: var(--parchment);
+  background: var(--page-frame);  /* shows on either side of the centered page card on wide screens */
   color: var(--ink);
   line-height: 1.78;
   font-size: 18px;
@@ -37,8 +39,14 @@ body {
 .site-header {
   background: var(--cave-dark);
   color: #DDD3C0;
-  padding: 1.6rem 2rem 1.2rem;
+  /* L/R padding matches the body text padding so "Analects, Book 1" lines up with the
+     reading text below, and the right-side controls line up with the margin column edge. */
+  padding: 1.6rem var(--content-gutter) 1.2rem;
   position: relative; overflow: hidden;
+  /* Constrain the dark header band to the same width as the main container so the
+     muted page frame shows on either side of the whole card on wide viewports. */
+  max-width: 1220px;
+  margin: 0 auto;
 }
 .site-header::before {
   content:''; position:absolute; inset:0;
@@ -116,13 +124,14 @@ body {
 .main-container {
   display: grid; grid-template-columns: 1fr 360px;
   max-width: 1220px; margin: 0 auto;
-  padding: 0 1.5rem;
   height: calc(100vh - 110px);
 }
 
 /* ═══ TEXT COLUMN ═══ */
 .text-column {
-  padding: 2rem 2.8rem 4rem 2.8rem;
+  background: var(--parchment);  /* explicit, since body is now the page-frame color */
+  /* L padding aligns with header text; R padding falls inside the inner column rule. */
+  padding: 2rem var(--content-gutter) 4rem;
   overflow-y: auto; position: relative;
 }
 .text-column::after {
@@ -198,7 +207,10 @@ body {
 /* ═══ COMMENT COLUMN ═══ */
 .comment-column {
   background: var(--margin-bg);
-  padding: 1.5rem 1.1rem;
+  /* Right padding matches the header gutter so the margin notes' inner edge lines
+     up with the reading controls' right edge. Left padding stays tighter to keep
+     the panel content area generous. */
+  padding: 1.5rem var(--content-gutter) 1.5rem 1.1rem;
   overflow-y: auto; position: relative;
 }
 .margin-header {
