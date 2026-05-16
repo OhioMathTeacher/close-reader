@@ -152,6 +152,48 @@ body {
   font-size: 0.72rem; font-weight: 500; font-style: italic;
   color: var(--muted); margin-bottom: 0.15rem; margin-top: 1.2rem;
 }
+
+/* ═══ ABOUT PAGE ACCORDION ═══
+   The About reading renders each section as a collapsible <details> block.
+   The section label (e.g. "Features") becomes the big clickable summary; the
+   section title (if any) and paragraphs render inside the open body. */
+.about-section { border-bottom: 1px solid rgba(143, 134, 122, 0.22); }
+.about-section:last-child { border-bottom: none; }
+.about-summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 0.95rem 0;
+  font-family: 'Crimson Pro', serif;
+  font-weight: 500; font-size: 1.4rem;
+  color: var(--cave-dark); letter-spacing: 0.01em;
+  display: flex; align-items: baseline; gap: 0.7rem;
+  user-select: none;
+  transition: color 0.15s;
+}
+.about-summary::-webkit-details-marker { display: none; }
+.about-summary::before {
+  content: '▸';
+  display: inline-block;
+  color: var(--accent);
+  font-size: 0.7em;
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+.about-section[open] > .about-summary::before { transform: rotate(90deg); }
+.about-summary:hover { color: var(--accent); }
+.about-section-body { padding: 0 0 1.5rem 1.5rem; }
+/* Override .section-title inside the accordion body — drop its top margin. */
+.about-section-body > .section-title {
+  font-size: 1.05rem; margin-top: 0.2rem; margin-bottom: 0.9rem;
+}
+/* About uses .para-heading for real sub-headings (not Confucius verse numbers),
+   so size it like a tertiary heading rather than a tiny italic label. */
+.about-section-body .para-heading {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem; font-weight: 600; font-style: normal;
+  color: var(--cave-dark); margin-top: 1rem; margin-bottom: 0.25rem;
+  letter-spacing: 0.01em;
+}
 .text-paragraph {
   margin-bottom: 0.6rem;
   text-align: justify;
@@ -2508,92 +2550,6 @@ const ABOUT_READING = {
         },
       ],
     },
-    no: {
-      label: 'Norsk',
-      translator: 'Machine translation (Claude Opus)',
-      machineTranslated: true,
-      aboutTagline: 'En flerspråklig lese- og notatprogramvare — drevet av AI',
-      sections: [
-        {
-          id: 'welcome', label: 'Velkommen', title: '',
-          paragraphs: [
-            { text: "Close Reader er et verktøy for nær tekstlesing og AI-assistert annotering. Velg et hvilket som helst avsnitt i en lesing og enten uthev det (gult) eller spør en LLM om det (blått). Notatene dine lagres automatisk i nettleseren din — ingen konto nødvendig." },
-            { text: "Velg en lesing fra menyen øverst for å begynne. Hver lesing har sine egne oversettelser; bruk språkknappene for å bytte mellom dem. For å aktivere Spør LLM, klikk på AI-knappen øverst til høyre og velg en modell fra Lokal, $0 eller Betal. API-nøkkelen din lagres bare i nettleseren din, og sendes aldri til noen server vi kontrollerer." },
-            { text: "For mer informasjon, uthev et hvilket som helst begrep på denne siden og still et spørsmål." },
-          ],
-        },
-        {
-          id: 'features', label: 'Funksjoner', title: 'Hva Close Reader gjør',
-          paragraphs: [
-            { heading: 'Et voksende bibliotek', text: "Lesinger inkluderer for tiden Gandhis Hind Swaraj, Konfucius' Analekter, Bryants Thanatopsis, Platons Hulelignelse og Ibsens Et dukkehjem — med flere på vei." },
-            { heading: 'Seks grensesnittspråk', text: "Engelsk, spansk, gresk (moderne), kinesisk, hindi og norsk. Hver lesing leveres også med sine egne språkoversettelser." },
-            { heading: 'Mange AI-leverandører', text: "Anthropic Claude, Google Gemini, Groq, OpenAI, DeepSeek — eller kjør en lokal modell med Ollama, LM Studio eller llama.cpp. Du kan konfigurere flere leverandører og bytte mellom dem per spørsmål." },
-            { heading: 'Uthevinger og spørsmål', text: "Marker et avsnitt med gult for deg selv, eller spør LLM-en om det med blått. Begge lagres i margkolonnen til høyre." },
-            { heading: 'Autolagring og portabilitet', text: "Notater lagres automatisk per lesing via nettleserens localStorage. Eksporter og importer alle notatene dine som JSON for å sikkerhetskopiere dem eller flytte dem til en annen nettleser." },
-          ],
-        },
-        {
-          id: 'how-to', label: 'Hvordan bruke', title: 'Kom i gang',
-          paragraphs: [
-            { heading: '1. Velg en lesing', text: "Bruk rullegardinmenyen øverst på siden for å velge en lesing. Valget ditt beholdes mellom besøk." },
-            { heading: '2. Bytt språk hvis du vil', text: "Hvis lesingen har flere oversettelser, vises språkknappene til høyre. Klikk på en for å bytte." },
-            { heading: '3. Velg et avsnitt', text: "Dra for å velge hvilken som helst tekst i lesingen. En flytende meny dukker opp med Uthev, Spør LLM og Kopier." },
-            { heading: '4. Annoter', text: "Uthev markerer avsnittet med gult. Spør LLM åpner en spørreboks; spørsmålet ditt og modellens svar lagres i margkolonnen med blått." },
-            { heading: '5. Administrer notatene dine', text: "Bruk Margnotater-overskriften for å justere skriftstørrelse, eksportere, importere eller tømme notatene dine. Notater lagres per lesing per nettleser." },
-          ],
-        },
-        {
-          id: 'ai-providers', label: 'AI-leverandører', title: 'Velge en modell',
-          paragraphs: [
-            { text: "AI-oppsett-vinduet grupperer leverandører i tre faner: Lokal for modeller som kjører på din egen maskin, $0 for skyleverandører med gratisnivåer, og Betal for skyleverandører som krever en betalingsbasert konto." },
-            { heading: 'Lokal — Ollama, LM Studio, llama.cpp', text: "Close Reader sjekker velkjente localhost-porter når AI-vinduet åpnes og viser oppdagede servere som ettklikks-fliser. Installer Ollama fra ollama.com og hent en modell som llama3.2 eller gemma3:27b. LM Studios innebygde server fungerer på samme måte. Du kan også legge til en hvilken som helst OpenAI-kompatibel lokal endepunkt manuelt via + Legg til lokal server-alternativet." },
-            { heading: '$0 — Google Gemini (Gratis)', text: "Få en gratis API-nøkkel fra aistudio.google.com ved hjelp av en personlig Gmail-konto. Skole-G-Suite-kontoer har ofte tjenesten deaktivert. Sjenerøse daglige grenser og ingen kredittkort kreves — det beste alternativet for de fleste studenter." },
-            { heading: '$0 — Groq (Gratis)', text: "Gratis, veldig rask Llama 3.3 70B-inferens. Registrer deg på console.groq.com med hvilken som helst e-post. Et godt alternativ når Google Workspace er blokkert på skolen." },
-            { heading: 'Betal — Anthropic Claude', text: "Få en nøkkel på console.anthropic.com. Utmerket resonnement for nyanserte spørsmål. Anthropic tilbyr vanligvis gratis prøvekreditter til å begynne med; deretter omtrent ti til tretti cent per spørsmål avhengig av lengde." },
-            { heading: 'Betal — OpenAI', text: "Få en nøkkel på platform.openai.com etter å ha lagt til en betalingsmetode. Bruker gpt-4o." },
-            { heading: 'Betal — DeepSeek', text: "Få en nøkkel på platform.deepseek.com. Veldig rimelig per token." },
-            { heading: 'Ingen AI', text: "Close Reader fungerer uten AI. Uthev avsnitt, ta margnotater og eksporter dem som JSON — helt frakoblet." },
-          ],
-        },
-        {
-          id: 'privacy', label: 'Personvern', title: 'Dataene dine forblir dine',
-          paragraphs: [
-            { text: "Close Reader er bevisst lokal. Det er ingen backend, ingen konto, ingen analyse, ingen informasjonskapsler. Alt du gjør lever i nettleserens lagring." },
-            { text: "API-nøkler lagres bare i nettleseren din via localStorage. De overføres aldri til noen server vi kontrollerer. Når du stiller et spørsmål, sendes nøkkelen direkte til leverandøren du valgte — eller til 127.0.0.1 hvis du kjører en lokal modell." },
-            { text: "Appen er en enkelt åpen-kildekode HTML-fil. Du kan lese hver linje selv." },
-            { text: "Lokalheten er et bevisst designvalg. Fokuset er på lesingen — ikke på kontoer, deling eller sosiale funksjoner." },
-          ],
-        },
-        {
-          id: 'troubleshooting', label: 'Feilsøking', title: 'Når noe går galt',
-          paragraphs: [
-            { heading: 'Ugyldig API-nøkkel', text: "Sørg for at du kopierte hele nøkkelen uten innledende eller etterfølgende mellomrom. For Gemini, bekreft at du brukte en personlig Gmail-konto, ikke en skole-konto. Hvis du er i tvil, generer nøkkelen på nytt i leverandørens dashbord og prøv igjen." },
-            { heading: 'Nøkkelen lagres ikke', text: "Sjekk at nettleseren din tillater localStorage. Privat eller inkognito-modus deaktiverer det ofte. Prøv et vanlig vindu." },
-            { heading: 'Lokal modell ikke oppdaget', text: "Bekreft at serveren kjører. For Ollama bør curl http://127.0.0.1:11434/api/tags returnere en modellliste. For LM Studio, prøv http://127.0.0.1:1234/v1/models. Hvis du bruker en ikke-standard port, legg den til via + Legg til lokal server i AI-vinduet." },
-            { heading: 'Notater forsvant', text: "Notater er per lesing og per nettleser. Bytter du nettleser eller sletter nettstedsdata mister du dem — bruk Eksporter regelmessig for å sikkerhetskopiere til JSON." },
-          ],
-        },
-        {
-          id: 'roadmap', label: 'Veikart', title: 'Fremtidige planer',
-          paragraphs: [
-            { text: "Ideer på veikartet, alle designet for å passe den lokale arkitekturen:" },
-            { heading: 'Last inn og oversett PDF-er på sparket', text: "Slipp inn en hvilken som helst PDF og få en ren, avsnittsegmentert lesing med oversettelse på forespørsel til et hvilket som helst av grensesnittspråkene." },
-            { heading: 'Les høyt', text: "Tekst-til-tale for gjeldende avsnitt eller hele lesingen, med mulighet til å bruke en lokal stemme eller en sky-TTS-leverandør." },
-            { heading: 'En åpen-kildekode-bokhylle', text: "Et kuratert bibliotek med kodingstekster, Project Gutenberg-klassikere, primærkilder i offentlig eie og annet åpent lisensiert materiale, organisert etter fagområde." },
-            { heading: 'Parallelloversettelser side om side', text: "Vis to språk i tilstøtende kolonner i stedet for å veksle mellom dem — nyttig for språkstudenter og oversettere." },
-            { heading: 'Delbare annotasjonssett', text: "Eksporter en lesing sammen med margnotatene dine som en enkelt fil som en lærer eller studiegruppe kan importere." },
-            { heading: 'Ordforrådsordliste', text: "Bygg automatisk en personlig ordliste fra begrepene du spør LLM-en om, eksporterbar for flashcards eller repetisjon." },
-          ],
-        },
-        {
-          id: 'license', label: 'Lisens', title: '',
-          paragraphs: [
-            { text: "Close Reader er MIT-lisensiert. Bruk, modifiser og del fritt. Attribusjon settes pris på." },
-            { text: "Bygget for nær lesing og aktiv utforskning på tvers av alle fagområder." },
-          ],
-        },
-      ],
-    },
   },
 };
 
@@ -2652,16 +2608,16 @@ function renderText() {
   // About: third line is the app tagline (per language), not a translator credit.
   if (data.aboutTagline) translatorEl.textContent = data.aboutTagline;
 
-  let html = '';
-  for (const sec of (data.sections || [])) {
-    if (sec.label) html += `<div class="section-label">${escHtml(sec.label)}</div>`;
-    if (sec.title) html += `<div class="section-title">${escHtml(sec.title)}</div>`;
+  // About renders each section as a collapsible <details>; the first one opens.
+  const isAccordion = (currentReadingSlug === ABOUT_SLUG);
+  const PRIMARY_SPEAKERS = new Set(['SOCRATES', 'ΣΩΚΡΑΤΗΣ', 'EDITOR', 'HELMER']);
+
+  function renderParagraphs(sec) {
+    let out = '';
     for (const p of (sec.paragraphs || [])) {
-      if (p.heading) html += `<div class="para-heading">${escHtml(p.heading)}</div>`;
+      if (p.heading) out += `<div class="para-heading">${escHtml(p.heading)}</div>`;
       // Two visual styles for dialogue: "socrates" for the primary/teacher voice,
-      // "glaucon" for the questioner/respondent. Extend PRIMARY_SPEAKERS as new
-      // dialogue readings are added.
-      const PRIMARY_SPEAKERS = new Set(['SOCRATES', 'ΣΩΚΡΑΤΗΣ', 'EDITOR', 'HELMER']);
+      // "glaucon" for the questioner/respondent.
       const speakerClass = !p.speaker ? ''
                          : PRIMARY_SPEAKERS.has(p.speaker) ? 'socrates'
                          : 'glaucon';
@@ -2670,7 +2626,27 @@ function renderText() {
         ? `<span class="speaker-label ${speakerClass}">${escHtml(translateSpeaker(p.speaker))}:</span> `
         : '';
       const verseClass = (sec.verse || p.verse) ? ' verse' : '';
-      html += `<div class="text-paragraph${verseClass}">${speakerHtml}${textWithMarks}</div>`;
+      out += `<div class="text-paragraph${verseClass}">${speakerHtml}${textWithMarks}</div>`;
+    }
+    return out;
+  }
+
+  let html = '';
+  const sections = data.sections || [];
+  for (let i = 0; i < sections.length; i++) {
+    const sec = sections[i];
+    if (isAccordion) {
+      const summaryText = sec.label || sec.title || '';
+      html += `<details class="about-section"${i === 0 ? ' open' : ''}>`;
+      html += `<summary class="about-summary">${escHtml(summaryText)}</summary>`;
+      html += `<div class="about-section-body">`;
+      if (sec.title && sec.label) html += `<div class="section-title">${escHtml(sec.title)}</div>`;
+      html += renderParagraphs(sec);
+      html += `</div></details>`;
+    } else {
+      if (sec.label) html += `<div class="section-label">${escHtml(sec.label)}</div>`;
+      if (sec.title) html += `<div class="section-title">${escHtml(sec.title)}</div>`;
+      html += renderParagraphs(sec);
     }
   }
   textCol.innerHTML = html;
