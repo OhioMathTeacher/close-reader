@@ -91,21 +91,6 @@ body {
   margin-left: 0.5rem;
 }
 
-/* Small utility-row button (e.g., "Copy reading text"). Matches lang-btn weight. */
-.utility-row { display: flex; justify-content: flex-end; }
-.utility-btn {
-  font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 500;
-  letter-spacing: 0.04em;
-  background: transparent; color: var(--muted);
-  border: 1px solid rgba(212, 168, 67, 0.2);
-  border-radius: 4px;
-  padding: 0.3rem 0.6rem;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.utility-btn:hover { border-color: rgba(212, 168, 67, 0.55); color: var(--accent-light); }
-.utility-btn.flash { background: rgba(120, 200, 140, 0.18); border-color: rgba(120, 200, 140, 0.45); color: #7EC88A; }
-
 /* Verse paragraphs preserve line breaks (for poetry). */
 .text-paragraph.verse {
   white-space: pre-line;
@@ -649,9 +634,6 @@ body {
         <select id="readingSelect" onchange="switchReading(this.value)"></select>
       </div>
       <div class="lang-toggles" id="langToggles"></div>
-      <div class="utility-row">
-        <button class="utility-btn" id="copyReadingBtn" onclick="copyReadingText()" title="Copy the full reading text in the current language" data-i18n="copyReading" data-i18n-title="copyReadingTitle">📋 Copy text</button>
-      </div>
       <div class="instructions" data-i18n-html="instructionsHtml">
         <em>Select any text</em> — choose <strong>🟡 Highlight</strong> or <strong>🔵 Ask LLM</strong>.
       </div>
@@ -2349,59 +2331,6 @@ function closeSelectionMenu() {
   selectionMenu.classList.remove('open');
 }
 
-// Build a plain-text rendering of the current reading in the current language,
-// stripping HTML, speaker labels formatted, headings, etc. Used by the "Copy text"
-// utility button — much cleaner than Ctrl+A, which also grabs margin notes.
-function readingAsPlainText() {
-  const reading = currentReading();
-  if (!reading) return '';
-  const data = reading.languages?.[currentLang];
-  if (!data) return '';
-  const lines = [];
-  lines.push(reading.title);
-  lines.push(`${reading.author} · ${reading.source} · ${reading.reference}`);
-  if (data.translator) lines.push(`tr. ${data.translator}`);
-  lines.push('');
-  for (const sec of (data.sections || [])) {
-    if (sec.label) lines.push(sec.label);
-    if (sec.title) lines.push(sec.title);
-    if (sec.label || sec.title) lines.push('');
-    for (const p of (sec.paragraphs || [])) {
-      if (p.heading) lines.push(p.heading);
-      const speaker = p.speaker ? `${p.speaker}: ` : '';
-      lines.push(`${speaker}${p.text}`);
-      lines.push('');
-    }
-  }
-  return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n';
-}
-
-async function copyReadingText() {
-  const text = readingAsPlainText();
-  if (!text) return;
-  const btn = document.getElementById('copyReadingBtn');
-  const flash = (msg) => {
-    if (!btn) return;
-    const original = btn.textContent;
-    btn.textContent = msg;
-    btn.classList.add('flash');
-    setTimeout(() => { btn.textContent = original; btn.classList.remove('flash'); }, 1200);
-  };
-  try {
-    await navigator.clipboard.writeText(text);
-    flash(t('copiedToClipboard'));
-  } catch (err) {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed'; ta.style.left = '-9999px';
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand('copy'); flash(t('copiedToClipboard')); }
-    catch { flash(t('copyFailed')); }
-    document.body.removeChild(ta);
-  }
-}
-
 async function copySelectedText() {
   if (!selectedText) return;
   const btn = document.getElementById('menuCopyBtn');
@@ -2556,8 +2485,6 @@ const RESPONSE_LANGUAGE_NAMES = {
 // ═══════════════════════════════════
 const UI_TRANSLATIONS = {
   en: {
-    copyReading: '📋 Copy text',
-    copyReadingTitle: 'Copy the full reading text in the current language',
     instructionsHtml: '<em>Select any text</em> — choose <strong>🟡 Highlight</strong> or <strong>🔵 Ask LLM</strong>.',
     aiOff: 'AI: Off',
     marginNotes: 'Margin Notes',
@@ -2604,8 +2531,6 @@ const UI_TRANSLATIONS = {
     machineTranslated: 'Machine translation (Claude Opus)',
   },
   es: {
-    copyReading: '📋 Copiar texto',
-    copyReadingTitle: 'Copiar todo el texto de la lectura en el idioma actual',
     instructionsHtml: '<em>Selecciona cualquier texto</em> — elige <strong>🟡 Resaltar</strong> o <strong>🔵 Preguntar al LLM</strong>.',
     aiOff: 'IA: Off',
     marginNotes: 'Notas al margen',
@@ -2652,8 +2577,6 @@ const UI_TRANSLATIONS = {
     machineTranslated: 'Traducción automática (Claude Opus)',
   },
   el: {
-    copyReading: '📋 Αντιγραφή κειμένου',
-    copyReadingTitle: 'Αντιγραφή όλου του κειμένου ανάγνωσης στην τρέχουσα γλώσσα',
     instructionsHtml: '<em>Επίλεξε κείμενο</em> — διάλεξε <strong>🟡 Επισήμανση</strong> ή <strong>🔵 Ρώτα το LLM</strong>.',
     aiOff: 'AI: Ανενεργό',
     marginNotes: 'Σημειώσεις στο περιθώριο',
@@ -2699,8 +2622,6 @@ const UI_TRANSLATIONS = {
     translatorPrefix: 'μτφρ.',
   },
   zh: {
-    copyReading: '📋 复制文本',
-    copyReadingTitle: '复制当前语言下的完整阅读文本',
     instructionsHtml: '<em>选择任何文本</em> — 选择 <strong>🟡 高亮</strong> 或 <strong>🔵 询问 LLM</strong>。',
     aiOff: 'AI：关闭',
     marginNotes: '旁注',
@@ -2746,8 +2667,6 @@ const UI_TRANSLATIONS = {
     translatorPrefix: '译',
   },
   hi: {
-    copyReading: '📋 पाठ कॉपी करें',
-    copyReadingTitle: 'वर्तमान भाषा में पूरा पठन पाठ कॉपी करें',
     instructionsHtml: '<em>कोई भी पाठ चुनें</em> — चुनें <strong>🟡 हाइलाइट</strong> या <strong>🔵 LLM से पूछें</strong>।',
     aiOff: 'AI: बंद',
     marginNotes: 'हाशिये के नोट्स',
@@ -2793,8 +2712,6 @@ const UI_TRANSLATIONS = {
     translatorPrefix: 'अनु.',
   },
   no: {
-    copyReading: '📋 Kopier tekst',
-    copyReadingTitle: 'Kopier hele lesingsteksten på gjeldende språk',
     instructionsHtml: '<em>Velg en tekst</em> — velg <strong>🟡 Fremhev</strong> eller <strong>🔵 Spør LLM</strong>.',
     aiOff: 'AI: Av',
     marginNotes: 'Margnotater',
