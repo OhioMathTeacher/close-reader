@@ -2066,13 +2066,60 @@ const READINGS = {
 // ═══════════════════════════════════
 const READING_KEY = 'cr_current_reading';
 let currentReadingSlug = localStorage.getItem(READING_KEY) || 'gandhi-hind-swaraj';
-if (!READINGS[currentReadingSlug]) currentReadingSlug = 'gandhi-hind-swaraj';
+// '__about__' is a synthetic reading (see ABOUT_READING below), not in the
+// READINGS map — allow it through so a user who left on the About page returns
+// there next visit.
+if (currentReadingSlug !== '__about__' && !READINGS[currentReadingSlug]) {
+  currentReadingSlug = 'gandhi-hind-swaraj';
+}
 let currentLang = 'en';
 let selectedText = '';
 let comments = [];
 let commentId = 0;
 
-function currentReading() { return READINGS[currentReadingSlug]; }
+// Special slug for the About / welcome splash. Not a real reading — flows
+// through switchReading() and currentReading() so the normal render path
+// handles it.
+const ABOUT_SLUG = '__about__';
+
+// Welcome / about "reading". Lives outside READINGS so it stays out of the
+// normal reading loop and never persists notes to a real reading's slot, but
+// currentReading() returns it for the __about__ slug so all the rendering
+// infrastructure (text selection, Ask LLM, language toggles, margin notes,
+// Copy text) works without per-screen special-casing. English-only for now;
+// add es/el/zh/hi/no language entries to translate the welcome body.
+const ABOUT_READING = {
+  id: ABOUT_SLUG,
+  title: 'Close Reader v2',
+  author: 'Developed by Todd Edwards and Aaditya Paudel · Technology Education Alliance (TEA)',
+  source: '',
+  reference: '',
+  // Repurposes the third header line (normally "tr. …") for the app tagline.
+  aboutTagline: 'A multi-language reading and notetaking software — powered by AI',
+  summary: '',
+  systemPromptExtra: "You are explaining the Close Reader app — a tool for close textual reading with AI-assisted annotation. It supports multiple cloud and local LLM providers (Claude, Gemini, Groq, OpenAI, DeepSeek, plus Ollama / LM Studio / llama.cpp running locally), keeps API keys only in the user's browser, and lets readers highlight passages or ask questions that save to a margin column. Be concise and friendly.",
+  languages: {
+    en: {
+      label: 'English',
+      translator: '',
+      sections: [{
+        id: 'welcome',
+        label: 'Welcome',
+        title: '',
+        paragraphs: [
+          { text: "Close Reader is a tool for close textual reading and AI-assisted annotation. Select any passage in a reading and either highlight it (yellow) or ask an LLM about it (blue). Your annotations save in your browser automatically — no account required." },
+          { text: "Pick a reading from the menu at the top to begin. Each reading carries its own translations; use the language toggles to switch between them. To enable Ask LLM, click the AI button at the top right and choose a model from Local, $0, or Pay. Your API key is stored only in your browser, never sent to any server we control." },
+          { text: "For further information, highlight any term above and ask a question." },
+        ],
+      }],
+    },
+  },
+};
+
+function currentReading() {
+  if (currentReadingSlug === ABOUT_SLUG) return ABOUT_READING;
+  return READINGS[currentReadingSlug];
+}
 function readingHasLang(reading, lang) {
   return !!(reading && reading.languages && reading.languages[lang]);
 }
@@ -2097,7 +2144,7 @@ function renderText() {
   // Stub readings show a placeholder instead of text.
   if (reading.stub || !readingHasLang(reading, currentLang)) {
     document.getElementById('headerSubtitle').textContent =
-      `${reading.author} · ${reading.source} · ${reading.reference}`;
+      [reading.author, reading.source, reading.reference].filter(Boolean).join(' · ');
     document.getElementById('headerTranslator').textContent = '';
     textCol.innerHTML = `
       <div class="stub-notice">
@@ -2111,7 +2158,7 @@ function renderText() {
 
   const data = reading.languages[currentLang];
   document.getElementById('headerSubtitle').textContent =
-    `${reading.author} · ${reading.source} · ${reading.reference}`;
+    [reading.author, reading.source, reading.reference].filter(Boolean).join(' · ');
   const translatorEl = document.getElementById('headerTranslator');
   if (data.translator || data.pending) {
     const translatorString = data.machineTranslated ? t('machineTranslated') : data.translator;
@@ -2121,6 +2168,8 @@ function renderText() {
   } else {
     translatorEl.textContent = '';
   }
+  // About: third line is the app tagline, not a translator credit.
+  if (reading.aboutTagline) translatorEl.textContent = reading.aboutTagline;
 
   let html = '';
   for (const sec of (data.sections || [])) {
@@ -2176,6 +2225,12 @@ function rebuildReadingPicker() {
     if (slug === currentReadingSlug) opt.selected = true;
     sel.appendChild(opt);
   }
+  // About item lives at the bottom of the menu — no extra button in the header.
+  const aboutOpt = document.createElement('option');
+  aboutOpt.value = ABOUT_SLUG;
+  aboutOpt.textContent = t('aboutCloseReader');
+  if (currentReadingSlug === ABOUT_SLUG) aboutOpt.selected = true;
+  sel.appendChild(aboutOpt);
 }
 
 function rebuildLangButtons() {
@@ -2202,9 +2257,10 @@ function rebuildLangButtons() {
 }
 
 function switchReading(slug) {
-  if (!READINGS[slug]) return;
+  // About is a synthetic "reading" — flows through the same path so selection,
+  // Ask LLM, language buttons, and margin notes all work without special cases.
+  if (slug !== ABOUT_SLUG && !READINGS[slug]) return;
   applyTranslations();
-  // Persist current reading's notes (already auto-saved per change), then load the new reading's.
   closeSelectionMenu();
   closePopup();
   currentReadingSlug = slug;
@@ -2522,6 +2578,7 @@ const UI_TRANSLATIONS = {
     tabPay: 'Pay',
     turnOffAI: 'Turn off AI',
     aiSetupHint: 'Pick a model below to enable Ask LLM.',
+    aboutCloseReader: 'About Close Reader',
     copyBtn: '📋 Copy',
     copyTitle: 'Copy selection to clipboard',
     copied: '✓ Copied',
@@ -2569,6 +2626,7 @@ const UI_TRANSLATIONS = {
     tabPay: 'Pago',
     turnOffAI: 'Apagar IA',
     aiSetupHint: 'Elige un modelo abajo para habilitar Preguntar al LLM.',
+    aboutCloseReader: 'Acerca de Close Reader',
     copyBtn: '📋 Copiar',
     copyTitle: 'Copiar la selección al portapapeles',
     copied: '✓ Copiado',
@@ -2616,6 +2674,7 @@ const UI_TRANSLATIONS = {
     tabPay: 'Με χρέωση',
     turnOffAI: 'Απενεργοποίηση AI',
     aiSetupHint: 'Επίλεξε ένα μοντέλο παρακάτω για να ενεργοποιήσεις το Ρώτα το LLM.',
+    aboutCloseReader: 'Σχετικά με το Close Reader',
     copyBtn: '📋 Αντιγραφή',
     copyTitle: 'Αντιγραφή επιλογής στο πρόχειρο',
     copied: '✓ Αντιγράφηκε',
@@ -2662,6 +2721,7 @@ const UI_TRANSLATIONS = {
     tabPay: '付费',
     turnOffAI: '关闭 AI',
     aiSetupHint: '在下方选择一个模型以启用询问 LLM。',
+    aboutCloseReader: '关于 Close Reader',
     copyBtn: '📋 复制',
     copyTitle: '复制所选内容到剪贴板',
     copied: '✓ 已复制',
@@ -2708,6 +2768,7 @@ const UI_TRANSLATIONS = {
     tabPay: 'भुगतान',
     turnOffAI: 'AI बंद करें',
     aiSetupHint: 'LLM से पूछें सक्षम करने के लिए नीचे एक मॉडल चुनें।',
+    aboutCloseReader: 'Close Reader के बारे में',
     copyBtn: '📋 कॉपी',
     copyTitle: 'चयन को क्लिपबोर्ड पर कॉपी करें',
     copied: '✓ कॉपी हो गया',
@@ -2754,6 +2815,7 @@ const UI_TRANSLATIONS = {
     tabPay: 'Betal',
     turnOffAI: 'Slå av AI',
     aiSetupHint: 'Velg en modell nedenfor for å aktivere Spør LLM.',
+    aboutCloseReader: 'Om Close Reader',
     copyBtn: '📋 Kopier',
     copyTitle: 'Kopier valg til utklippstavlen',
     copied: '✓ Kopiert',
