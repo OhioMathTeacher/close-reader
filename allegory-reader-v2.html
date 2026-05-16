@@ -111,7 +111,9 @@ body {
 .instructions {
   font-family: 'DM Sans', sans-serif;
   font-size: 0.72rem; color: #9A9083; line-height: 1.5;
-  text-align: right; max-width: 400px;
+  /* Capped to match .reading-picker select / .lang-toggles above so the
+     longer translated strings (es, el, hi) don't poke past the column edge. */
+  text-align: right; width: 100%; max-width: 360px;
 }
 .instructions em { color: var(--cave-glow); font-style: normal; font-weight: 500; }
 
@@ -267,8 +269,13 @@ body {
   background: var(--margin-bg);
   padding-top: 1.5rem; padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--comment-border);
-  display: flex; justify-content: space-between; align-items: flex-start;
+  /* flex-wrap lets the action buttons drop to a new row when their translated
+     labels (e.g. Greek "Εξαγωγή / Εισαγωγή / Καθαρισμός") would otherwise clip
+     the rightmost button off the column. */
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  justify-content: space-between; align-items: flex-start;
 }
+.margin-header-actions { flex-wrap: wrap; }
 .margin-header-title {
   display: flex; flex-direction: column; gap: 0.2rem;
 }
