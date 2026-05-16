@@ -178,10 +178,23 @@ Pure frontend: one HTML file with embedded CSS and JavaScript. No backend, no da
 - Responsive layout: sticky header, independently scrolling text and margin columns
 - Mobile-friendly reading dropdown
 
+## Future Plans
+
+Ideas on the roadmap — feedback and PRs welcome:
+
+- **Load and translate PDFs on the fly** — drop in any PDF and get a clean, paragraph-segmented reading with on-demand translation into any of the UI languages
+- **Read aloud** — text-to-speech for the current passage or the whole reading, with the option to use a local voice or a cloud TTS provider
+- **An open-source bookshelf** — a curated library of coding texts, Project Gutenberg classics, public-domain primary sources, and other openly-licensed material, organized by subject area
+- **Side-by-side parallel translations** — show two languages in adjacent columns rather than toggling between them, useful for language learners and translators
+- **Shareable annotation sets** — export a reading + your margin notes as a single file a teacher or study group can import and discuss
+- **Vocabulary glossary** — auto-build a personal glossary from the terms you ask the LLM about, exportable for flashcards or review
+
+Close Reader is intentionally local-only: no backend, no accounts, no real-time chat. Localness is a feature — it keeps the focus on the reading.
+
 ## License
 
 MIT — use, modify, and share freely. Attribution appreciated.
 
 ---
 
-Built for close reading in the humanities classroom.
+Built for close reading and active exploration across every content area.
