@@ -584,7 +584,6 @@ body {
   color: var(--muted); letter-spacing: 0.04em;
   margin-bottom: 0.4rem;
 }
-.reading-picker label { text-transform: uppercase; font-size: 0.66rem; }
 .reading-picker select {
   font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
   background: rgba(255, 255, 255, 0.06);
@@ -594,6 +593,14 @@ body {
   padding: 0.32rem 0.55rem;
   cursor: pointer; outline: none;
   transition: border-color 0.15s;
+  /* Cap at the margin-notes column width so long titles never push the dropdown
+     off-screen on phones. Closed state truncates with ellipsis; the native picker
+     UI on tap/click still shows full text. */
+  max-width: 360px;
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 .reading-picker select:hover { border-color: rgba(212, 168, 67, 0.55); }
 .reading-picker select:focus { border-color: var(--cave-glow); }
@@ -639,7 +646,6 @@ body {
     </div>
     <div class="header-right">
       <div class="reading-picker">
-        <label for="readingSelect" data-i18n="readingLabel">Reading:</label>
         <select id="readingSelect" onchange="switchReading(this.value)"></select>
       </div>
       <div class="lang-toggles" id="langToggles"></div>
@@ -2143,6 +2149,18 @@ function renderText() {
 // ═══════════════════════════════════
 // READING / LANGUAGE PICKERS
 // ═══════════════════════════════════
+// Shorten an author string to a single surname for the dropdown:
+//   "M. K. Gandhi"         → "Gandhi"
+//   "Confucius (孔子)"      → "Confucius"  (strip parenthetical, then last word)
+//   "William Cullen Bryant" → "Bryant"
+//   "Plato"                 → "Plato"
+function authorSurname(author) {
+  if (!author) return '';
+  const clean = String(author).replace(/\s*\([^)]*\)/g, '').trim();
+  const tokens = clean.split(/\s+/);
+  return tokens[tokens.length - 1];
+}
+
 function rebuildReadingPicker() {
   const sel = document.getElementById('readingSelect');
   if (!sel) return;
@@ -2151,7 +2169,10 @@ function rebuildReadingPicker() {
     const r = READINGS[slug];
     const opt = document.createElement('option');
     opt.value = slug;
-    opt.textContent = `${r.author} — ${r.title}${r.stub ? ' (coming soon)' : ''}`;
+    // "Title (Surname)" — compact and scannable on mobile. Strip any trailing
+    // parenthetical from the title itself so we don't end up with "(foo) (Bar)".
+    const cleanTitle = String(r.title).replace(/\s*\([^)]*\)\s*$/, '').trim();
+    opt.textContent = `${cleanTitle} (${authorSurname(r.author)})${r.stub ? ' — coming soon' : ''}`;
     if (slug === currentReadingSlug) opt.selected = true;
     sel.appendChild(opt);
   }
@@ -2479,7 +2500,6 @@ const RESPONSE_LANGUAGE_NAMES = {
 // ═══════════════════════════════════
 const UI_TRANSLATIONS = {
   en: {
-    readingLabel: 'Reading:',
     copyReading: '📋 Copy text',
     copyReadingTitle: 'Copy the full reading text in the current language',
     instructionsHtml: '<em>Select any text</em> — choose <strong>🟡 Highlight</strong> or <strong>🔵 Ask LLM</strong>.',
@@ -2527,7 +2547,6 @@ const UI_TRANSLATIONS = {
     machineTranslated: 'Machine translation (Claude Opus)',
   },
   es: {
-    readingLabel: 'Lectura:',
     copyReading: '📋 Copiar texto',
     copyReadingTitle: 'Copiar todo el texto de la lectura en el idioma actual',
     instructionsHtml: '<em>Selecciona cualquier texto</em> — elige <strong>🟡 Resaltar</strong> o <strong>🔵 Preguntar al LLM</strong>.',
@@ -2575,7 +2594,6 @@ const UI_TRANSLATIONS = {
     machineTranslated: 'Traducción automática (Claude Opus)',
   },
   el: {
-    readingLabel: 'Ανάγνωση:',
     copyReading: '📋 Αντιγραφή κειμένου',
     copyReadingTitle: 'Αντιγραφή όλου του κειμένου ανάγνωσης στην τρέχουσα γλώσσα',
     instructionsHtml: '<em>Επίλεξε κείμενο</em> — διάλεξε <strong>🟡 Επισήμανση</strong> ή <strong>🔵 Ρώτα το LLM</strong>.',
@@ -2622,7 +2640,6 @@ const UI_TRANSLATIONS = {
     translatorPrefix: 'μτφρ.',
   },
   zh: {
-    readingLabel: '阅读：',
     copyReading: '📋 复制文本',
     copyReadingTitle: '复制当前语言下的完整阅读文本',
     instructionsHtml: '<em>选择任何文本</em> — 选择 <strong>🟡 高亮</strong> 或 <strong>🔵 询问 LLM</strong>。',
@@ -2669,7 +2686,6 @@ const UI_TRANSLATIONS = {
     translatorPrefix: '译',
   },
   hi: {
-    readingLabel: 'पठन:',
     copyReading: '📋 पाठ कॉपी करें',
     copyReadingTitle: 'वर्तमान भाषा में पूरा पठन पाठ कॉपी करें',
     instructionsHtml: '<em>कोई भी पाठ चुनें</em> — चुनें <strong>🟡 हाइलाइट</strong> या <strong>🔵 LLM से पूछें</strong>।',
@@ -2716,7 +2732,6 @@ const UI_TRANSLATIONS = {
     translatorPrefix: 'अनु.',
   },
   no: {
-    readingLabel: 'Lesing:',
     copyReading: '📋 Kopier tekst',
     copyReadingTitle: 'Kopier hele lesingsteksten på gjeldende språk',
     instructionsHtml: '<em>Velg en tekst</em> — velg <strong>🟡 Fremhev</strong> eller <strong>🔵 Spør LLM</strong>.',
