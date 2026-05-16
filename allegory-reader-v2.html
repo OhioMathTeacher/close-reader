@@ -2073,27 +2073,526 @@ const ABOUT_SLUG = '__about__';
 const ABOUT_READING = {
   id: ABOUT_SLUG,
   title: 'Close Reader v2',
-  author: 'Developed by Todd Edwards and Aaditya Paudel · Technology Education Alliance (TEA)',
+  author: 'Developed by Todd Edwards and Aaditya Paudel · Technology Educator Alliance (TEA)',
   source: '',
   reference: '',
-  // Repurposes the third header line (normally "tr. …") for the app tagline.
-  aboutTagline: 'A multi-language reading and notetaking software — powered by AI',
   summary: '',
   systemPromptExtra: "You are explaining the Close Reader app — a tool for close textual reading with AI-assisted annotation. It supports multiple cloud and local LLM providers (Claude, Gemini, Groq, OpenAI, DeepSeek, plus Ollama / LM Studio / llama.cpp running locally), keeps API keys only in the user's browser, and lets readers highlight passages or ask questions that save to a margin column. Be concise and friendly.",
   languages: {
     en: {
       label: 'English',
       translator: '',
-      sections: [{
-        id: 'welcome',
-        label: 'Welcome',
-        title: '',
-        paragraphs: [
-          { text: "Close Reader is a tool for close textual reading and AI-assisted annotation. Select any passage in a reading and either highlight it (yellow) or ask an LLM about it (blue). Your annotations save in your browser automatically — no account required." },
-          { text: "Pick a reading from the menu at the top to begin. Each reading carries its own translations; use the language toggles to switch between them. To enable Ask LLM, click the AI button at the top right and choose a model from Local, $0, or Pay. Your API key is stored only in your browser, never sent to any server we control." },
-          { text: "For further information, highlight any term above and ask a question." },
-        ],
-      }],
+      aboutTagline: 'A multi-language reading and notetaking software — powered by AI',
+      sections: [
+        {
+          id: 'welcome', label: 'Welcome', title: '',
+          paragraphs: [
+            { text: "Close Reader is a tool for close textual reading and AI-assisted annotation. Select any passage in a reading and either highlight it (yellow) or ask an LLM about it (blue). Your annotations save in your browser automatically — no account required." },
+            { text: "Pick a reading from the menu at the top to begin. Each reading carries its own translations; use the language toggles to switch between them. To enable Ask LLM, click the AI button at the top right and choose a model from Local, $0, or Pay. Your API key is stored only in your browser, never sent to any server we control." },
+            { text: "For further information, highlight any term on this page and ask a question." },
+          ],
+        },
+        {
+          id: 'features', label: 'Features', title: 'What Close Reader does',
+          paragraphs: [
+            { heading: 'A growing library', text: "Readings currently include Gandhi's Hind Swaraj, the Analects of Confucius, Bryant's Thanatopsis, Plato's Allegory of the Cave, and Ibsen's A Doll's House — with more on the way." },
+            { heading: 'Six UI languages', text: "English, Spanish, Greek (Modern), Chinese, Hindi, and Norwegian. Each reading also ships with its own per-language translations." },
+            { heading: 'Many AI providers', text: "Anthropic Claude, Google Gemini, Groq, OpenAI, DeepSeek — or run a local model with Ollama, LM Studio, or llama.cpp. You can configure several providers and switch between them per question." },
+            { heading: 'Highlights and queries', text: "Mark a passage in yellow for yourself, or ask the LLM a question about it in blue. Both save to the margin column on the right." },
+            { heading: 'Auto-save and portability', text: "Notes save automatically per reading via your browser's localStorage. Export and import all your notes as JSON to back them up or move them to another browser." },
+          ],
+        },
+        {
+          id: 'how-to', label: 'How to use', title: 'Getting started',
+          paragraphs: [
+            { heading: '1. Pick a reading', text: "Use the dropdown at the top of the page to choose a reading. Your choice persists between visits." },
+            { heading: '2. Switch languages if you like', text: "If the reading has multiple translations, the language buttons appear on the right. Click one to swap." },
+            { heading: '3. Select a passage', text: "Drag-select any text in the reading. A floating menu appears with Highlight, Ask LLM, and Copy." },
+            { heading: '4. Annotate', text: "Highlight marks the passage in yellow. Ask LLM opens a prompt; your question and the model's answer save to the margin column in blue." },
+            { heading: '5. Manage your notes', text: "Use the Margin Notes header to adjust font size, export, import, or clear your notes. Notes are kept per reading per browser." },
+          ],
+        },
+        {
+          id: 'ai-providers', label: 'AI Providers', title: 'Choosing a model',
+          paragraphs: [
+            { text: "The AI Setup modal groups providers into three tabs: Local for models running on your own machine, $0 for cloud providers with free tiers, and Pay for cloud providers that need a billing-attached account." },
+            { heading: 'Local — Ollama, LM Studio, llama.cpp', text: "Close Reader probes well-known localhost ports when the AI modal opens and shows any detected servers as one-click tiles. Install Ollama from ollama.com and pull a model like llama3.2 or gemma3:27b. LM Studio's built-in server works the same way. You can also add any OpenAI-compatible local endpoint manually via the + Add local server option." },
+            { heading: '$0 — Google Gemini (Free)', text: "Get a free API key from aistudio.google.com using a personal Gmail account. School G-Suite accounts often have the service disabled. Generous daily limits and no credit card required — the best option for most students." },
+            { heading: '$0 — Groq (Free)', text: "Free, very fast Llama 3.3 70B inference. Sign up at console.groq.com with any email. A good fallback when Google Workspace is blocked at school." },
+            { heading: 'Pay — Anthropic Claude', text: "Get a key at console.anthropic.com. Excellent reasoning for nuanced questions. Anthropic usually offers free trial credits to start; afterward, roughly ten to thirty cents per question depending on length." },
+            { heading: 'Pay — OpenAI', text: "Get a key at platform.openai.com after adding a payment method. Uses gpt-4o." },
+            { heading: 'Pay — DeepSeek', text: "Get a key at platform.deepseek.com. Very inexpensive per token." },
+            { heading: 'No AI', text: "Close Reader works without AI. Highlight passages, take margin notes, and export them as JSON — entirely offline." },
+          ],
+        },
+        {
+          id: 'privacy', label: 'Privacy', title: 'Your data stays yours',
+          paragraphs: [
+            { text: "Close Reader is intentionally local-only. There is no backend, no account, no analytics, no cookies. Everything you do lives in your browser's storage." },
+            { text: "API keys are stored only in your browser via localStorage. They are never transmitted to any server we control. When you ask a question, the key is sent directly to the provider you chose — or to 127.0.0.1 if you're running a local model." },
+            { text: "The app is a single open-source HTML file. You can read every line yourself." },
+            { text: "Localness is a deliberate design choice. The focus is on the reading — not on accounts, sharing, or social features." },
+          ],
+        },
+        {
+          id: 'troubleshooting', label: 'Troubleshooting', title: 'When something goes wrong',
+          paragraphs: [
+            { heading: 'Invalid API key', text: "Make sure you copied the full key with no leading or trailing whitespace. For Gemini, verify you used a personal Gmail account, not a school account. If in doubt, regenerate the key in the provider's dashboard and try again." },
+            { heading: 'Key not saving', text: "Check that your browser allows localStorage. Private or incognito browsing often disables it. Try a normal window." },
+            { heading: 'Local model not detected', text: "Confirm the server is running. For Ollama, curl http://127.0.0.1:11434/api/tags should return a model list. For LM Studio, try http://127.0.0.1:1234/v1/models. If you use a non-default port, add it via + Add local server in the AI modal." },
+            { heading: 'Notes disappeared', text: "Notes are scoped per reading and per browser. Switching browsers or clearing site data will lose them — use Export regularly to back up to JSON." },
+          ],
+        },
+        {
+          id: 'roadmap', label: 'Roadmap', title: 'Future plans',
+          paragraphs: [
+            { text: "Ideas on the roadmap, all designed to fit the local-only architecture:" },
+            { heading: 'Load and translate PDFs on the fly', text: "Drop in any PDF and get a clean, paragraph-segmented reading with on-demand translation into any of the UI languages." },
+            { heading: 'Read aloud', text: "Text-to-speech for the current passage or the whole reading, with the option to use a local voice or a cloud TTS provider." },
+            { heading: 'An open-source bookshelf', text: "A curated library of coding texts, Project Gutenberg classics, public-domain primary sources, and other openly-licensed material, organized by subject area." },
+            { heading: 'Side-by-side parallel translations', text: "Show two languages in adjacent columns rather than toggling between them — useful for language learners and translators." },
+            { heading: 'Shareable annotation sets', text: "Export a reading together with your margin notes as a single file a teacher or study group can import." },
+            { heading: 'Vocabulary glossary', text: "Auto-build a personal glossary from the terms you ask the LLM about, exportable for flashcards or review." },
+          ],
+        },
+        {
+          id: 'license', label: 'License', title: '',
+          paragraphs: [
+            { text: "Close Reader is MIT licensed. Use, modify, and share freely. Attribution appreciated." },
+            { text: "Built for close reading and active exploration across every content area." },
+          ],
+        },
+      ],
+    },
+    es: {
+      label: 'Español',
+      translator: 'Machine translation (Claude Opus)',
+      machineTranslated: true,
+      aboutTagline: 'Un software de lectura y notas multilingüe — impulsado por IA',
+      sections: [
+        {
+          id: 'welcome', label: 'Bienvenida', title: '',
+          paragraphs: [
+            { text: "Close Reader es una herramienta para la lectura textual atenta y la anotación asistida por IA. Selecciona cualquier pasaje en una lectura y resáltalo (amarillo) o pregúntale al LLM sobre él (azul). Tus anotaciones se guardan en tu navegador automáticamente — no se requiere cuenta." },
+            { text: "Elige una lectura desde el menú en la parte superior para comenzar. Cada lectura trae sus propias traducciones; usa los botones de idioma para cambiar entre ellas. Para activar Preguntar al LLM, haz clic en el botón AI arriba a la derecha y elige un modelo de Local, $0 o Pago. Tu clave de API se guarda solo en tu navegador, nunca se envía a ningún servidor que controlemos." },
+            { text: "Para más información, resalta cualquier término de esta página y haz una pregunta." },
+          ],
+        },
+        {
+          id: 'features', label: 'Características', title: 'Lo que hace Close Reader',
+          paragraphs: [
+            { heading: 'Una biblioteca creciente', text: "Las lecturas actualmente incluyen Hind Swaraj de Gandhi, las Analectas de Confucio, Thanatopsis de Bryant, La Alegoría de la Caverna de Platón y Casa de muñecas de Ibsen — con más en camino." },
+            { heading: 'Seis idiomas de interfaz', text: "Inglés, español, griego (moderno), chino, hindi y noruego. Cada lectura también incluye sus propias traducciones por idioma." },
+            { heading: 'Muchos proveedores de IA', text: "Anthropic Claude, Google Gemini, Groq, OpenAI, DeepSeek — o ejecuta un modelo local con Ollama, LM Studio o llama.cpp. Puedes configurar varios proveedores y cambiar entre ellos en cada pregunta." },
+            { heading: 'Resaltados y consultas', text: "Marca un pasaje en amarillo para ti, o pregúntale al LLM sobre él en azul. Ambos se guardan en la columna de margen a la derecha." },
+            { heading: 'Autoguardado y portabilidad', text: "Las notas se guardan automáticamente por lectura mediante el localStorage de tu navegador. Exporta e importa todas tus notas como JSON para respaldarlas o moverlas a otro navegador." },
+          ],
+        },
+        {
+          id: 'how-to', label: 'Cómo usar', title: 'Cómo empezar',
+          paragraphs: [
+            { heading: '1. Elige una lectura', text: "Usa el menú desplegable en la parte superior de la página para elegir una lectura. Tu elección persiste entre visitas." },
+            { heading: '2. Cambia de idioma si quieres', text: "Si la lectura tiene varias traducciones, los botones de idioma aparecen a la derecha. Haz clic en uno para cambiar." },
+            { heading: '3. Selecciona un pasaje', text: "Arrastra para seleccionar cualquier texto en la lectura. Aparece un menú flotante con Resaltar, Preguntar al LLM y Copiar." },
+            { heading: '4. Anota', text: "Resaltar marca el pasaje en amarillo. Preguntar al LLM abre un cuadro de texto; tu pregunta y la respuesta del modelo se guardan en la columna de margen en azul." },
+            { heading: '5. Administra tus notas', text: "Usa el encabezado de Notas al margen para ajustar el tamaño de la fuente, exportar, importar o borrar tus notas. Las notas se guardan por lectura y por navegador." },
+          ],
+        },
+        {
+          id: 'ai-providers', label: 'Proveedores de IA', title: 'Eligiendo un modelo',
+          paragraphs: [
+            { text: "El modal de Configuración de IA agrupa los proveedores en tres pestañas: Local para modelos que se ejecutan en tu propia máquina, $0 para proveedores en la nube con planes gratuitos, y Pago para proveedores en la nube que requieren una cuenta con facturación." },
+            { heading: 'Local — Ollama, LM Studio, llama.cpp', text: "Close Reader explora los puertos conocidos del localhost cuando se abre el modal de IA y muestra los servidores detectados como tarjetas de un clic. Instala Ollama desde ollama.com y descarga un modelo como llama3.2 o gemma3:27b. El servidor incorporado de LM Studio funciona igual. También puedes añadir manualmente cualquier endpoint local compatible con OpenAI mediante la opción + Añadir servidor local." },
+            { heading: '$0 — Google Gemini (Gratis)', text: "Obtén una clave API gratuita en aistudio.google.com usando una cuenta personal de Gmail. Las cuentas de G-Suite escolares a menudo tienen el servicio deshabilitado. Límites diarios generosos y sin tarjeta de crédito — la mejor opción para la mayoría de los estudiantes." },
+            { heading: '$0 — Groq (Gratis)', text: "Inferencia gratuita y muy rápida con Llama 3.3 70B. Regístrate en console.groq.com con cualquier correo. Una buena alternativa cuando Google Workspace está bloqueado en la escuela." },
+            { heading: 'Pago — Anthropic Claude', text: "Obtén una clave en console.anthropic.com. Excelente razonamiento para preguntas matizadas. Anthropic suele ofrecer créditos de prueba gratuitos al inicio; después, aproximadamente diez a treinta centavos por pregunta según la longitud." },
+            { heading: 'Pago — OpenAI', text: "Obtén una clave en platform.openai.com después de añadir un método de pago. Usa gpt-4o." },
+            { heading: 'Pago — DeepSeek', text: "Obtén una clave en platform.deepseek.com. Muy económico por token." },
+            { heading: 'Sin IA', text: "Close Reader funciona sin IA. Resalta pasajes, toma notas al margen y expórtalas como JSON — completamente sin conexión." },
+          ],
+        },
+        {
+          id: 'privacy', label: 'Privacidad', title: 'Tus datos siguen siendo tuyos',
+          paragraphs: [
+            { text: "Close Reader es intencionalmente local. No hay backend, ni cuenta, ni analítica, ni cookies. Todo lo que haces vive en el almacenamiento de tu navegador." },
+            { text: "Las claves API se almacenan solo en tu navegador mediante localStorage. Nunca se transmiten a ningún servidor que controlemos. Cuando haces una pregunta, la clave se envía directamente al proveedor que elegiste — o a 127.0.0.1 si estás ejecutando un modelo local." },
+            { text: "La aplicación es un solo archivo HTML de código abierto. Puedes leer cada línea tú mismo." },
+            { text: "La localidad es una decisión de diseño deliberada. El enfoque está en la lectura — no en cuentas, compartir o funciones sociales." },
+          ],
+        },
+        {
+          id: 'troubleshooting', label: 'Solución de problemas', title: 'Cuando algo sale mal',
+          paragraphs: [
+            { heading: 'Clave API inválida', text: "Asegúrate de copiar la clave completa sin espacios al principio o al final. Para Gemini, verifica que usaste una cuenta personal de Gmail, no una cuenta escolar. Si tienes dudas, regenera la clave en el panel del proveedor e inténtalo de nuevo." },
+            { heading: 'La clave no se guarda', text: "Verifica que tu navegador permita localStorage. La navegación privada o de incógnito a menudo lo deshabilita. Prueba en una ventana normal." },
+            { heading: 'Modelo local no detectado', text: "Confirma que el servidor se esté ejecutando. Para Ollama, curl http://127.0.0.1:11434/api/tags debería devolver una lista de modelos. Para LM Studio, prueba http://127.0.0.1:1234/v1/models. Si usas un puerto no estándar, añádelo mediante + Añadir servidor local en el modal de IA." },
+            { heading: 'Las notas desaparecieron', text: "Las notas tienen alcance por lectura y por navegador. Cambiar de navegador o borrar los datos del sitio las perderá — usa Exportar regularmente para hacer copias en JSON." },
+          ],
+        },
+        {
+          id: 'roadmap', label: 'Hoja de ruta', title: 'Planes futuros',
+          paragraphs: [
+            { text: "Ideas en la hoja de ruta, todas diseñadas para encajar con la arquitectura local:" },
+            { heading: 'Cargar y traducir PDFs al vuelo', text: "Suelta cualquier PDF y obtén una lectura limpia y segmentada por párrafos con traducción bajo demanda a cualquiera de los idiomas de la interfaz." },
+            { heading: 'Lectura en voz alta', text: "Texto a voz para el pasaje actual o toda la lectura, con la opción de usar una voz local o un proveedor de TTS en la nube." },
+            { heading: 'Una biblioteca de código abierto', text: "Una biblioteca curada de textos de programación, clásicos de Project Gutenberg, fuentes primarias de dominio público y otros materiales con licencia abierta, organizados por área temática." },
+            { heading: 'Traducciones paralelas lado a lado', text: "Mostrar dos idiomas en columnas adyacentes en lugar de alternar entre ellos — útil para aprendices de idiomas y traductores." },
+            { heading: 'Conjuntos de anotaciones compartibles', text: "Exportar una lectura junto con tus notas al margen como un solo archivo que un profesor o grupo de estudio pueda importar." },
+            { heading: 'Glosario de vocabulario', text: "Construir automáticamente un glosario personal a partir de los términos que le preguntas al LLM, exportable para tarjetas didácticas o repaso." },
+          ],
+        },
+        {
+          id: 'license', label: 'Licencia', title: '',
+          paragraphs: [
+            { text: "Close Reader está bajo licencia MIT. Úsalo, modifícalo y compártelo libremente. Se agradece la atribución." },
+            { text: "Hecho para la lectura atenta y la exploración activa en todas las áreas de contenido." },
+          ],
+        },
+      ],
+    },
+    el: {
+      label: 'Ελληνικά',
+      translator: 'Machine translation (Claude Opus)',
+      machineTranslated: true,
+      aboutTagline: 'Ένα πολυγλωσσικό λογισμικό ανάγνωσης και σημειώσεων — με τεχνητή νοημοσύνη',
+      sections: [
+        {
+          id: 'welcome', label: 'Καλωσόρισμα', title: '',
+          paragraphs: [
+            { text: "Το Close Reader είναι ένα εργαλείο για προσεκτική ανάγνωση κειμένου και σχολιασμό με τη βοήθεια AI. Επίλεξε οποιοδήποτε απόσπασμα σε ένα ανάγνωσμα και είτε επισήμανέ το (κίτρινο) είτε ρώτησε ένα LLM γι' αυτό (μπλε). Οι σημειώσεις σου αποθηκεύονται αυτόματα στο πρόγραμμα περιήγησής σου — δεν χρειάζεται λογαριασμός." },
+            { text: "Επίλεξε ένα ανάγνωσμα από το μενού στο επάνω μέρος για να ξεκινήσεις. Κάθε ανάγνωσμα φέρει τις δικές του μεταφράσεις· χρησιμοποίησε τα κουμπιά γλώσσας για να εναλλάσσεσαι. Για να ενεργοποιήσεις το Ρώτα το LLM, κάνε κλικ στο κουμπί AI επάνω δεξιά και επίλεξε ένα μοντέλο από Τοπικά, $0 ή Με χρέωση. Το κλειδί API σου αποθηκεύεται μόνο στο πρόγραμμα περιήγησής σου, δεν στέλνεται ποτέ σε διακομιστή που ελέγχουμε." },
+            { text: "Για περισσότερες πληροφορίες, επισήμανε οποιονδήποτε όρο σε αυτή τη σελίδα και κάνε μια ερώτηση." },
+          ],
+        },
+        {
+          id: 'features', label: 'Χαρακτηριστικά', title: 'Τι κάνει το Close Reader',
+          paragraphs: [
+            { heading: 'Μια αναπτυσσόμενη βιβλιοθήκη', text: "Τα αναγνώσματα περιλαμβάνουν αυτή τη στιγμή τα Hind Swaraj του Γκάντι, τα Ανάλεκτα του Κομφούκιου, τον Θανατόπτη του Μπράιαντ, την Αλληγορία του Σπηλαίου του Πλάτωνα και το Κουκλόσπιτο του Ίψεν — με περισσότερα να έρχονται." },
+            { heading: 'Έξι γλώσσες διεπαφής', text: "Αγγλικά, Ισπανικά, Ελληνικά (Νέα), Κινεζικά, Χίντι και Νορβηγικά. Κάθε ανάγνωσμα συνοδεύεται επίσης από τις δικές του μεταφράσεις ανά γλώσσα." },
+            { heading: 'Πολλοί πάροχοι AI', text: "Anthropic Claude, Google Gemini, Groq, OpenAI, DeepSeek — ή τρέξε ένα τοπικό μοντέλο με Ollama, LM Studio ή llama.cpp. Μπορείς να ρυθμίσεις πολλούς παρόχους και να εναλλάσσεσαι μεταξύ τους ανά ερώτηση." },
+            { heading: 'Επισημάνσεις και ερωτήσεις', text: "Σημάδεψε ένα απόσπασμα με κίτρινο για τον εαυτό σου, ή ρώτησε το LLM γι' αυτό με μπλε. Και τα δύο αποθηκεύονται στη στήλη περιθωρίου στα δεξιά." },
+            { heading: 'Αυτόματη αποθήκευση και φορητότητα', text: "Οι σημειώσεις αποθηκεύονται αυτόματα ανά ανάγνωσμα μέσω του localStorage του προγράμματος περιήγησής σου. Εξαγωγή και εισαγωγή όλων των σημειώσεών σου ως JSON για αντίγραφα ασφαλείας ή μεταφορά σε άλλο πρόγραμμα περιήγησης." },
+          ],
+        },
+        {
+          id: 'how-to', label: 'Πώς να χρησιμοποιήσεις', title: 'Ξεκινώντας',
+          paragraphs: [
+            { heading: '1. Επίλεξε ένα ανάγνωσμα', text: "Χρησιμοποίησε το αναπτυσσόμενο μενού στο επάνω μέρος της σελίδας για να επιλέξεις ένα ανάγνωσμα. Η επιλογή σου διατηρείται μεταξύ επισκέψεων." },
+            { heading: '2. Άλλαξε γλώσσα αν θέλεις', text: "Αν το ανάγνωσμα έχει πολλές μεταφράσεις, τα κουμπιά γλώσσας εμφανίζονται στα δεξιά. Κάνε κλικ σε ένα για να αλλάξεις." },
+            { heading: '3. Επίλεξε ένα απόσπασμα', text: "Σύρε για να επιλέξεις οποιοδήποτε κείμενο στο ανάγνωσμα. Εμφανίζεται ένα κινητό μενού με Επισήμανση, Ρώτα το LLM και Αντιγραφή." },
+            { heading: '4. Σχολίασε', text: "Η Επισήμανση μαρκάρει το απόσπασμα με κίτρινο. Το Ρώτα το LLM ανοίγει ένα πλαίσιο· η ερώτησή σου και η απάντηση του μοντέλου αποθηκεύονται στη στήλη περιθωρίου με μπλε." },
+            { heading: '5. Διαχειρίσου τις σημειώσεις σου', text: "Χρησιμοποίησε την κεφαλίδα Σημειώσεις Περιθωρίου για να ρυθμίσεις το μέγεθος γραμματοσειράς, να εξάγεις, να εισάγεις ή να καθαρίσεις τις σημειώσεις σου. Οι σημειώσεις φυλάσσονται ανά ανάγνωσμα ανά πρόγραμμα περιήγησης." },
+          ],
+        },
+        {
+          id: 'ai-providers', label: 'Πάροχοι AI', title: 'Επιλέγοντας ένα μοντέλο',
+          paragraphs: [
+            { text: "Το παράθυρο Ρύθμισης AI ομαδοποιεί τους παρόχους σε τρεις καρτέλες: Τοπικά για μοντέλα που τρέχουν στο δικό σου μηχάνημα, $0 για παρόχους σύννεφου με δωρεάν επίπεδα, και Με χρέωση για παρόχους σύννεφου που χρειάζονται λογαριασμό με χρέωση." },
+            { heading: 'Τοπικά — Ollama, LM Studio, llama.cpp', text: "Το Close Reader ελέγχει τις γνωστές θύρες του localhost όταν ανοίγει το παράθυρο AI και εμφανίζει τους διακομιστές που εντοπίστηκαν ως πλακίδια ενός κλικ. Εγκατέστησε το Ollama από το ollama.com και κατέβασε ένα μοντέλο όπως llama3.2 ή gemma3:27b. Ο ενσωματωμένος διακομιστής του LM Studio λειτουργεί το ίδιο. Μπορείς επίσης να προσθέσεις χειροκίνητα οποιοδήποτε τοπικό endpoint συμβατό με OpenAI μέσω της επιλογής + Προσθήκη τοπικού διακομιστή." },
+            { heading: '$0 — Google Gemini (Δωρεάν)', text: "Πάρε ένα δωρεάν κλειδί API από το aistudio.google.com χρησιμοποιώντας έναν προσωπικό λογαριασμό Gmail. Οι σχολικοί λογαριασμοί G-Suite συχνά έχουν την υπηρεσία απενεργοποιημένη. Γενναιόδωρα ημερήσια όρια και χωρίς πιστωτική κάρτα — η καλύτερη επιλογή για τους περισσότερους μαθητές." },
+            { heading: '$0 — Groq (Δωρεάν)', text: "Δωρεάν, πολύ γρήγορη εξαγωγή συμπερασμάτων με Llama 3.3 70B. Εγγράψου στο console.groq.com με οποιοδήποτε email. Καλή εναλλακτική όταν το Google Workspace είναι μπλοκαρισμένο στο σχολείο." },
+            { heading: 'Με χρέωση — Anthropic Claude', text: "Πάρε ένα κλειδί στο console.anthropic.com. Εξαιρετική λογική για λεπτές ερωτήσεις. Η Anthropic συνήθως προσφέρει δωρεάν πιστώσεις δοκιμής στην αρχή· μετά, περίπου δέκα έως τριάντα σεντς ανά ερώτηση ανάλογα με το μήκος." },
+            { heading: 'Με χρέωση — OpenAI', text: "Πάρε ένα κλειδί στο platform.openai.com αφού προσθέσεις μέθοδο πληρωμής. Χρησιμοποιεί gpt-4o." },
+            { heading: 'Με χρέωση — DeepSeek', text: "Πάρε ένα κλειδί στο platform.deepseek.com. Πολύ φθηνό ανά token." },
+            { heading: 'Χωρίς AI', text: "Το Close Reader λειτουργεί χωρίς AI. Επισήμανε αποσπάσματα, κράτησε σημειώσεις στο περιθώριο και εξάγαγέ τες ως JSON — εντελώς εκτός σύνδεσης." },
+          ],
+        },
+        {
+          id: 'privacy', label: 'Απόρρητο', title: 'Τα δεδομένα σου παραμένουν δικά σου',
+          paragraphs: [
+            { text: "Το Close Reader είναι σκόπιμα τοπικό. Δεν υπάρχει backend, λογαριασμός, στατιστικά ή cookies. Όλα όσα κάνεις ζουν στην αποθήκευση του προγράμματος περιήγησής σου." },
+            { text: "Τα κλειδιά API αποθηκεύονται μόνο στο πρόγραμμα περιήγησής σου μέσω localStorage. Δεν μεταδίδονται ποτέ σε κανέναν διακομιστή που ελέγχουμε. Όταν κάνεις μια ερώτηση, το κλειδί στέλνεται απευθείας στον πάροχο που επέλεξες — ή στη 127.0.0.1 αν τρέχεις τοπικό μοντέλο." },
+            { text: "Η εφαρμογή είναι ένα μόνο αρχείο HTML ανοιχτού κώδικα. Μπορείς να διαβάσεις κάθε γραμμή ο ίδιος." },
+            { text: "Η τοπικότητα είναι μια συνειδητή σχεδιαστική επιλογή. Η εστίαση είναι στο ανάγνωσμα — όχι σε λογαριασμούς, κοινοποίηση ή κοινωνικά χαρακτηριστικά." },
+          ],
+        },
+        {
+          id: 'troubleshooting', label: 'Αντιμετώπιση προβλημάτων', title: 'Όταν κάτι πάει στραβά',
+          paragraphs: [
+            { heading: 'Μη έγκυρο κλειδί API', text: "Βεβαιώσου ότι αντέγραψες ολόκληρο το κλειδί χωρίς κενά στην αρχή ή στο τέλος. Για το Gemini, επιβεβαίωσε ότι χρησιμοποίησες προσωπικό λογαριασμό Gmail, όχι σχολικό λογαριασμό. Αν έχεις αμφιβολίες, ξανα-δημιούργησε το κλειδί στον πίνακα του παρόχου και προσπάθησε ξανά." },
+            { heading: 'Το κλειδί δεν αποθηκεύεται', text: "Έλεγξε ότι το πρόγραμμα περιήγησής σου επιτρέπει το localStorage. Η ιδιωτική ή ανώνυμη περιήγηση συχνά το απενεργοποιεί. Δοκίμασε ένα κανονικό παράθυρο." },
+            { heading: 'Δεν εντοπίζεται τοπικό μοντέλο', text: "Επιβεβαίωσε ότι ο διακομιστής τρέχει. Για το Ollama, curl http://127.0.0.1:11434/api/tags θα πρέπει να επιστρέφει μια λίστα μοντέλων. Για το LM Studio, δοκίμασε http://127.0.0.1:1234/v1/models. Αν χρησιμοποιείς μη τυπική θύρα, πρόσθεσέ την μέσω + Προσθήκη τοπικού διακομιστή στο παράθυρο AI." },
+            { heading: 'Οι σημειώσεις εξαφανίστηκαν', text: "Οι σημειώσεις είναι ανά ανάγνωσμα και ανά πρόγραμμα περιήγησης. Η αλλαγή προγράμματος περιήγησης ή η εκκαθάριση δεδομένων ιστότοπου θα τις χάσει — χρησιμοποίησε Εξαγωγή τακτικά για αντίγραφα ασφαλείας σε JSON." },
+          ],
+        },
+        {
+          id: 'roadmap', label: 'Χάρτης πορείας', title: 'Μελλοντικά σχέδια',
+          paragraphs: [
+            { text: "Ιδέες στον χάρτη πορείας, όλες σχεδιασμένες να ταιριάζουν με την τοπική αρχιτεκτονική:" },
+            { heading: 'Φόρτωση και μετάφραση PDF επιτόπου', text: "Άφησε οποιοδήποτε PDF και πάρε ένα καθαρό ανάγνωσμα τμηματοποιημένο σε παραγράφους με μετάφραση κατ' απαίτηση σε οποιαδήποτε από τις γλώσσες διεπαφής." },
+            { heading: 'Φωναχτή ανάγνωση', text: "Κείμενο σε ομιλία για το τρέχον απόσπασμα ή ολόκληρο το ανάγνωσμα, με την επιλογή χρήσης τοπικής φωνής ή παρόχου TTS σύννεφου." },
+            { heading: 'Μια βιβλιοθήκη ανοιχτού κώδικα', text: "Μια επιμελημένη βιβλιοθήκη κειμένων προγραμματισμού, κλασικά του Project Gutenberg, πρωτογενών πηγών δημόσιας κτήσης και άλλου ανοιχτά αδειοδοτημένου υλικού, οργανωμένου ανά θεματική περιοχή." },
+            { heading: 'Παράλληλες μεταφράσεις δίπλα-δίπλα', text: "Εμφάνιση δύο γλωσσών σε διπλανές στήλες αντί να εναλλάσσεσαι μεταξύ τους — χρήσιμο για μαθητευόμενους γλωσσών και μεταφραστές." },
+            { heading: 'Κοινόχρηστα σύνολα σχολιασμών', text: "Εξαγωγή ενός αναγνώσματος μαζί με τις σημειώσεις περιθωρίου σου ως ενιαίο αρχείο που ένας δάσκαλος ή μια ομάδα μελέτης μπορεί να εισάγει." },
+            { heading: 'Γλωσσάρι λεξιλογίου', text: "Αυτόματη κατασκευή ενός προσωπικού γλωσσαρίου από τους όρους που ρωτάς το LLM, εξαγώγιμο για κάρτες εκμάθησης ή επανάληψη." },
+          ],
+        },
+        {
+          id: 'license', label: 'Άδεια', title: '',
+          paragraphs: [
+            { text: "Το Close Reader έχει άδεια MIT. Χρησιμοποίησέ το, τροποποίησέ το και μοιράσου το ελεύθερα. Η αναφορά στην προέλευση εκτιμάται." },
+            { text: "Φτιαγμένο για προσεκτική ανάγνωση και ενεργή εξερεύνηση σε κάθε γνωστικό αντικείμενο." },
+          ],
+        },
+      ],
+    },
+    zh: {
+      label: '中文',
+      translator: 'Machine translation (Claude Opus)',
+      machineTranslated: true,
+      aboutTagline: '一款多语言阅读与笔记软件 — 由 AI 驱动',
+      sections: [
+        {
+          id: 'welcome', label: '欢迎', title: '',
+          paragraphs: [
+            { text: "Close Reader 是一款用于细致文本阅读和 AI 辅助注释的工具。选择阅读中的任何段落，可以高亮（黄色）或向 LLM 提问（蓝色）。你的注释会自动保存在浏览器中 — 无需账户。" },
+            { text: "从顶部菜单选择一篇阅读开始。每篇阅读都附带自己的翻译；使用语言切换按钮在它们之间切换。要启用询问 LLM，请点击右上角的 AI 按钮，从本地、$0 或付费中选择一个模型。你的 API 密钥仅存储在你的浏览器中，绝不会发送到我们控制的任何服务器。" },
+            { text: "如需更多信息，请高亮此页上的任何术语并提问。" },
+          ],
+        },
+        {
+          id: 'features', label: '功能', title: 'Close Reader 能做什么',
+          paragraphs: [
+            { heading: '日益丰富的阅读库', text: "目前的阅读包括甘地的《印度自治》、孔子的《论语》、布莱恩特的《死之冥想》、柏拉图的《洞穴寓言》和易卜生的《玩偶之家》 — 还有更多即将加入。" },
+            { heading: '六种界面语言', text: "英语、西班牙语、希腊语（现代）、中文、印地语和挪威语。每篇阅读也都附带各自的语言翻译。" },
+            { heading: '多个 AI 提供商', text: "Anthropic Claude、Google Gemini、Groq、OpenAI、DeepSeek — 或使用 Ollama、LM Studio 或 llama.cpp 运行本地模型。你可以配置多个提供商，并在每次提问时切换。" },
+            { heading: '高亮与提问', text: "用黄色为自己标记一段文字，或用蓝色就此向 LLM 提问。两者都会保存到右侧的边栏笔记中。" },
+            { heading: '自动保存与可移植性', text: "笔记通过浏览器的 localStorage 按阅读自动保存。将所有笔记导出和导入为 JSON 以备份或迁移到另一个浏览器。" },
+          ],
+        },
+        {
+          id: 'how-to', label: '使用方法', title: '入门指南',
+          paragraphs: [
+            { heading: '1. 选择一篇阅读', text: "使用页面顶部的下拉菜单选择一篇阅读。你的选择会在访问之间保留。" },
+            { heading: '2. 如果愿意可切换语言', text: "如果该阅读有多种翻译，语言按钮会显示在右侧。点击其中一个即可切换。" },
+            { heading: '3. 选择一段文字', text: "在阅读中拖动选择任意文本。会出现一个浮动菜单，包含高亮、询问 LLM 和复制。" },
+            { heading: '4. 做注释', text: "高亮会将段落标记为黄色。询问 LLM 会打开一个提示框；你的问题和模型的回答会以蓝色保存到边栏笔记中。" },
+            { heading: '5. 管理你的笔记', text: "使用边栏笔记标题来调整字体大小、导出、导入或清除你的笔记。笔记按阅读、按浏览器保存。" },
+          ],
+        },
+        {
+          id: 'ai-providers', label: 'AI 提供商', title: '选择一个模型',
+          paragraphs: [
+            { text: "AI 设置弹窗将提供商分为三个标签：本地用于在自己机器上运行的模型，$0 用于带免费额度的云提供商，付费用于需要付费账户的云提供商。" },
+            { heading: '本地 — Ollama、LM Studio、llama.cpp', text: "打开 AI 弹窗时，Close Reader 会探测常见的本地端口，并将检测到的服务器显示为一键磁贴。从 ollama.com 安装 Ollama，并拉取像 llama3.2 或 gemma3:27b 这样的模型。LM Studio 的内置服务器以同样方式工作。你也可以通过 + 添加本地服务器 选项手动添加任何兼容 OpenAI 的本地端点。" },
+            { heading: '$0 — Google Gemini（免费）', text: "使用个人 Gmail 账户在 aistudio.google.com 获取免费 API 密钥。学校的 G-Suite 账户通常已禁用此服务。每日额度宽松，无需信用卡 — 大多数学生的最佳选择。" },
+            { heading: '$0 — Groq（免费）', text: "免费且非常快的 Llama 3.3 70B 推理。用任何邮箱在 console.groq.com 注册。当 Google Workspace 在学校被屏蔽时是不错的备选。" },
+            { heading: '付费 — Anthropic Claude', text: "在 console.anthropic.com 获取密钥。对于细致的问题有出色的推理能力。Anthropic 通常会提供免费试用额度；之后，根据长度，每次提问约十到三十美分。" },
+            { heading: '付费 — OpenAI', text: "添加付款方式后在 platform.openai.com 获取密钥。使用 gpt-4o。" },
+            { heading: '付费 — DeepSeek', text: "在 platform.deepseek.com 获取密钥。按 token 计费非常便宜。" },
+            { heading: '无 AI', text: "Close Reader 无需 AI 也能工作。高亮段落、做边栏笔记并将其导出为 JSON — 完全离线。" },
+          ],
+        },
+        {
+          id: 'privacy', label: '隐私', title: '你的数据归你所有',
+          paragraphs: [
+            { text: "Close Reader 是有意本地化的。没有后端、没有账户、没有分析、没有 cookie。你做的一切都存在浏览器的存储中。" },
+            { text: "API 密钥仅通过 localStorage 存储在你的浏览器中。它们绝不会传输到我们控制的任何服务器。当你提问时，密钥会直接发送到你选择的提供商 — 或者如果你运行本地模型，则发送到 127.0.0.1。" },
+            { text: "该应用是一个开源的单一 HTML 文件。你可以亲自阅读每一行。" },
+            { text: "本地性是一种有意的设计选择。重点在于阅读 — 而不是账户、分享或社交功能。" },
+          ],
+        },
+        {
+          id: 'troubleshooting', label: '故障排除', title: '出问题时',
+          paragraphs: [
+            { heading: 'API 密钥无效', text: "确保你完整地复制了密钥，没有前后空格。对于 Gemini，请确认你使用的是个人 Gmail 账户，而非学校账户。如有疑问，请在提供商的控制台重新生成密钥再试。" },
+            { heading: '密钥不保存', text: "检查你的浏览器是否允许 localStorage。私密或无痕浏览常常会禁用它。请尝试普通窗口。" },
+            { heading: '未检测到本地模型', text: "确认服务器正在运行。对于 Ollama，curl http://127.0.0.1:11434/api/tags 应返回模型列表。对于 LM Studio，请尝试 http://127.0.0.1:1234/v1/models。如果你使用非默认端口，请通过 AI 弹窗中的 + 添加本地服务器 添加。" },
+            { heading: '笔记消失了', text: "笔记按阅读、按浏览器划分。切换浏览器或清除站点数据会丢失它们 — 请定期使用导出备份为 JSON。" },
+          ],
+        },
+        {
+          id: 'roadmap', label: '路线图', title: '未来计划',
+          paragraphs: [
+            { text: "路线图上的想法，全部为契合本地架构而设计：" },
+            { heading: '即时加载和翻译 PDF', text: "投放任何 PDF 即可获得整洁、按段落分割的阅读，并按需翻译成任何界面语言。" },
+            { heading: '朗读', text: "为当前段落或整篇阅读提供文本转语音，可选择使用本地语音或云端 TTS 提供商。" },
+            { heading: '开源书架', text: "一个经过精心整理的库，包含编程教材、Project Gutenberg 经典、公有领域的一手资料及其他开放授权材料，按学科领域组织。" },
+            { heading: '并排平行翻译', text: "在相邻栏中显示两种语言，而不是在它们之间切换 — 对语言学习者和译者有用。" },
+            { heading: '可分享的注释集', text: "将一篇阅读连同你的边栏笔记一起导出为单个文件，老师或学习小组可以导入。" },
+            { heading: '词汇表', text: "根据你向 LLM 提问的术语自动构建个人词汇表，可导出用于抽认卡或复习。" },
+          ],
+        },
+        {
+          id: 'license', label: '许可证', title: '',
+          paragraphs: [
+            { text: "Close Reader 采用 MIT 许可证。自由使用、修改和分享。署名将不胜感激。" },
+            { text: "为各学科领域的细致阅读和主动探索而构建。" },
+          ],
+        },
+      ],
+    },
+    hi: {
+      label: 'हिन्दी',
+      translator: 'Machine translation (Claude Opus)',
+      machineTranslated: true,
+      aboutTagline: 'एक बहुभाषी पठन और नोट लेने का सॉफ़्टवेयर — AI द्वारा संचालित',
+      sections: [
+        {
+          id: 'welcome', label: 'स्वागत है', title: '',
+          paragraphs: [
+            { text: "Close Reader गहन पाठ्य पठन और AI-सहायता प्राप्त टिप्पणी के लिए एक उपकरण है। किसी पठन में कोई भी अंश चुनें और उसे या तो हाइलाइट करें (पीला) या उसके बारे में LLM से पूछें (नीला)। आपकी टिप्पणियाँ स्वचालित रूप से आपके ब्राउज़र में सहेजी जाती हैं — कोई खाता आवश्यक नहीं है।" },
+            { text: "शुरू करने के लिए शीर्ष पर मेनू से एक पठन चुनें। प्रत्येक पठन के अपने अनुवाद हैं; उनके बीच स्विच करने के लिए भाषा बटनों का उपयोग करें। LLM से पूछें सक्षम करने के लिए, ऊपर दाईं ओर AI बटन पर क्लिक करें और स्थानीय, $0, या भुगतान में से एक मॉडल चुनें। आपकी API कुंजी केवल आपके ब्राउज़र में संग्रहीत है, हमारे नियंत्रण वाले किसी भी सर्वर पर कभी नहीं भेजी जाती।" },
+            { text: "अधिक जानकारी के लिए, इस पृष्ठ पर किसी भी शब्द को हाइलाइट करें और प्रश्न पूछें।" },
+          ],
+        },
+        {
+          id: 'features', label: 'विशेषताएँ', title: 'Close Reader क्या करता है',
+          paragraphs: [
+            { heading: 'एक बढ़ती हुई लाइब्रेरी', text: "वर्तमान में पठनों में गांधी की हिंद स्वराज, कन्फ्यूशियस के विश्लेषण, ब्रायंट की थैनाटॉप्सिस, प्लेटो की गुफा का दृष्टांत और इब्सेन की डॉल्स हाउस शामिल हैं — और भी आ रहे हैं।" },
+            { heading: 'छह UI भाषाएँ', text: "अंग्रेज़ी, स्पेनिश, यूनानी (आधुनिक), चीनी, हिंदी और नार्वेजियन। प्रत्येक पठन अपने स्वयं के भाषा-वार अनुवादों के साथ भी आता है।" },
+            { heading: 'कई AI प्रदाता', text: "Anthropic Claude, Google Gemini, Groq, OpenAI, DeepSeek — या Ollama, LM Studio या llama.cpp के साथ एक स्थानीय मॉडल चलाएँ। आप कई प्रदाता कॉन्फ़िगर कर सकते हैं और प्रति प्रश्न उनके बीच स्विच कर सकते हैं।" },
+            { heading: 'हाइलाइट और प्रश्न', text: "अपने लिए किसी अंश को पीले रंग में चिह्नित करें, या उसके बारे में LLM से नीले रंग में प्रश्न पूछें। दोनों दाईं ओर के हाशिये के कॉलम में सहेजे जाते हैं।" },
+            { heading: 'स्वचालित-सहेजना और पोर्टेबिलिटी', text: "नोट्स आपके ब्राउज़र के localStorage के माध्यम से प्रति पठन स्वचालित रूप से सहेजे जाते हैं। बैकअप लेने या किसी अन्य ब्राउज़र पर ले जाने के लिए अपने सभी नोट्स को JSON के रूप में निर्यात और आयात करें।" },
+          ],
+        },
+        {
+          id: 'how-to', label: 'कैसे उपयोग करें', title: 'शुरुआत',
+          paragraphs: [
+            { heading: '1. एक पठन चुनें', text: "पठन चुनने के लिए पृष्ठ के शीर्ष पर ड्रॉपडाउन का उपयोग करें। आपका चयन यात्राओं के बीच बना रहता है।" },
+            { heading: '2. यदि चाहें तो भाषा बदलें', text: "यदि पठन में कई अनुवाद हैं, तो भाषा बटन दाईं ओर दिखाई देते हैं। बदलने के लिए किसी एक पर क्लिक करें।" },
+            { heading: '3. एक अंश चुनें', text: "पठन में किसी भी पाठ को चुनने के लिए खींचें। हाइलाइट, LLM से पूछें और कॉपी के साथ एक फ़्लोटिंग मेनू दिखाई देता है।" },
+            { heading: '4. टिप्पणी जोड़ें', text: "हाइलाइट अंश को पीले रंग में चिह्नित करता है। LLM से पूछें एक प्रॉम्प्ट खोलता है; आपका प्रश्न और मॉडल का उत्तर नीले रंग में हाशिये के कॉलम में सहेजे जाते हैं।" },
+            { heading: '5. अपने नोट्स प्रबंधित करें', text: "फ़ॉन्ट आकार समायोजित करने, निर्यात करने, आयात करने या अपने नोट्स साफ़ करने के लिए हाशिया नोट्स हेडर का उपयोग करें। नोट्स प्रति पठन प्रति ब्राउज़र रखे जाते हैं।" },
+          ],
+        },
+        {
+          id: 'ai-providers', label: 'AI प्रदाता', title: 'मॉडल चुनना',
+          paragraphs: [
+            { text: "AI सेटअप विंडो प्रदाताओं को तीन टैब में समूहित करती है: स्थानीय आपकी अपनी मशीन पर चलने वाले मॉडल के लिए, $0 मुफ़्त स्तरों वाले क्लाउड प्रदाताओं के लिए, और भुगतान बिलिंग खाता आवश्यक क्लाउड प्रदाताओं के लिए।" },
+            { heading: 'स्थानीय — Ollama, LM Studio, llama.cpp', text: "जब AI विंडो खुलती है, Close Reader जाने-माने localhost पोर्ट की जाँच करता है और किसी भी पाए गए सर्वर को एक-क्लिक टाइल के रूप में दिखाता है। ollama.com से Ollama इंस्टॉल करें और llama3.2 या gemma3:27b जैसा मॉडल खींचें। LM Studio का अंतर्निहित सर्वर उसी तरह काम करता है। आप + स्थानीय सर्वर जोड़ें विकल्प के माध्यम से OpenAI-संगत कोई भी स्थानीय एंडपॉइंट मैन्युअल रूप से भी जोड़ सकते हैं।" },
+            { heading: '$0 — Google Gemini (मुफ़्त)', text: "व्यक्तिगत Gmail खाते का उपयोग करके aistudio.google.com से मुफ़्त API कुंजी प्राप्त करें। स्कूल के G-Suite खातों में अक्सर यह सेवा अक्षम होती है। उदार दैनिक सीमाएँ और कोई क्रेडिट कार्ड आवश्यक नहीं — अधिकांश छात्रों के लिए सर्वोत्तम विकल्प।" },
+            { heading: '$0 — Groq (मुफ़्त)', text: "मुफ़्त, बहुत तेज़ Llama 3.3 70B अनुमान। किसी भी ईमेल के साथ console.groq.com पर साइन अप करें। जब Google Workspace स्कूल में अवरुद्ध हो तो एक अच्छा विकल्प।" },
+            { heading: 'भुगतान — Anthropic Claude', text: "console.anthropic.com पर एक कुंजी प्राप्त करें। सूक्ष्म प्रश्नों के लिए उत्कृष्ट तर्क। Anthropic आमतौर पर शुरुआत में मुफ़्त परीक्षण क्रेडिट प्रदान करता है; उसके बाद, लंबाई के आधार पर लगभग दस से तीस सेंट प्रति प्रश्न।" },
+            { heading: 'भुगतान — OpenAI', text: "भुगतान विधि जोड़ने के बाद platform.openai.com पर एक कुंजी प्राप्त करें। gpt-4o का उपयोग करता है।" },
+            { heading: 'भुगतान — DeepSeek', text: "platform.deepseek.com पर एक कुंजी प्राप्त करें। प्रति टोकन बहुत सस्ता।" },
+            { heading: 'कोई AI नहीं', text: "Close Reader AI के बिना भी काम करता है। अंशों को हाइलाइट करें, हाशिया नोट्स लें और उन्हें JSON के रूप में निर्यात करें — पूरी तरह से ऑफ़लाइन।" },
+          ],
+        },
+        {
+          id: 'privacy', label: 'गोपनीयता', title: 'आपका डेटा आपका ही रहता है',
+          paragraphs: [
+            { text: "Close Reader जानबूझकर स्थानीय है। कोई बैकएंड, कोई खाता, कोई एनालिटिक्स, कोई कुकीज़ नहीं। आप जो भी करते हैं वह आपके ब्राउज़र के संग्रहण में रहता है।" },
+            { text: "API कुंजियाँ केवल localStorage के माध्यम से आपके ब्राउज़र में संग्रहीत होती हैं। वे हमारे नियंत्रण वाले किसी भी सर्वर पर कभी नहीं भेजी जाती हैं। जब आप प्रश्न पूछते हैं, कुंजी सीधे आपके चुने हुए प्रदाता को भेजी जाती है — या यदि आप स्थानीय मॉडल चला रहे हैं तो 127.0.0.1 पर।" },
+            { text: "ऐप एक एकल ओपन-सोर्स HTML फ़ाइल है। आप स्वयं प्रत्येक पंक्ति पढ़ सकते हैं।" },
+            { text: "स्थानीयता एक जानबूझकर डिज़ाइन विकल्प है। ध्यान पठन पर है — खातों, साझा करने या सामाजिक सुविधाओं पर नहीं।" },
+          ],
+        },
+        {
+          id: 'troubleshooting', label: 'समस्या निवारण', title: 'जब कुछ गलत हो जाता है',
+          paragraphs: [
+            { heading: 'अमान्य API कुंजी', text: "सुनिश्चित करें कि आपने पूरी कुंजी को बिना किसी अग्रणी या अनुगामी रिक्त स्थान के कॉपी किया है। Gemini के लिए, सत्यापित करें कि आपने व्यक्तिगत Gmail खाते का उपयोग किया है, स्कूल खाते का नहीं। यदि संदेह हो, तो प्रदाता के डैशबोर्ड में कुंजी को पुनः उत्पन्न करें और पुनः प्रयास करें।" },
+            { heading: 'कुंजी सहेजी नहीं जा रही', text: "जाँचें कि आपका ब्राउज़र localStorage की अनुमति देता है। निजी या गुप्त ब्राउज़िंग अक्सर इसे अक्षम कर देती है। एक सामान्य विंडो आज़माएँ।" },
+            { heading: 'स्थानीय मॉडल का पता नहीं चला', text: "पुष्टि करें कि सर्वर चल रहा है। Ollama के लिए, curl http://127.0.0.1:11434/api/tags को एक मॉडल सूची लौटानी चाहिए। LM Studio के लिए, http://127.0.0.1:1234/v1/models आज़माएँ। यदि आप गैर-डिफ़ॉल्ट पोर्ट का उपयोग करते हैं, तो AI विंडो में + स्थानीय सर्वर जोड़ें के माध्यम से जोड़ें।" },
+            { heading: 'नोट्स गायब हो गए', text: "नोट्स प्रति पठन प्रति ब्राउज़र होते हैं। ब्राउज़र बदलने या साइट डेटा साफ़ करने से वे खो जाएँगे — JSON में बैकअप के लिए नियमित रूप से निर्यात का उपयोग करें।" },
+          ],
+        },
+        {
+          id: 'roadmap', label: 'रोडमैप', title: 'भविष्य की योजनाएँ',
+          paragraphs: [
+            { text: "रोडमैप पर विचार, सभी स्थानीय वास्तुकला के अनुरूप डिज़ाइन किए गए:" },
+            { heading: 'PDF को तुरंत लोड और अनुवाद करें', text: "किसी भी PDF को छोड़ें और किसी भी UI भाषा में मांग पर अनुवाद के साथ एक साफ़, अनुच्छेद-खंडित पठन प्राप्त करें।" },
+            { heading: 'ज़ोर से पढ़ें', text: "वर्तमान अंश या पूरे पठन के लिए टेक्स्ट-टू-स्पीच, स्थानीय आवाज़ या क्लाउड TTS प्रदाता के उपयोग के विकल्प के साथ।" },
+            { heading: 'एक ओपन-सोर्स बुकशेल्फ़', text: "कोडिंग पाठ्यपुस्तकें, Project Gutenberg के क्लासिक्स, सार्वजनिक डोमेन के प्राथमिक स्रोत और अन्य खुले लाइसेंस वाली सामग्री की एक क्यूरेटेड लाइब्रेरी, विषय क्षेत्र के अनुसार व्यवस्थित।" },
+            { heading: 'समानांतर अनुवाद साथ-साथ', text: "उनके बीच टॉगल करने के बजाय निकटवर्ती कॉलमों में दो भाषाएँ दिखाएँ — भाषा सीखने वालों और अनुवादकों के लिए उपयोगी।" },
+            { heading: 'साझा करने योग्य टिप्पणी सेट', text: "एक पठन को आपके हाशिए के नोट्स के साथ एक एकल फ़ाइल के रूप में निर्यात करें जिसे शिक्षक या अध्ययन समूह आयात कर सकता है।" },
+            { heading: 'शब्दावली शब्दकोश', text: "उन शब्दों से एक व्यक्तिगत शब्दकोश स्वचालित रूप से बनाएँ जिनके बारे में आप LLM से पूछते हैं, फ़्लैशकार्ड या समीक्षा के लिए निर्यात योग्य।" },
+          ],
+        },
+        {
+          id: 'license', label: 'लाइसेंस', title: '',
+          paragraphs: [
+            { text: "Close Reader MIT लाइसेंस के तहत है। स्वतंत्र रूप से उपयोग, संशोधन और साझा करें। आभार की सराहना की जाती है।" },
+            { text: "हर विषय क्षेत्र में गहन पठन और सक्रिय अन्वेषण के लिए बनाया गया।" },
+          ],
+        },
+      ],
+    },
+    no: {
+      label: 'Norsk',
+      translator: 'Machine translation (Claude Opus)',
+      machineTranslated: true,
+      aboutTagline: 'En flerspråklig lese- og notatprogramvare — drevet av AI',
+      sections: [
+        {
+          id: 'welcome', label: 'Velkommen', title: '',
+          paragraphs: [
+            { text: "Close Reader er et verktøy for nær tekstlesing og AI-assistert annotering. Velg et hvilket som helst avsnitt i en lesing og enten uthev det (gult) eller spør en LLM om det (blått). Notatene dine lagres automatisk i nettleseren din — ingen konto nødvendig." },
+            { text: "Velg en lesing fra menyen øverst for å begynne. Hver lesing har sine egne oversettelser; bruk språkknappene for å bytte mellom dem. For å aktivere Spør LLM, klikk på AI-knappen øverst til høyre og velg en modell fra Lokal, $0 eller Betal. API-nøkkelen din lagres bare i nettleseren din, og sendes aldri til noen server vi kontrollerer." },
+            { text: "For mer informasjon, uthev et hvilket som helst begrep på denne siden og still et spørsmål." },
+          ],
+        },
+        {
+          id: 'features', label: 'Funksjoner', title: 'Hva Close Reader gjør',
+          paragraphs: [
+            { heading: 'Et voksende bibliotek', text: "Lesinger inkluderer for tiden Gandhis Hind Swaraj, Konfucius' Analekter, Bryants Thanatopsis, Platons Hulelignelse og Ibsens Et dukkehjem — med flere på vei." },
+            { heading: 'Seks grensesnittspråk', text: "Engelsk, spansk, gresk (moderne), kinesisk, hindi og norsk. Hver lesing leveres også med sine egne språkoversettelser." },
+            { heading: 'Mange AI-leverandører', text: "Anthropic Claude, Google Gemini, Groq, OpenAI, DeepSeek — eller kjør en lokal modell med Ollama, LM Studio eller llama.cpp. Du kan konfigurere flere leverandører og bytte mellom dem per spørsmål." },
+            { heading: 'Uthevinger og spørsmål', text: "Marker et avsnitt med gult for deg selv, eller spør LLM-en om det med blått. Begge lagres i margkolonnen til høyre." },
+            { heading: 'Autolagring og portabilitet', text: "Notater lagres automatisk per lesing via nettleserens localStorage. Eksporter og importer alle notatene dine som JSON for å sikkerhetskopiere dem eller flytte dem til en annen nettleser." },
+          ],
+        },
+        {
+          id: 'how-to', label: 'Hvordan bruke', title: 'Kom i gang',
+          paragraphs: [
+            { heading: '1. Velg en lesing', text: "Bruk rullegardinmenyen øverst på siden for å velge en lesing. Valget ditt beholdes mellom besøk." },
+            { heading: '2. Bytt språk hvis du vil', text: "Hvis lesingen har flere oversettelser, vises språkknappene til høyre. Klikk på en for å bytte." },
+            { heading: '3. Velg et avsnitt', text: "Dra for å velge hvilken som helst tekst i lesingen. En flytende meny dukker opp med Uthev, Spør LLM og Kopier." },
+            { heading: '4. Annoter', text: "Uthev markerer avsnittet med gult. Spør LLM åpner en spørreboks; spørsmålet ditt og modellens svar lagres i margkolonnen med blått." },
+            { heading: '5. Administrer notatene dine', text: "Bruk Margnotater-overskriften for å justere skriftstørrelse, eksportere, importere eller tømme notatene dine. Notater lagres per lesing per nettleser." },
+          ],
+        },
+        {
+          id: 'ai-providers', label: 'AI-leverandører', title: 'Velge en modell',
+          paragraphs: [
+            { text: "AI-oppsett-vinduet grupperer leverandører i tre faner: Lokal for modeller som kjører på din egen maskin, $0 for skyleverandører med gratisnivåer, og Betal for skyleverandører som krever en betalingsbasert konto." },
+            { heading: 'Lokal — Ollama, LM Studio, llama.cpp', text: "Close Reader sjekker velkjente localhost-porter når AI-vinduet åpnes og viser oppdagede servere som ettklikks-fliser. Installer Ollama fra ollama.com og hent en modell som llama3.2 eller gemma3:27b. LM Studios innebygde server fungerer på samme måte. Du kan også legge til en hvilken som helst OpenAI-kompatibel lokal endepunkt manuelt via + Legg til lokal server-alternativet." },
+            { heading: '$0 — Google Gemini (Gratis)', text: "Få en gratis API-nøkkel fra aistudio.google.com ved hjelp av en personlig Gmail-konto. Skole-G-Suite-kontoer har ofte tjenesten deaktivert. Sjenerøse daglige grenser og ingen kredittkort kreves — det beste alternativet for de fleste studenter." },
+            { heading: '$0 — Groq (Gratis)', text: "Gratis, veldig rask Llama 3.3 70B-inferens. Registrer deg på console.groq.com med hvilken som helst e-post. Et godt alternativ når Google Workspace er blokkert på skolen." },
+            { heading: 'Betal — Anthropic Claude', text: "Få en nøkkel på console.anthropic.com. Utmerket resonnement for nyanserte spørsmål. Anthropic tilbyr vanligvis gratis prøvekreditter til å begynne med; deretter omtrent ti til tretti cent per spørsmål avhengig av lengde." },
+            { heading: 'Betal — OpenAI', text: "Få en nøkkel på platform.openai.com etter å ha lagt til en betalingsmetode. Bruker gpt-4o." },
+            { heading: 'Betal — DeepSeek', text: "Få en nøkkel på platform.deepseek.com. Veldig rimelig per token." },
+            { heading: 'Ingen AI', text: "Close Reader fungerer uten AI. Uthev avsnitt, ta margnotater og eksporter dem som JSON — helt frakoblet." },
+          ],
+        },
+        {
+          id: 'privacy', label: 'Personvern', title: 'Dataene dine forblir dine',
+          paragraphs: [
+            { text: "Close Reader er bevisst lokal. Det er ingen backend, ingen konto, ingen analyse, ingen informasjonskapsler. Alt du gjør lever i nettleserens lagring." },
+            { text: "API-nøkler lagres bare i nettleseren din via localStorage. De overføres aldri til noen server vi kontrollerer. Når du stiller et spørsmål, sendes nøkkelen direkte til leverandøren du valgte — eller til 127.0.0.1 hvis du kjører en lokal modell." },
+            { text: "Appen er en enkelt åpen-kildekode HTML-fil. Du kan lese hver linje selv." },
+            { text: "Lokalheten er et bevisst designvalg. Fokuset er på lesingen — ikke på kontoer, deling eller sosiale funksjoner." },
+          ],
+        },
+        {
+          id: 'troubleshooting', label: 'Feilsøking', title: 'Når noe går galt',
+          paragraphs: [
+            { heading: 'Ugyldig API-nøkkel', text: "Sørg for at du kopierte hele nøkkelen uten innledende eller etterfølgende mellomrom. For Gemini, bekreft at du brukte en personlig Gmail-konto, ikke en skole-konto. Hvis du er i tvil, generer nøkkelen på nytt i leverandørens dashbord og prøv igjen." },
+            { heading: 'Nøkkelen lagres ikke', text: "Sjekk at nettleseren din tillater localStorage. Privat eller inkognito-modus deaktiverer det ofte. Prøv et vanlig vindu." },
+            { heading: 'Lokal modell ikke oppdaget', text: "Bekreft at serveren kjører. For Ollama bør curl http://127.0.0.1:11434/api/tags returnere en modellliste. For LM Studio, prøv http://127.0.0.1:1234/v1/models. Hvis du bruker en ikke-standard port, legg den til via + Legg til lokal server i AI-vinduet." },
+            { heading: 'Notater forsvant', text: "Notater er per lesing og per nettleser. Bytter du nettleser eller sletter nettstedsdata mister du dem — bruk Eksporter regelmessig for å sikkerhetskopiere til JSON." },
+          ],
+        },
+        {
+          id: 'roadmap', label: 'Veikart', title: 'Fremtidige planer',
+          paragraphs: [
+            { text: "Ideer på veikartet, alle designet for å passe den lokale arkitekturen:" },
+            { heading: 'Last inn og oversett PDF-er på sparket', text: "Slipp inn en hvilken som helst PDF og få en ren, avsnittsegmentert lesing med oversettelse på forespørsel til et hvilket som helst av grensesnittspråkene." },
+            { heading: 'Les høyt', text: "Tekst-til-tale for gjeldende avsnitt eller hele lesingen, med mulighet til å bruke en lokal stemme eller en sky-TTS-leverandør." },
+            { heading: 'En åpen-kildekode-bokhylle', text: "Et kuratert bibliotek med kodingstekster, Project Gutenberg-klassikere, primærkilder i offentlig eie og annet åpent lisensiert materiale, organisert etter fagområde." },
+            { heading: 'Parallelloversettelser side om side', text: "Vis to språk i tilstøtende kolonner i stedet for å veksle mellom dem — nyttig for språkstudenter og oversettere." },
+            { heading: 'Delbare annotasjonssett', text: "Eksporter en lesing sammen med margnotatene dine som en enkelt fil som en lærer eller studiegruppe kan importere." },
+            { heading: 'Ordforrådsordliste', text: "Bygg automatisk en personlig ordliste fra begrepene du spør LLM-en om, eksporterbar for flashcards eller repetisjon." },
+          ],
+        },
+        {
+          id: 'license', label: 'Lisens', title: '',
+          paragraphs: [
+            { text: "Close Reader er MIT-lisensiert. Bruk, modifiser og del fritt. Attribusjon settes pris på." },
+            { text: "Bygget for nær lesing og aktiv utforskning på tvers av alle fagområder." },
+          ],
+        },
+      ],
     },
   },
 };
@@ -2150,8 +2649,8 @@ function renderText() {
   } else {
     translatorEl.textContent = '';
   }
-  // About: third line is the app tagline, not a translator credit.
-  if (reading.aboutTagline) translatorEl.textContent = reading.aboutTagline;
+  // About: third line is the app tagline (per language), not a translator credit.
+  if (data.aboutTagline) translatorEl.textContent = data.aboutTagline;
 
   let html = '';
   for (const sec of (data.sections || [])) {
