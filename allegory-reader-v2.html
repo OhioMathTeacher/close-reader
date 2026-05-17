@@ -2681,6 +2681,7 @@ function switchLang(lang) {
   if (!readingHasLang(currentReading(), lang)) return;
   currentLang = lang;
   applyTranslations();
+  updateAIBtn();
   document.querySelectorAll('.lang-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.lang === lang);
   });
