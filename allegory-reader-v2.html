@@ -2096,12 +2096,12 @@ const READINGS = {
 // APP STATE
 // ═══════════════════════════════════
 const READING_KEY = 'cr_current_reading';
-let currentReadingSlug = localStorage.getItem(READING_KEY) || 'gandhi-hind-swaraj';
+let currentReadingSlug = localStorage.getItem(READING_KEY) || '__about__';
 // '__about__' is a synthetic reading (see ABOUT_READING below), not in the
 // READINGS map — allow it through so a user who left on the About page returns
-// there next visit.
+// there next visit. First-time visitors land on About to orient themselves.
 if (currentReadingSlug !== '__about__' && !READINGS[currentReadingSlug]) {
-  currentReadingSlug = 'gandhi-hind-swaraj';
+  currentReadingSlug = '__about__';
 }
 let currentLang = 'en';
 let selectedText = '';
