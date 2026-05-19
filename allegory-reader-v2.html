@@ -2090,13 +2090,63 @@ const READINGS = {
       },
     },
   },
+  'cisa-k12-cybersecurity': {
+    id: 'cisa-k12-cybersecurity',
+    title: 'Protecting Our Future: Cybersecurity for K-12',
+    author: 'Cybersecurity and Infrastructure Security Agency (CISA)',
+    source: 'U.S. Department of Homeland Security',
+    reference: 'January 2023',
+    summary: "CISA's report to Congress on cybersecurity risks facing K-12 schools and three recommendations for protecting students, staff, and school systems.",
+    systemPromptExtra: "You are an annotation assistant for CISA's January 2023 report \"Protecting Our Future: Partnering to Safeguard K-12 Organizations from Cybersecurity Threats.\" The document is federal cybersecurity guidance addressed to K-12 leaders — superintendents, district administrators, school boards, state policymakers, and IT/cybersecurity staff. When the reader highlights a term or passage, help them understand it in operational context: what it means, why it matters in a school setting, and how it connects to the three CISA recommendations (impactful security measures, resource constraints, and information sharing). Generate quiz questions on highlighted passages when asked. Treat this as test-prep material for school administrators who need to internalize the vocabulary and the recommendations.",
+    languages: {
+      en: {
+        label: 'English',
+        translator: 'CISA / U.S. Department of Homeland Security (public domain)',
+        sections: [
+          {
+            id: 'executive-summary',
+            label: 'EXECUTIVE SUMMARY',
+            title: '',
+            paragraphs: [
+              { heading: 'A heightened risk environment for K-12', text: "There is no more important institution to the future prosperity and strength of the United States than our nation's K-12 education system. K-12 schools and school districts have adopted advanced networking technologies that facilitate learning and make schools more efficient and effective. This technological gain, however, has introduced heightened risks. Malicious cyber actors are targeting K-12 education organizations across the country, with potentially catastrophic impacts on students, their families, teachers, and administrators." },
+              { heading: 'The pandemic accelerated the challenge', text: "The K-12 cybersecurity challenge was exacerbated by the COVID-19 pandemic, which significantly tested the nation's education system, necessitating an unexpected pivot to virtual learning that rendered our K-12 educational institutions increasingly vulnerable as new technologies were adopted on an unprecedented scale. Cyberattacks, and the threat thereof, strained resources and impacted delivery of critical education services across the nation. This has placed an untenable burden on our educational institutions and the populations that they serve and protect — children, parents, and educators." },
+              { heading: 'The K-12 Cybersecurity Act of 2021', text: "Congress recognized this heightened risk environment by enacting the K-12 Cybersecurity Act of 2021, which required the Cybersecurity and Infrastructure Security Agency (CISA) to report on cybersecurity risks facing elementary and secondary schools and develop recommendations that include cybersecurity guidelines designed to help schools face these risks. Our resultant report provides insight into the current threat landscape and the K-12 community's capacity to prevent and mitigate cyber attacks." },
+              { heading: 'Change must come from the top down', text: "These recommendations are presented with a caveat: change must come from the top down. Leaders must establish and reinforce a cybersecure culture. Information technology and cybersecurity personnel cannot bear the burden alone." }
+            ]
+          },
+          {
+            id: 'key-findings',
+            label: 'KEY FINDINGS AND RECOMMENDATIONS',
+            title: '',
+            paragraphs: [
+              { speaker: 'FINDING 1', heading: 'Invest in the most impactful security measures', text: "In an environment of limited resources, leaders should leverage security investments to focus on the most impactful steps. K-12 entities should begin with a small number of prioritized investments: deploying multi-factor authentication (MFA), mitigating known exploited vulnerabilities, implementing and testing backups, regularly exercising an incident response plan, and implementing a strong cybersecurity training program. K-12 entities should then progress to fully adopting CISA's Cybersecurity Performance Goals (CPGs) and mature to building an enterprise cybersecurity plan aligned around the NIST Cybersecurity Framework (CSF)." },
+              { speaker: 'FINDING 2', heading: 'Recognize and actively address resource constraints', text: "Cybersecurity risk management must be elevated as a top priority for administrators, superintendents, and other leaders at every K-12 institution. Leaders must take creative approaches to securing necessary resources, including leveraging available grant programs, working with technology providers to benefit from low-cost services and products that are secure by design and default, and urgently reducing the security burden by migrating to secure cloud environments and trusted managed services." },
+              { speaker: 'FINDING 3', heading: 'Focus on collaboration and information sharing', text: "No K-12 institution is an island. Information sharing and collaboration with peers and partners is essential to build awareness and sustain resilience. K-12 entities should participate in an information sharing forum such as the Multi-State Information Sharing and Analysis Center (MS-ISAC) and/or K12 Security Information eXchange (K12 SIX) and establish a relationship with CISA and FBI field personnel." }
+            ]
+          },
+          {
+            id: 'risks-and-challenges',
+            label: 'RISKS AND CHALLENGES TO THE K-12 EDUCATION COMMUNITY',
+            title: '',
+            paragraphs: [
+              { heading: 'Scale and trajectory', text: "According to the U.S. Department of Education, K-12 institutions serve more than 50 million students in the United States. Although the total number of K-12 cybersecurity incidents is impossible to reliably quantify due to a lack of consolidated data, research from federal and private sector sources shows that cyber threats have continued to escalate. From 2018 to the present, schools in most states have reported cyber incidents on their systems. Reported incidents between 2018–2021 have risen from 400 in 2018 to an accumulated total of over 1,300." },
+              { heading: 'What attackers are after', text: "Malicious cyber actors are targeting school computer systems, disrupting access, and rendering the systems unable to perform basic functions. Moreover, schools, districts, states, and educational technology vendors collect, transmit, and store a range of sensitive information on students and employees including grades, test/assessment scores, addresses, telephone numbers, emails, special education accommodations, disciplinary records, financial information, medical information, and employee Social Security numbers (SSNs). With greater connectivity among these systems and networks, threat actors attack these systems for financial gain, to disrupt classes, or for other potentially destructive purposes." },
+              { heading: 'A shortage of in-house expertise', text: "Notwithstanding this continuous onslaught of intrusions, research shows that many school districts lack a chief information security officer (CISO) position and the internal expertise to match the many challenges of cybersecurity today." },
+              { heading: 'Types of incidents reported', text: "According to a recent report by the Multi-State Information Sharing and Analysis Center (MS-ISAC), 29 percent of the ISAC's K-12 school and district members reported being victims of a cyber incident. Types of incidents included: student data breaches; data breaches involving information regarding teachers and school community members; ransomware attacks; business email compromise (BEC) scams; denial of service (DDoS) attacks; website and social media defacement; and online class and school meeting invasions." }
+            ]
+          }
+        ]
+      }
+    }
+  },
 };
 
 // ═══════════════════════════════════
 // APP STATE
 // ═══════════════════════════════════
 const READING_KEY = 'cr_current_reading';
-let currentReadingSlug = localStorage.getItem(READING_KEY) || '__about__';
+const urlReadingParam = new URLSearchParams(location.search).get('reading');
+let currentReadingSlug = urlReadingParam || localStorage.getItem(READING_KEY) || '__about__';
 // '__about__' is a synthetic reading (see ABOUT_READING below), not in the
 // READINGS map — allow it through so a user who left on the About page returns
 // there next visit. First-time visitors land on About to orient themselves.
