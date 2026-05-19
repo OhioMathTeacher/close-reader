@@ -68,10 +68,12 @@ body {
   display: flex; justify-content: space-between; align-items: flex-start;
   flex-wrap: wrap; gap: 0.8rem; position: relative; z-index: 1;
 }
-/* Constrain the title column so a long title (e.g., CISA's K-12 report)
-   wraps to multiple lines inside .header-text rather than expanding the
-   flex item to full width and pushing .header-right below it. */
-.header-text { flex: 1 1 auto; min-width: 0; }
+/* Constrain the title column so long titles or subtitles wrap inside it
+   instead of pushing the right-side controls (.header-right) to a new
+   row below. flex: 1 1 0 means the column starts at zero width and grows
+   to fill whatever the right-side controls don't claim; min-width: 0
+   lets the title wrap rather than overflow. */
+.header-text { flex: 1 1 0; min-width: 0; }
 .header-text h1 {
   font-family: 'Crimson Pro', serif;
   font-weight: 300; font-size: 1.8rem; letter-spacing: 0.03em; line-height: 1.2;
@@ -100,7 +102,7 @@ body {
   white-space: pre-line;
   margin: 1.2rem 0;
 }
-.header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
+.header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; flex-shrink: 0; }
 .lang-toggles { display: flex; gap: 0.4rem; }
 .lang-btn {
   font-family: 'DM Sans', sans-serif;
