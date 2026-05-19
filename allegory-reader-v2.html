@@ -2892,6 +2892,18 @@ async function submitComment() {
   renderComments();
 }
 
+// Scroll the most recent follow-up of a thread into view. Called after
+// renderComments() so the new question lands visibly and again when the
+// answer arrives — without this, follow-ups stack below the viewport
+// edge and the user has to hunt for the answer.
+function scrollLatestSubcomment(cid) {
+  const thread = document.getElementById('comment-' + cid);
+  if (!thread) return;
+  const subs = thread.querySelectorAll('.sub-comment');
+  const last = subs[subs.length - 1];
+  if (last) last.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
 async function submitFollowup(cid) {
   const input = document.getElementById('followup-input-' + cid);
   const question = input.value.trim();
@@ -2904,6 +2916,7 @@ async function submitFollowup(cid) {
   saveNotesToStorage();
   input.value = '';
   renderComments();
+  scrollLatestSubcomment(cid);
 
   let ctx = `Original passage: "${comment.passage}"\nOriginal question: ${comment.question}\nOriginal answer: ${comment.answer}\n`;
   comment.followups.forEach((f, i) => {
@@ -2914,6 +2927,7 @@ async function submitFollowup(cid) {
   followup.answer = await askAI(comment.passage, question, ctx, comment.lang);
   saveNotesToStorage();
   renderComments();
+  scrollLatestSubcomment(cid);
 }
 
 // Map a reading-language code to the natural language the AI should reply in.
