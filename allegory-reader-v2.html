@@ -3251,6 +3251,13 @@ function translateSpeaker(speaker) {
 }
 
 
+// Brevity controls. Tune these two numbers to make AI responses tighter or
+// looser. RESPONSE_TARGET_WORDS is the soft target the model sees in the
+// prompt; RESPONSE_MAX_TOKENS is the hard cap enforced at the API level.
+// ~60 words ≈ ~80 tokens; 150 leaves headroom for a few extra sentences.
+const RESPONSE_TARGET_WORDS = 60;
+const RESPONSE_MAX_TOKENS = 150;
+
 async function askAI(passage, question, context, lang) {
   const reading = currentReading();
   const responseLanguage = RESPONSE_LANGUAGE_NAMES[lang] || lang;
@@ -3260,11 +3267,13 @@ async function askAI(passage, question, context, lang) {
     || `You are an annotation assistant for ${reading?.title || 'this reading'}.`;
   const sysContext = `${baseContext} ${langNote}`.trim();
 
+  const brevityNote = `Answer briefly — about ${RESPONSE_TARGET_WORDS} words, 2-3 sentences maximum. Use plain language; lead with the most important point. No bullet points. No sycophancy.`;
+
   let prompt;
   if (context) {
-    prompt = `${sysContext}\n\nHere is the conversation so far:\n${context}\n\nThe student's follow-up question is: ${question}\n\nGive a clear, substantive answer of 2-4 sentences. Build on what was discussed. Use plain language and modern analogies where they illuminate. No bullet points. No sycophancy.`;
+    prompt = `${sysContext}\n\nHere is the conversation so far:\n${context}\n\nThe student's follow-up question is: ${question}\n\n${brevityNote} Build on what was discussed.`;
   } else {
-    prompt = `${sysContext}\n\nA student selected this passage:\n"${passage}"\n\nTheir question: ${question}\n\nGive a clear, substantive answer of 3-5 sentences. Explain philosophical meaning, connect to the broader allegory if relevant. Use plain language and modern analogies where they illuminate. No bullet points. No sycophancy.`;
+    prompt = `${sysContext}\n\nA student selected this passage:\n"${passage}"\n\nTheir question: ${question}\n\n${brevityNote}`;
   }
 
   const provider = getProvider();
@@ -3290,7 +3299,7 @@ async function askAI(passage, question, context, lang) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: parsed.modelId,
-          max_tokens: 1000,
+          max_tokens: RESPONSE_MAX_TOKENS,
           messages: [{ role: 'user', content: prompt }],
         }),
       });
@@ -3317,7 +3326,7 @@ async function askAI(passage, question, context, lang) {
         },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
+          max_tokens: RESPONSE_MAX_TOKENS,
           messages: [{ role: 'user', content: prompt }]
         })
       });
@@ -3341,7 +3350,7 @@ async function askAI(passage, question, context, lang) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
+          generationConfig: { maxOutputTokens: RESPONSE_MAX_TOKENS, temperature: 0.7 }
         })
       });
       if (!res.ok) {
@@ -3368,7 +3377,7 @@ async function askAI(passage, question, context, lang) {
         },
         body: JSON.stringify({
           model: cfg.model,
-          max_tokens: 1000,
+          max_tokens: RESPONSE_MAX_TOKENS,
           messages: [{ role: 'user', content: prompt }],
         }),
       });
