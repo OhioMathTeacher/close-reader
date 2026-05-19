@@ -68,6 +68,10 @@ body {
   display: flex; justify-content: space-between; align-items: flex-start;
   flex-wrap: wrap; gap: 0.8rem; position: relative; z-index: 1;
 }
+/* Constrain the title column so a long title (e.g., CISA's K-12 report)
+   wraps to multiple lines inside .header-text rather than expanding the
+   flex item to full width and pushing .header-right below it. */
+.header-text { flex: 1 1 auto; min-width: 0; }
 .header-text h1 {
   font-family: 'Crimson Pro', serif;
   font-weight: 300; font-size: 1.8rem; letter-spacing: 0.03em; line-height: 1.2;
@@ -2093,7 +2097,7 @@ const READINGS = {
   'cisa-k12-cybersecurity': {
     id: 'cisa-k12-cybersecurity',
     title: 'Protecting Our Future: Cybersecurity for K-12',
-    author: 'Cybersecurity and Infrastructure Security Agency (CISA)',
+    author: 'CISA',
     source: 'U.S. Department of Homeland Security',
     reference: 'January 2023',
     summary: "CISA's report to Congress on cybersecurity risks facing K-12 schools and three recommendations for protecting students, staff, and school systems.",
