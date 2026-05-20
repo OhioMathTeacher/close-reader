@@ -412,7 +412,10 @@ body {
   margin-top: 0.4rem; padding-top: 0.4rem;
   border-top: 1px dashed var(--comment-border);
 }
-.sub-comment .comment-question, .sub-comment .comment-answer { font-size: 0.76rem; }
+/* No font-size override here: sub-comment Q&A inherits the same
+   calc(0.84em * scale) rule as the top-level pair. Earlier the override
+   was a fixed 0.76rem that ignored the scale variable and rendered
+   larger than the top-level — follow-ups looked visually inflated. */
 
 .empty-state {
   text-align: center; padding: 2.5rem 1rem;
